@@ -27,7 +27,7 @@ public class AdminDashboardServlet extends HttpServlet {
             return;
         }
         User user = (User) session.getAttribute("user");
-        //không phải admin
+        //không phải vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin
         if (user.getRoleId() != 1) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
@@ -47,7 +47,7 @@ public class AdminDashboardServlet extends HttpServlet {
         Map<String, Double> revenue30Days = dashboardService.getRevenueLast30Days();
         request.setAttribute("revenueLabels", revenue30Days.keySet());
         request.setAttribute("revenueValues", revenue30Days.values());
-        request.getRequestDispatcher("/page/admin/dashboard.jsp")
+        request.getRequestDispatcher("/page/vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin/dashboard.jsp")
                 .forward(request, response);
     }
 
