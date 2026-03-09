@@ -98,7 +98,7 @@
             </a>
             <c:if test="${not empty user and user.roleId == 1}">
                 <a href="${pageContext.request.contextPath}/admin/dashboard">
-                    <button class="nav-item ${currentPage.contains('/admin') ? 'active' : ''}">
+                    <button class="nav-item ${currentPage.contains('/vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin') ? 'active' : ''}">
                         <i class="bi bi-shield-lock"></i>Quản lý Admin
                     </button>
                 </a>
