@@ -103,7 +103,9 @@ public class Product implements Serializable {
 
     public void setPrice(double price) {
         this.price = price;
-        this.finalPrice = price; //cập nhật finalPrice mỗi khi price thay đổi
+
+        //cập nhật finalPrice mỗi khi price thay đổi
+        this.finalPrice = price;
     }
 
     public double getFinalPrice() {
