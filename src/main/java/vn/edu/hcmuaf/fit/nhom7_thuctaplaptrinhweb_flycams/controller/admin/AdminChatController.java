@@ -29,6 +29,16 @@ public class AdminChatController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            resp.sendRedirect(req.getContextPath() + "/Login");
+            return;
+        }
+        User user = (User) session.getAttribute("user");
+        if (user.getRoleId() != 1) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
         String path = req.getServletPath();
         if ("/admin/chat-manage".equals(path)) {
             req.getRequestDispatcher("/page/admin/chat-manage.jsp").forward(req, resp);
@@ -43,30 +53,35 @@ public class AdminChatController extends HttpServlet {
         } else if ("messages".equals(action)) {
             int convId = Integer.parseInt(req.getParameter("conversationId"));
             List<Message> messages = chatDAO.getMessages(convId);
-            HttpSession session = req.getSession();
-            User admin = (User) session.getAttribute("user");
-            int adminId = (admin != null) ? admin.getId() : 1;
-            chatDAO.markAsRead(convId, adminId);
+            chatDAO.markAsRead(convId, user.getId());
             resp.getWriter().write(gson.toJson(messages));
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+        User user = (User) session.getAttribute("user");
+        if (user.getRoleId() != 1) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
         String action = req.getParameter("action");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         Map<String, Object> result = new HashMap<>();
         if ("send".equals(action)) {
-            HttpSession session = req.getSession();
-            User admin = (User) session.getAttribute("user");
             int convId = Integer.parseInt(req.getParameter("conversationId"));
             int participantId = Integer.parseInt(req.getParameter("participantId"));
             String content = req.getParameter("content");
             if (content != null && !content.trim().isEmpty()) {
                 Message msg = new Message();
                 msg.setConversationId(convId);
-                msg.setSendUserId(admin != null ? admin.getId() : 1);
+                msg.setSendUserId(user.getId());
                 msg.setReceiveUserId(participantId);
                 msg.setContent(content.trim());
                 msg.setStatus("SENT");
