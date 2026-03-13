@@ -1,0 +1,422 @@
+body {
+    font-family: Inter, Inter Fallback, Arial, sans-serif;
+    background-color: #fff;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.phan-san-pham {
+    background-color: #ffffff;
+    padding: 20px 10%;
+
+}
+
+.link-chi-tiet {
+    display: block;
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+    color: inherit;
+}
+
+.hang-danh-gia {
+    position: relative;
+    z-index: 2;
+}
+
+.tim-yeu-thich {
+    cursor: pointer;
+    font-size: 20px;
+    color: #888;
+    z-index: 5;
+}
+
+.tim-yeu-thich.yeu-thich {
+    color: red;
+}
+
+.khung-anh {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+}
+
+.khung-anh img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.tieu-de-muc {
+    font-weight: 700;
+}
+
+.bo-loc .loc-select {
+    width: 220px;
+}
+
+.danh-muc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    justify-content: flex-start;
+    margin-bottom: 30px;
+}
+
+.danh-muc-list li {
+    padding: 10px 18px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.danh-muc-list li:hover,
+.danh-muc-list li.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.san-pham-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.san-pham-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.khung-san-pham {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 25px 15px;
+    justify-items: center;
+    margin: 15px auto;
+    width: 1200px;
+}
+
+.san-pham {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 270px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.san-pham form {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+    margin-bottom: 10px;
+}
+
+.san-pham:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.san-pham img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 20px 20px 0 0;
+}
+
+.ten-san-pham {
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+    margin: 6px 0;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+    max-height: 2.6em;
+    min-height: 2.6em;
+    word-break: break-word;
+    text-overflow: ellipsis;
+}
+
+.gia {
+    color: red;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 4px 0;
+    text-align: left;
+    line-height: 1.2;
+}
+
+.gia-goc {
+    display: block;
+    color: #888;
+    font-size: 0.9rem;
+    text-decoration: line-through;
+    margin-top: 2px;
+    font-weight: normal;
+}
+
+.danh-gia-sao {
+    color: #ffb400;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    line-height: 1.2;
+}
+
+.hang-danh-gia {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    line-height: 1.0;
+}
+
+.tim-yeu-thich {
+    font-size: 1.3rem;
+    color: #bbb;
+    cursor: pointer;
+    transition: color 0.3s;
+    margin-right: 20px;
+    font-size: 1rem;
+}
+
+.tim-yeu-thich.yeu-thich {
+    color: #ff4d4d;
+}
+
+.so-danh-gia {
+    font-size: 0.85rem;
+    color: #777;
+    margin: 4px 0 10px 8px;
+    margin-left: 15px;
+}
+
+.nut-mua-ngay {
+    background-color: #0051c6;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: auto;
+    margin-bottom: 10px;
+    align-self: center;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.nut-mua-ngay:hover {
+    background-color: #003c94;
+    transform: scale(1.05);
+}
+
+.tieu-de-muc {
+    font-size: 1.8rem;
+    position: relative;
+    display: inline-block;
+}
+
+.tieu-de-muc::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: #0051c6;
+    margin: 10px auto 0;
+}
+
+.toan-bo-noi-dung {
+    width: 70%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.bo-sap-xep {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 20px 0 40px 0;
+    gap: 10px;
+    font-size: 1rem;
+}
+
+.lua-chon-sap-xep {
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.3s;
+}
+
+.lua-chon-sap-xep:focus {
+    border-color: #0051c6;
+}
+
+.bo-loc-va-sap-xep {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.nut-bo-loc {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1.5px solid #0051c6;
+    color: #0051c6;
+    border-radius: 8px;
+    background-color: transparent;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nut-bo-loc i {
+    font-size: 1.1rem;
+}
+
+.nut-bo-loc:hover {
+    background-color: #0051c6;
+    color: #fff;
+}
+
+.sap-xep-theo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.label {
+    font-size: 14px;
+    color: #333;
+}
+
+.btn-sap-xep {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #000;
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-sap-xep i {
+    font-size: 1rem;
+}
+
+.btn-sap-xep:hover {
+    background-color: #f3f3f3;
+}
+
+.btn-sap-xep.active {
+    background-color: #0051c6;
+    color: #fff;
+    border-color: #0051c6;
+}
+
+.hop-loc {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 15px;
+    width: 300px;
+    z-index: 100;
+    display: none;
+}
+
+.hop-loc h6 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.hop-loc label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.hop-loc input[type="radio"] {
+    margin-right: 6px;
+}
+
+.hop-loc.hien {
+    display: block;
+}
+
+input[type="radio"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #0051c6;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+input[type="radio"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 8px;
+    height: 8px;
+    background-color: #0051c6;
+    border-radius: 50%;
+}
+
+.ten-san-pham,
+.gia,
+.danh-gia-sao {
+    text-align: left;
+    margin-left: 15px;
+    margin-right: 15px;
+
+}
+
+.phan-trang button {
+    margin: 0 5px;
+    border-radius: 10px;
+}

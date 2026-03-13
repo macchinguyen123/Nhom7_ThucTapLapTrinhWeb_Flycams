@@ -1,0 +1,64 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", "Segoe UI", sans-serif;
+}
+
+.gio-hang {
+    background-color: white;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0 10%;
+}
+
+.gio-hang-noi-dung {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 0 20px;
+}
+
+.san-pham {
+    border: 1px solid #0051c6;
+    transition: box-shadow 0.3s;
+}
+
+.san-pham:hover {
+    box-shadow: 0 3px 10px #0051c6;
+}
+
+.ten-san-pham {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.gia-hien-tai {
+    font-size: 1.05rem;
+}
+
+.gia-goc {
+    font-size: 0.9rem;
+}
+
+.o-so-luong {
+    border: 1px solid #0051c6;
+}
+
+.card {
+    margin-top: 25px;
+}
+
+.btn-outline-secondary {
+    font-weight: 500;
+    color: black;
+}
+
+.anh_san_pham {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}

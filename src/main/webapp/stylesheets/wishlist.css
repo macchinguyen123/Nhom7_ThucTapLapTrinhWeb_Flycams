@@ -1,0 +1,29 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", "Segoe UI", sans-serif;
+}
+
+.gio-hang {
+    background-color: white;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0 10%;
+}
+
+.gio-hang-noi-dung {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 0 20px;
+}
+
+.anh_san_pham {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
