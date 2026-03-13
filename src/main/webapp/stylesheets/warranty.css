@@ -1,0 +1,73 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.warranty {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.warranty .container {
+    background: #fff;
+    max-width: 1000px;
+    padding: 50px 60px;
+    border-radius: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.warranty h1 {
+    font-family: sans-serif;
+    text-align: center;
+    color: #004aad;
+    font-size: 28px;
+    font-weight: 1;
+    margin-bottom: 30px;
+    letter-spacing: 0.5px;
+}
+
+.mascot {
+    width: 430px;
+    margin: 0px auto;
+}
+
+.warranty ul {
+    list-style: none;
+    color: #333;
+}
+
+.warranty ul li {
+    margin-bottom: 14px;
+    text-align: justify;
+    position: relative;
+    padding-left: 20px;
+    font-size: 16px;
+}
+
+.warranty ul li::before {
+    content: "–";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #000;
+}
+
+.note {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #111;
+    line-height: 1.6;
+}
+
+.note b {
+    color: #004aad;
+}
