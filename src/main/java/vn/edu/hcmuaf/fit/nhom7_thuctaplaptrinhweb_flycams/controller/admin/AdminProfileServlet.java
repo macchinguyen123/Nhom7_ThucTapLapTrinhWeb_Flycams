@@ -1,12 +1,9 @@
 package vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.MultipartConfig;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.Part;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
 
@@ -14,8 +11,8 @@ import java.io.File;
 import java.io.IOException;
 
 @WebServlet(name = "AdminProfileServlet", value = "/admin/profile")
-@MultipartConfig(maxFileSize = 5 * 1024 * 1024, // 5MB
-        maxRequestSize = 10 * 1024 * 1024 // 10MB
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024,
+        maxRequestSize = 10 * 1024 * 1024
 )
 public class AdminProfileServlet extends HttpServlet {
     private final AuthService authService = new AuthService();
@@ -28,14 +25,13 @@ public class AdminProfileServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
-        //refresh thông tin vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin từ DB
         User refreshedAdmin = authService.getUserByEmail(admin.getEmail());
         if (refreshedAdmin != null) {
             request.getSession().setAttribute("user", refreshedAdmin);
             admin = refreshedAdmin;
         }
         request.setAttribute("admin", admin);
-        request.getRequestDispatcher("/page/vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin/profile-vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin.jsp")
+        request.getRequestDispatcher("/page/admin/profile-admin.jsp")
                 .forward(request, response);
     }
 
@@ -58,7 +54,7 @@ public class AdminProfileServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
-    //undate info
+
     private void updateInfo(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, ServletException {
         User admin = (User) req.getSession().getAttribute("user");
@@ -69,7 +65,6 @@ public class AdminProfileServlet extends HttpServlet {
         String fullName = req.getParameter("fullName");
         String email = req.getParameter("email");
         String phone = req.getParameter("phone");
-        //validate
         if (fullName == null || fullName.trim().isEmpty()) {
             req.getSession().setAttribute("infoMsg", "Họ tên không được để trống");
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
@@ -85,29 +80,26 @@ public class AdminProfileServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
             return;
         }
-        //lấy thông tin vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin hiện tại từ DB để giữ lại các field khác
         User currentAdmin = authService.getUserByEmail(admin.getEmail());
         if (currentAdmin == null) {
-            req.getSession().setAttribute("infoMsg", "Không tìm thấy thông tin vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin");
+            req.getSession().setAttribute("infoMsg", "Không tìm thấy thông tin admin");
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
             return;
         }
-        //cập nhật các trường cần thiết
+        // Cập nhật các trường cần thiết
         currentAdmin.setFullName(fullName.trim());
         currentAdmin.setEmail(email.trim());
         currentAdmin.setPhoneNumber(phone.trim());
-        // xử lý avatar
+        // Xử lý avatar
         try {
             Part avatarPart = req.getPart("avatar");
             if (avatarPart != null && avatarPart.getSize() > 0) {
                 String contentType = avatarPart.getContentType();
-                //validate content type
                 if (contentType == null || !contentType.startsWith("image/")) {
                     req.getSession().setAttribute("infoMsg", "File avatar phải là hình ảnh");
                     resp.sendRedirect(req.getContextPath() + "/admin/profile");
                     return;
                 }
-                //validate file size (5MB)
                 if (avatarPart.getSize() > 5 * 1024 * 1024) {
                     req.getSession().setAttribute("infoMsg", "File avatar không được vượt quá 5MB");
                     resp.sendRedirect(req.getContextPath() + "/admin/profile");
@@ -119,30 +111,25 @@ public class AdminProfileServlet extends HttpServlet {
                     resp.sendRedirect(req.getContextPath() + "/admin/profile");
                     return;
                 }
-                //tạo tên file unique
                 String fileExtension = "";
                 int dotIndex = originalFileName.lastIndexOf('.');
                 if (dotIndex > 0) {
                     fileExtension = originalFileName.substring(dotIndex);
                 }
                 String fileName = System.currentTimeMillis() + fileExtension;
-                //lấy đường dẫn upload - deployment directory (temporary)
-                String deploymentPath = getServletContext().getRealPath("/uploads/avatar/");
+                String deploymentPath = getServletContext().getRealPath("/image/avatar/");
                 File deployDir = new File(deploymentPath);
-                //tạo thư mục nếu chưa tồn tại
+                // Tạo thư mục nếu chưa tồn tại
                 if (!deployDir.exists()) {
                     deployDir.mkdirs();
                 }
-                //lấy đường dẫn upload - source directory (persistent)
-                String sourcePath = "D:/Nhom12LapTrinhWebFlycams/src/main/webapp/uploads/avatar/";
+                String sourcePath = "D:/Nhom12LapTrinhWebFlycams/src/main/webapp/image/avatar/";
                 File sourceDir = new File(sourcePath);
                 if (!sourceDir.exists()) {
                     sourceDir.mkdirs();
                 }
-                //lưu file vào deployment directory
                 String deployFilePath = deploymentPath + File.separator + fileName;
                 avatarPart.write(deployFilePath);
-                //copy file vào source directory cho tính bền vững
                 String sourceFilePath = sourcePath + File.separator + fileName;
                 try {
                     java.nio.file.Files.copy(
@@ -154,20 +141,18 @@ public class AdminProfileServlet extends HttpServlet {
                     System.err.println("Failed to save avatar to source directory: " + copyEx.getMessage());
                 }
                 System.out.println("Avatar saved to deployment: " + deployFilePath);
-                //cập nhật tên file vào object
                 currentAdmin.setAvatar(fileName);
             }
-            //nếu không có file mới, giữ nguyên avatar cũ (đã có trong currentAdmin)
         } catch (Exception e) {
             e.printStackTrace();
             req.getSession().setAttribute("infoMsg", "Lỗi upload avatar: " + e.getMessage());
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
             return;
         }
-        //cập nhật vào database
+        // Cập nhật vào database
         boolean success = authService.updateProfileAdmin(currentAdmin);
         if (success) {
-            //refresh lại thông tin trong session
+            // Refresh lại thông tin trong session
             User updatedAdmin = authService.getUserByEmail(currentAdmin.getEmail());
             if (updatedAdmin != null) {
                 req.getSession().setAttribute("user", updatedAdmin);
@@ -178,7 +163,7 @@ public class AdminProfileServlet extends HttpServlet {
         }
         resp.sendRedirect(req.getContextPath() + "/admin/profile");
     }
-    //update bankk
+
     private void changePassword(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         User admin = (User) req.getSession().getAttribute("user");
@@ -189,7 +174,6 @@ public class AdminProfileServlet extends HttpServlet {
         String oldPass = req.getParameter("oldPassword");
         String newPass = req.getParameter("newPassword");
         String confirmPass = req.getParameter("confirmPassword");
-        //validate input
         if (oldPass == null || oldPass.trim().isEmpty()) {
             req.getSession().setAttribute("passMsg", "Vui lòng nhập mật khẩu cũ");
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
@@ -200,42 +184,38 @@ public class AdminProfileServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
             return;
         }
-        //kiểm tra xác nhận
+        // Kiểm tra xác nhận
         if (!newPass.equals(confirmPass)) {
             req.getSession().setAttribute("passMsg", "Mật khẩu xác nhận không khớp");
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
             return;
         }
-        //kiểm tra độ mạnh
+        // Kiểm tra độ mạnh
         if (!isStrongPassword(newPass)) {
             req.getSession().setAttribute("passMsg",
                     "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
             resp.sendRedirect(req.getContextPath() + "/admin/profile");
             return;
         }
-        //thực hiện đổi mật khẩu qua AuthService
         String error = authService.changePassword(
                 admin.getId(),
                 admin.getEmail(),
                 oldPass,
                 newPass,
                 confirmPass,
-                null, //không dùng OTP
-                null //không dùng OTP
+                null,
+                null
         );
         if (error == null) {
-            //success
-            //cập nhật password trong session (plaintext, chỉ để hiển thị hoặc dùng tạm,
-            //thực tế ko nên lưu plaintext pass trong session)
             admin.setPassword(newPass);
             req.getSession().setAttribute("user", admin);
             req.getSession().setAttribute("passMsg", "Đổi mật khẩu thành công");
         } else {
-            //fail
             req.getSession().setAttribute("passMsg", error);
         }
         resp.sendRedirect(req.getContextPath() + "/admin/profile");
     }
+
     private boolean isStrongPassword(String password) {
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$");
     }
