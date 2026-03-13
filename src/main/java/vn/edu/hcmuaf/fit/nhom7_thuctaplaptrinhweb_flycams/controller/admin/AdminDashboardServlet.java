@@ -21,13 +21,11 @@ public class AdminDashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-        //chưa login
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/Login");
             return;
         }
         User user = (User) session.getAttribute("user");
-        //không phải vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin
         if (user.getRoleId() != 1) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
@@ -47,7 +45,7 @@ public class AdminDashboardServlet extends HttpServlet {
         Map<String, Double> revenue30Days = dashboardService.getRevenueLast30Days();
         request.setAttribute("revenueLabels", revenue30Days.keySet());
         request.setAttribute("revenueValues", revenue30Days.values());
-        request.getRequestDispatcher("/page/vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin/dashboard.jsp")
+        request.getRequestDispatcher("/page/admin/dashboard.jsp")
                 .forward(request, response);
     }
 

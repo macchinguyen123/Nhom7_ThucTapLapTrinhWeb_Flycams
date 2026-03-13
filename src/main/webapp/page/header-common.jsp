@@ -183,7 +183,6 @@
     searchInput.addEventListener("input", function () {
         triggerSuggest();
     });
-
     searchInput.addEventListener("focus", function () {
         const keyword = searchInput.value.trim();
         if (keyword === "") {
@@ -514,5 +513,168 @@
             }
         }
     });
+</script>
+<div class="chat-widget" id="chatWidget">
+    <button class="chat-button" id="chatBtn">
+        <i class="bi bi-chat-dots-fill"></i>
+        <div class="unread-badge" id="chatBadgeUnread" style="display: none;">0</div>
+    </button>
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-header-avatar">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div>
+                    <h5>Hỗ trợ SkyDrone</h5>
+                    <div class="status-text">
+                        <span class="status-dot"></span>Trực tuyến
+                    </div>
+                </div>
+            </div>
+            <div class="close-chat" id="closeChat">
+                <i class="bi bi-x-lg"></i>
+            </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+        </div>
+        <c:if test="${not empty user}">
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Nhập tin nhắn...">
+                <button id="sendChat">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </c:if>
+    </div>
+</div>
+<script>
+    (function () {
+        const chatBtn = document.getElementById('chatBtn');
+        const chatWindow = document.getElementById('chatWindow');
+        const closeChat = document.getElementById('closeChat');
+        const chatBody = document.getElementById('chatBody');
+        const chatInput = document.getElementById('chatInput');
+        const sendChat = document.getElementById('sendChat');
+        const unreadBadge = document.getElementById('chatBadgeUnread');
+        const userLoggedIn = ${not empty user};
+        let chatInitialized = false;
+        if (chatBtn) {
+            chatBtn.addEventListener('click', () => {
+                if (!userLoggedIn) {
+                    window.location.href = contextPath + '/page/login.jsp';
+                    return;
+                }
+                chatWindow.classList.toggle('active');
+                if (chatWindow.classList.contains('active') && userLoggedIn && !chatInitialized) {
+                    loadChatHistory();
+                    chatInitialized = true;
+                }
+            });
+        }
+        if (closeChat) {
+            closeChat.addEventListener('click', () => {
+                chatWindow.classList.remove('active');
+            });
+        }
+
+        function formatChatTime(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        }
+
+        function scrollToBottomChat() {
+            requestAnimationFrame(() => {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            });
+        }
+
+        function loadChatHistory() {
+            if (!userLoggedIn) return;
+            fetch(contextPath + '/chat?action=history')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        renderMessages(data.messages);
+                        updateUnreadCount();
+                    }
+                })
+                .catch(err => console.error('Chat error:', err));
+        }
+
+        function renderMessages(messages) {
+            chatBody.innerHTML = '';
+            if (!messages || messages.length === 0) {
+                chatBody.innerHTML = '<div class="text-center p-3 text-muted"><p>Chào bạn! SkyDrone có thể giúp gì cho bạn?</p></div>';
+                return;
+            }
+            messages.forEach(m => {
+                const isUser = m.sendUserId == '${user.id}';
+                const div = document.createElement('div');
+                div.className = 'message ' + (isUser ? 'user' : 'admin');
+                div.innerHTML = '<span class="msg-text">' + m.content + '</span>' +
+                    '<span class="msg-time">' + formatChatTime(m.sendTime) + '</span>';
+                chatBody.appendChild(div);
+            });
+            scrollToBottomChat();
+        }
+
+        function sendMessage() {
+            const content = chatInput.value.trim();
+            if (!content) return;
+            chatInput.value = '';
+            const div = document.createElement('div');
+            div.className = 'message user';
+            div.innerHTML = '<span class="msg-text">' + content + '</span><span class="msg-time">' + formatChatTime(new Date()) + '</span>';
+            chatBody.appendChild(div);
+            scrollToBottomChat();
+            fetch(contextPath + '/chat?action=send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({action: 'send', content: content})
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        loadChatHistory();
+                    }
+                });
+        }
+
+        if (sendChat) {
+            sendChat.addEventListener('click', sendMessage);
+        }
+        if (chatInput) {
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
+
+        function updateUnreadCount() {
+            if (!userLoggedIn) return;
+            fetch(contextPath + '/chat?action=unread-count')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.count > 0) {
+                        unreadBadge.textContent = data.count;
+                        unreadBadge.style.display = 'flex';
+                    } else {
+                        unreadBadge.style.display = 'none';
+                    }
+                });
+        }
+
+        if (userLoggedIn) {
+            updateUnreadCount();
+            setInterval(() => {
+                if (chatWindow.classList.contains('active')) {
+                    loadChatHistory();
+                } else {
+                    updateUnreadCount();
+                }
+            }, 5000);
+        }
+    })();
 </script>
 
