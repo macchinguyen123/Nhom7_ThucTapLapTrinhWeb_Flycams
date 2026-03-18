@@ -15,115 +15,9 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/footer.css">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/stylesheets/personal-page.css?v=${System.currentTimeMillis()}">
-    <style>
-        .avatar-camera {
-            position: absolute !important;
-            bottom: -5px !important;
-            right: -5px !important;
-            top: auto !important;
-            left: auto !important;
-            width: 32px !important;
-            height: 32px !important;
-            background: #0051c6 !important;
-            color: #fff !important;
-            border: 3px solid #fff !important;
-            border-radius: 50% !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 100 !important;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
-            cursor: pointer !important;
-            pointer-events: auto !important;
-        }
-
-        .avatar-container {
-            display: block;
-            cursor: pointer;
-        }
-
-        .avatar-wrapper {
-            cursor: pointer !important;
-            pointer-events: none !important;
-        }
-
-        .order-tab.active {
-            background: #0051c6 !important;
-            background-color: #0051c6 !important;
-            color: #ffffff !important;
-            border-color: #0051c6 !important;
-            box-shadow: none !important;
-            font-weight: 700 !important;
-        }
-
-        .order-tab.active i,
-        .order-tab.active span {
-            color: #ffffff !important;
-        }
-    </style>
 </head>
-<body>
 <jsp:include page="/page/header-common.jsp"/>
-<script>
-    function previewAndSaveAvatar(input) {
-        const file = input.files[0];
-        if (!file) return;
-        console.log("GOD MODE: File selected", file.name);
-        if (!file.type.startsWith('image/')) {
-            alert("Vui lòng chọn file hình ảnh!");
-            return;
-        }
-        // 1. HIỂN THỊ TỨC THÌ (FORCE PREVIEW)
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            console.log("GOD MODE: Previewing image...");
-            const result = e.target.result;
-            // Cập nhật bằng ID + Class + Background
-            const img = document.getElementById("sidebar-avatar-img");
-            if (img) {
-                img.src = result;
-                img.style.display = "block";
-                img.style.opacity = "1";
-            }
-            const wrapper = document.getElementById("sidebar-avatar-wrapper");
-            if (wrapper) {
-                wrapper.style.backgroundImage = "url('" + result + "')";
-                wrapper.style.backgroundSize = "cover";
-            }
-            document.querySelectorAll(".avatar-img").forEach(i => i.src = result);
-        };
-        reader.readAsDataURL(file);
-        // 2. FETCH LƯU VỀ SERVER
-        const formData = new FormData();
-        formData.append("avatar", file);
-        fetch("${pageContext.request.contextPath}/UpdateAvatar", {
-            method: "POST",
-            body: formData
-        }).then(res => {
-            if (res.ok) return res.text();
-            throw new Error("Server error " + res.status);
-        }).then(newFileName => {
-            console.log("GOD MODE: Saved to server", newFileName);
-            const ts = new Date().getTime();
-            const finalSrc = "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + ts;
-            document.querySelectorAll(".avatar-img").forEach(i => i.src = finalSrc);
-            if (window.Swal) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thành công',
-                    text: 'Đã cập nhật ảnh đại diện!',
-                    timer: 1000,
-                    showConfirmButton: false
-                });
-            }
-        }).catch(err => {
-            console.error("GOD MODE ERROR:", err);
-            if (window.Swal) {
-                Swal.fire({icon: 'error', title: 'Lỗi lưu ảnh', text: err.message});
-            }
-        });
-    }
-</script>
+<body>
 <div class="container">
     <aside class="sidebar">
         <div class="user-info">
@@ -293,14 +187,12 @@
                         <tr>
                             <td>${o.id}</td>
                             <td>
-                                <fmt:formatDate value="${o.createdAt}"
-                                                pattern="yyyy-MM-dd HH:mm:ss"/>
+                                <fmt:formatDate value="${o.createdAt}" pattern="yyyy-MM-dd HH:mm:ss"/>
                             </td>
                             <td class="status-col" data-status="${o.status.name()}">
                                 <c:choose>
                                     <c:when test="${o.status.name() eq 'PENDING'}">
-                                                                <span class="badge bg-warning text-dark">Chờ xác
-                                                                    nhận</span>
+                                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'PROCESSING'}">
                                         <span class="badge bg-primary">Đang xử lý</span>
@@ -361,13 +253,11 @@
                                 <input type="hidden" name="orderId" id="cancelOrderId">
                                 <div class="alert alert-warning" role="alert">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể
-                                    hoàn tác.
+                                    Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác.
                                 </div>
                                 <div class="mb-3">
                                     <label for="cancelReason" class="form-label">
-                                        Lý do hủy đơn <span class="text-muted">(không bắt
-                                                                buộc)</span>
+                                        Lý do hủy đơn <span class="text-muted">(không bắt buộc)</span>
                                     </label>
                                     <textarea class="form-control" id="cancelReason" rows="3"
                                               placeholder="Ví dụ: Tôi muốn thay đổi địa chỉ giao hàng, Tôi tìm được giá tốt hơn..."></textarea>
@@ -393,8 +283,7 @@
             <div id="order-detail" class="order-card"
                  style="display: ${empty selectedOrder ? 'none' : 'block'}">
                 <a href="${pageContext.request.contextPath}/personal?tab=orders" class="btn mb-3"
-                   style="background:#0051c6;color:white">
-                    ← Quay lại danh sách
+                   style="background:#0051c6;color:white">← Quay lại danh sách
                 </a>
                 <c:if test="${not empty selectedOrder}">
                     <p>
@@ -506,8 +395,7 @@
                     </ul>
                 </c:if>
                 <c:if test="${empty addresses}">
-                    <p
-                            style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <p style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
                         <i class="bi bi-inbox" style="font-size: 48px; color: #ccc;"></i>
                         <span>Chưa có địa chỉ nào.</span>
                     </p>
@@ -601,6 +489,32 @@
 </div>
 <jsp:include page="/page/footer.jsp"/>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    (function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('vnpaySuccess') === '1') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('vnpaySuccess');
+            window.history.replaceState({}, '', url.toString());
+            Swal.fire({
+                icon: 'success',
+                title: 'Thanh toán thành công!',
+                html: '<p style="font-size:1.1rem; margin-top:8px;">Đơn hàng của bạn đã được đặt thành công qua <strong>VNPAY</strong>.<br>Cảm ơn bạn đã mua hàng!</p>',
+                confirmButtonColor: '#0051c6',
+                showConfirmButton: true,
+                timer: 5000,
+                timerProgressBar: true,
+                width: '480px',
+                padding: '2em',
+                customClass: {
+                    title: 'swal-title-big',
+                    popup: 'swal-popup-center'
+                }
+            });
+        }
+    })();
+</script>
 <script>
     function openCancelModal(orderId) {
         document.getElementById("cancelOrderId").value = orderId;
@@ -626,21 +540,18 @@
                 reader.onload = function (e) {
                     const result = e.target.result;
                     console.log("FileReader done, updating UI...");
-                    // Update bằng ID cho chắc chắn
                     const img = document.getElementById("sidebar-avatar-img");
                     if (img) {
                         img.src = result;
                         img.style.display = 'block';
                         img.style.opacity = '1';
                     }
-                    // Update fallback background
                     const wrapper = document.getElementById("sidebar-avatar-wrapper");
                     if (wrapper) {
                         wrapper.style.backgroundImage = `url('${result}')`;
                         wrapper.style.backgroundSize = 'cover';
                         wrapper.style.backgroundPosition = 'center';
                     }
-                    // Update thêm các class khác (nếu có)
                     document.querySelectorAll(".avatar-img").forEach(item => {
                         if (item.id !== "sidebar-avatar-img") {
                             item.src = result;
@@ -670,7 +581,6 @@
                     console.log("Server saved successfully:", newFileName);
                     const timestamp = new Date().getTime();
                     const finalSrc = "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + timestamp;
-                    // Cập nhật lại với link thật từ server
                     document.querySelectorAll(".avatar-img").forEach(img => {
                         img.src = finalSrc;
                     });
@@ -734,7 +644,6 @@
             });
         });
     });
-    // click tab đầu tiên khi load
     document.addEventListener("DOMContentLoaded", () => {
         document.querySelector(".order-tab")?.click();
     });
@@ -764,7 +673,6 @@
             Swal.fire({icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng nhập đầy đủ các trường mật khẩu.'});
             return;
         }
-        // Chi tiết lỗi độ mạnh mật khẩu
         if (newPass.length < 8) {
             errors.push("Mật khẩu phải có ít nhất 8 ký tự.");
         }
@@ -792,7 +700,6 @@
             });
             return;
         }
-        // Nếu OK -> Gửi OTP
         const formData = new FormData();
         document.querySelector(".otp-group").style.display = "block";
         document.getElementById("sendOtpBtn").style.display = "none";
@@ -827,7 +734,6 @@
                 }
             })
             .catch(error => {
-                // Trường hợp lỗi kết nối -> Ẩn lại
                 document.querySelector(".otp-group").style.display = "none";
                 document.getElementById("sendOtpBtn").style.display = "inline-block";
                 document.getElementById("confirmChangeBtn").style.display = "none";
@@ -835,7 +741,6 @@
                 Swal.fire({icon: 'error', title: 'Lỗi', text: 'Không thể gửi mã OTP. Vui lòng thử lại sau.'});
             });
     });
-    // Xác nhận đổi mật khẩu
     document.getElementById("confirmChangeBtn").addEventListener("click", function () {
         const form = document.getElementById("passwordForm");
         form.action = "${pageContext.request.contextPath}/ChangePassword";
@@ -844,20 +749,15 @@
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Lấy tham số từ URL
         const urlParams = new URLSearchParams(window.location.search);
         const message = urlParams.get('message');
         const status = urlParams.get('status');
-        // Nếu có thông báo
         if (message && status) {
-            // Hiển thị thông báo
             showNotification(decodeURIComponent(message), status);
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
         }
     });
-
-    // Hàm hiển thị thông báo
     function showNotification(message, type = 'success') {
         const oldNotification = document.querySelector('.custom-notification');
         if (oldNotification) {
@@ -932,7 +832,6 @@
 </c:if>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Popup Thêm địa chỉ
         const popup = document.getElementById("popup");
         const openBtn = document.getElementById("openPopup");
         const closeBtn = document.getElementById("closePopup");
@@ -947,7 +846,6 @@
                 popup.classList.add("hidden");
             }
         });
-        // Popup Sửa địa chỉ
         const editPopup = document.getElementById("editPopup");
         const closeEditBtn = document.getElementById("closeEditPopup");
         closeEditBtn.addEventListener("click", () => {
@@ -959,18 +857,14 @@
             }
         });
     });
-
-    // Hàm mở popup sửa và điền dữ liệu
     function openEditPopup(id, fullName, phoneNumber, addressLine, province, district, isDefault) {
-        // Fill thông tin cơ bản
         document.getElementById("editId").value = id;
         document.getElementById("editFullName").value = fullName;
         document.getElementById("editPhoneNumber").value = phoneNumber;
         document.getElementById("editAddressLine").value = addressLine;
         document.getElementById("editIsDefault").checked = isDefault;
-        // Load danh sách tỉnh nếu chưa có
         if (editProvinceSelect.options.length <= 1) {
-            console.log("🔄 Loading provinces for edit...");
+            console.log("Loading provinces for edit...");
             fetch(API_BASE)
                 .then(res => res.json())
                 .then(provinces => {
@@ -1016,10 +910,8 @@
                     console.error("Error loading provinces:", err);
                 });
         } else {
-            // Nếu đã load rồi, chỉ cần select
             editProvinceSelect.value = province;
             editProvinceSelect.dispatchEvent(new Event('change'));
-            // Sau khi load xong ward, select district
             setTimeout(() => {
                 editWardSelect.value = district;
                 const selectedWard = editWardSelect.options[editWardSelect.selectedIndex];
@@ -1028,7 +920,6 @@
                 }
             }, 500);
         }
-        // Mở popup
         document.getElementById("editPopup").classList.remove("hidden");
     }
 </script>
@@ -1180,6 +1071,64 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = url;
+            }
+        });
+    }
+</script>
+
+<script>
+    function previewAndSaveAvatar(input) {
+        const file = input.files[0];
+        if (!file) return;
+        console.log("GOD MODE: File selected", file.name);
+        if (!file.type.startsWith('image/')) {
+            alert("Vui lòng chọn file hình ảnh!");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            console.log("GOD MODE: Previewing image...");
+            const result = e.target.result;
+            const img = document.getElementById("sidebar-avatar-img");
+            if (img) {
+                img.src = result;
+                img.style.display = "block";
+                img.style.opacity = "1";
+            }
+            const wrapper = document.getElementById("sidebar-avatar-wrapper");
+            if (wrapper) {
+                wrapper.style.backgroundImage = "url('" + result + "')";
+                wrapper.style.backgroundSize = "cover";
+            }
+            document.querySelectorAll(".avatar-img").forEach(i => i.src = result);
+        };
+        reader.readAsDataURL(file);
+        const formData = new FormData();
+        formData.append("avatar", file);
+        fetch("${pageContext.request.contextPath}/UpdateAvatar", {
+            method: "POST",
+            body: formData
+        }).then(res => {
+            if (res.ok) return res.text();
+            throw new Error("Server error " + res.status);
+        }).then(newFileName => {
+            console.log("GOD MODE: Saved to server", newFileName);
+            const ts = new Date().getTime();
+            const finalSrc = "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + ts;
+            document.querySelectorAll(".avatar-img").forEach(i => i.src = finalSrc);
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: 'Đã cập nhật ảnh đại diện!',
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+            }
+        }).catch(err => {
+            console.error("GOD MODE ERROR:", err);
+            if (window.Swal) {
+                Swal.fire({icon: 'error', title: 'Lỗi lưu ảnh', text: err.message});
             }
         });
     }

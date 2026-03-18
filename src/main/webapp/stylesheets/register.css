@@ -4,12 +4,18 @@
 }
 
 body {
-    background: #fff;
+    background-image: url("../image/img1.png"
+    );
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     color: #222;
     margin: 0;
     display: flex;
     justify-content: center;
     padding: 40px 10px;
+    min-height: 100vh;
 }
 
 .error {
@@ -24,16 +30,25 @@ body {
     max-width: 600px;
     text-align: center;
 }
-
 .title {
-    color: #222;
+    color: #ffffff;
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 8px;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .title span {
-    color: #0051c6;
+    color: #e0f0ff; /* trắng xanh nhạt, nổi bật hơn trắng thuần */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.or {
+    margin: 0 0 15px 0;
+    font-weight: 600;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .mascot {
@@ -45,11 +60,6 @@ body {
     margin: 6px 0;
 }
 
-.or {
-    margin: 10px 0;
-    font-weight: 600;
-    color: #555;
-}
 
 .register-form {
     text-align: left;

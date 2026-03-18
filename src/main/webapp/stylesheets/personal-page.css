@@ -1456,3 +1456,48 @@ button.btn-primary:hover,
 .popup-content button[type="submit"]:hover {
     background-color: #003e99 !important;
 }
+
+ .avatar-camera {
+     position: absolute !important;
+     bottom: -5px !important;
+     right: -5px !important;
+     top: auto !important;
+     left: auto !important;
+     width: 32px !important;
+     height: 32px !important;
+     background: #0051c6 !important;
+     color: #fff !important;
+     border: 3px solid #fff !important;
+     border-radius: 50% !important;
+     display: flex !important;
+     align-items: center !important;
+     justify-content: center !important;
+     z-index: 100 !important;
+     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+     cursor: pointer !important;
+     pointer-events: auto !important;
+ }
+
+.avatar-container {
+    display: block;
+    cursor: pointer;
+}
+
+.avatar-wrapper {
+    cursor: pointer !important;
+    pointer-events: none !important;
+}
+
+.order-tab.active {
+    background: #0051c6 !important;
+    background-color: #0051c6 !important;
+    color: #ffffff !important;
+    border-color: #0051c6 !important;
+    box-shadow: none !important;
+    font-weight: 700 !important;
+}
+
+.order-tab.active i,
+.order-tab.active span {
+    color: #ffffff !important;
+}
