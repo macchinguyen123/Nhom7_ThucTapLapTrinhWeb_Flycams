@@ -15,16 +15,18 @@
 </head>
 <body>
 <div class="container">
+    <div class="field1">
     <h1 class="title">Đăng ký trở thành <span>SKYDroneMember</span></h1>
-    <img src="${pageContext.request.contextPath}/image/logoo.png" alt="Logo" class="mascot">
+    <img src="${pageContext.request.contextPath}/image/looo.png" alt="Logo" class="mascot">
     <p class="or">Điền thông tin sau</p>
+    </div>
     <form class="register-form" method="POST" action="${pageContext.request.contextPath}/Register">
         <div class="field">
             <h2>Tên đăng nhập</h2>
             <input type="text" id="local" name="username" placeholder="Nhập tên đăng nhập"
                    value="${username}" required>
             <c:if test="${not empty usernameError}">
-                <p class="error">⚠ ${usernameError}</p>
+                <p class="error"> ${usernameError}</p>
             </c:if>
         </div>
         <h2>Thông tin cá nhân</h2>
@@ -34,14 +36,14 @@
                 <input type="text" id="fullname" name="fullName" placeholder="Nhập họ và tên"
                        value="${fullName}" required>
                 <c:if test="${not empty fullNameError}">
-                    <p class="error">⚠ ${fullNameError}</p>
+                    <p class="error"> ${fullNameError}</p>
                 </c:if>
             </div>
             <div class="field">
                 <label for="birthday">Ngày sinh</label>
                 <input type="date" id="birthday" name="birthday" value="${birthday}" required>
                 <c:if test="${not empty birthdayError}">
-                    <p class="error">⚠ ${birthdayError}</p>
+                    <p class="error"> ${birthdayError}</p>
                 </c:if>
             </div>
             <div class="field">
@@ -49,15 +51,15 @@
                 <input type="tel" id="phone" name="phoneNumber" placeholder="Nhập số điện thoại"
                        value="${phoneNumber}" required>
                 <c:if test="${not empty phoneError}">
-                    <p class="error">⚠ ${phoneError}</p>
+                    <p class="error"> ${phoneError}</p>
                 </c:if>
             </div>
             <div class="field">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="Nhập email" value="${email}">
-                <p class="hint">✔ Hóa đơn VAT sẽ gửi qua email này</p>
+                <p class="hint">Hóa đơn VAT sẽ gửi qua email này</p>
                 <c:if test="${not empty emailError}">
-                    <p class="error">⚠ ${emailError}</p>
+                    <p class="error"> ${emailError}</p>
                 </c:if>
             </div>
         </div>
@@ -72,7 +74,7 @@
                 </div>
                 <p class="hint">Mật khẩu tối thiểu 6 ký tự, có ít nhất 1 chữ số và 1 chữ cái</p>
                 <c:if test="${not empty passwordError}">
-                    <p class="error">⚠ ${passwordError}</p>
+                    <p class="error"> ${passwordError}</p>
                 </c:if>
             </div>
             <div class="field">
@@ -83,7 +85,7 @@
                     <i class="bi bi-eye-slash password-toggle" id="toggleConfirm"></i>
                 </div>
                 <c:if test="${not empty confirmPasswordError}">
-                    <p class="error">⚠ ${confirmPasswordError}</p>
+                    <p class="error"> ${confirmPasswordError}</p>
                 </c:if>
             </div>
         </div>
@@ -106,7 +108,6 @@
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Toggle cho mật khẩu
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('password');
         if (togglePassword && passwordInput) {
@@ -117,7 +118,6 @@
                 this.classList.toggle('bi-eye-slash');
             });
         }
-        // Toggle cho xác nhận mật khẩu
         const toggleConfirm = document.getElementById('toggleConfirm');
         const confirmInput = document.getElementById('confirm');
         if (toggleConfirm && confirmInput) {

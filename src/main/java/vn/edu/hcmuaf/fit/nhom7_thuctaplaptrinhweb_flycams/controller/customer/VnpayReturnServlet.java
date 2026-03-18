@@ -23,16 +23,15 @@ public class VnpayReturnServlet extends HttpServlet {
         HttpSession session = request.getSession();
         if ("00".equals(responseCode)) {
             try {
-                User             user      = (User) session.getAttribute("user");
-                List<OrderItems> items     = (List<OrderItems>) session.getAttribute("BUY_NOW_ITEM");
-                Carts            cart      = (Carts) session.getAttribute("cart");
-                Integer          addressId = (Integer) session.getAttribute("addressId");
-                String           phone     = (String) session.getAttribute("phone");
-                String           note      = (String) session.getAttribute("note");
+                User user = (User) session.getAttribute("user");
+                List<OrderItems> items = (List<OrderItems>) session.getAttribute("BUY_NOW_ITEM");
+                Carts cart = (Carts) session.getAttribute("cart");
+                Integer addressId = (Integer) session.getAttribute("addressId");
+                String phone = (String) session.getAttribute("phone");
+                String note = (String) session.getAttribute("note");
                 if (user != null && items != null && !items.isEmpty()) {
                     OrderService orderService = new OrderService();
                     orderService.placeOrder(user, addressId, phone, note, "VNPAY", items, cart);
-
                     if (cart != null) session.setAttribute("cart", cart);
                     session.removeAttribute("BUY_NOW_ITEM");
                     session.removeAttribute("note");
@@ -40,10 +39,10 @@ public class VnpayReturnServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            request.setAttribute("message", "Thanh toán thành công!");
+            response.sendRedirect(request.getContextPath() + "/personal?tab=orders&vnpaySuccess=1");
         } else {
             request.setAttribute("message", "Thanh toán thất bại! Mã lỗi: " + responseCode);
+            request.getRequestDispatcher("/page/paymentresult.jsp").forward(request, response);
         }
-        request.getRequestDispatcher("/page/paymentreturn.jsp").forward(request, response);
     }
 }
