@@ -11,10 +11,10 @@ public class AddressDAO {
 
     public boolean insert(Address address) throws SQLException {
         String sql = """
-            INSERT INTO addresses
-            (user_id, fullName, phoneNumber, addressLine, province, district, isDefault, is_active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-        """;
+                    INSERT INTO addresses
+                    (user_id, fullName, phoneNumber, addressLine, province, district, ward, isDefault, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, address.getUserId());
@@ -23,33 +23,31 @@ public class AddressDAO {
             ps.setString(4, address.getAddressLine());
             ps.setString(5, address.getProvince());
             ps.setString(6, address.getDistrict());
-            ps.setBoolean(7, address.isDefaultAddress());
+            ps.setString(7, address.getWard());
+            ps.setBoolean(8, address.isDefaultAddress());
             return ps.executeUpdate() > 0;
         }
     }
 
     public int insertID(Address address) throws SQLException {
         String sql = """
-        INSERT INTO addresses
-        (user_id, fullName, phoneNumber, addressLine, province, district, isDefault, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-    """;
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                     sql, Statement.RETURN_GENERATED_KEYS)) {
+                    INSERT INTO addresses
+                    (user_id, fullName, phoneNumber, addressLine, province, district, ward, isDefault, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                """;
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, address.getUserId());
             ps.setString(2, address.getFullName());
             ps.setString(3, address.getPhoneNumber());
             ps.setString(4, address.getAddressLine());
             ps.setString(5, address.getProvince());
             ps.setString(6, address.getDistrict());
-            ps.setBoolean(7, address.isDefaultAddress());
-
+            ps.setString(7, address.getWard());
+            ps.setBoolean(8, address.isDefaultAddress());
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {
                 return -1;
             }
-
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getInt(1);
@@ -74,17 +72,20 @@ public class AddressDAO {
         }
         return list;
     }
+
     public Address findById(int id) throws SQLException {
         String sql = "SELECT * FROM addresses WHERE id = ? AND is_active = 1";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapResultSetToAddress(rs);
+                if (rs.next())
+                    return mapResultSetToAddress(rs);
             }
         }
         return null;
     }
+
     public Address findByIdAndUserId(int id, int userId) throws SQLException {
         String sql = "SELECT * FROM addresses WHERE id = ? AND user_id = ? AND is_active = 1";
         try (Connection conn = DBConnection.getConnection();
@@ -92,22 +93,26 @@ public class AddressDAO {
             ps.setInt(1, id);
             ps.setInt(2, userId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapResultSetToAddress(rs);
+                if (rs.next())
+                    return mapResultSetToAddress(rs);
             }
         }
         return null;
     }
+
     public Address getDefaultAddress(int userId) throws SQLException {
         String sql = "SELECT * FROM addresses WHERE user_id = ? AND isDefault = 1 AND is_active = 1";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapResultSetToAddress(rs);
+                if (rs.next())
+                    return mapResultSetToAddress(rs);
             }
         }
         return null;
     }
+
     public boolean resetDefault(int userId) throws SQLException {
         String sql = "UPDATE addresses SET isDefault = 0 WHERE user_id = ? AND is_active = 1";
         try (Connection conn = DBConnection.getConnection();
@@ -116,6 +121,7 @@ public class AddressDAO {
             return ps.executeUpdate() >= 0; // Có thể không có địa chỉ nào
         }
     }
+
     public boolean delete(int id, int userId) throws SQLException {
         String sql = "UPDATE addresses SET is_active = 0 WHERE id = ? AND user_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -125,12 +131,13 @@ public class AddressDAO {
             return ps.executeUpdate() > 0;
         }
     }
+
     public boolean update(Address addr) throws SQLException {
         String sql = """
-            UPDATE addresses 
-            SET fullName=?, phoneNumber=?, addressLine=?, province=?, district=?, isDefault=? 
-            WHERE id=? AND user_id=? AND is_active = 1
-        """;
+                    UPDATE addresses
+                    SET fullName=?, phoneNumber=?, addressLine=?, province=?, district=?, ward=?, isDefault=?
+                    WHERE id=? AND user_id=? AND is_active = 1
+                """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, addr.getFullName());
@@ -138,12 +145,14 @@ public class AddressDAO {
             ps.setString(3, addr.getAddressLine());
             ps.setString(4, addr.getProvince());
             ps.setString(5, addr.getDistrict());
-            ps.setBoolean(6, addr.isDefaultAddress());
-            ps.setInt(7, addr.getId());
-            ps.setInt(8, addr.getUserId());
+            ps.setString(6, addr.getWard());
+            ps.setBoolean(7, addr.isDefaultAddress());
+            ps.setInt(8, addr.getId());
+            ps.setInt(9, addr.getUserId());
             return ps.executeUpdate() > 0;
         }
     }
+
     public int countActiveAddresses(int userId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM addresses WHERE user_id = ? AND is_active = 1";
         try (Connection conn = DBConnection.getConnection();
@@ -157,6 +166,7 @@ public class AddressDAO {
         }
         return 0;
     }
+
     public boolean restore(int id, int userId) throws SQLException {
         String sql = "UPDATE addresses SET is_active = 1 WHERE id = ? AND user_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -200,6 +210,7 @@ public class AddressDAO {
         a.setAddressLine(rs.getString("addressLine"));
         a.setProvince(rs.getString("province"));
         a.setDistrict(rs.getString("district"));
+        a.setWard(rs.getString("ward"));
         a.setDefaultAddress(rs.getBoolean("isDefault"));
         return a;
     }

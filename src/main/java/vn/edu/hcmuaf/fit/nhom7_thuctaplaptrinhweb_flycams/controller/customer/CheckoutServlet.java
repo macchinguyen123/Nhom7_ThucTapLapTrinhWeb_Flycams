@@ -16,8 +16,8 @@ public class CheckoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
     }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -28,7 +28,6 @@ public class CheckoutServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/login.jsp");
             return;
         }
-
         String savedAddressId = req.getParameter("savedAddress");
         String fullName = req.getParameter("fullName");
         String phone = req.getParameter("phone");
@@ -36,6 +35,14 @@ public class CheckoutServlet extends HttpServlet {
         String province = req.getParameter("province");
         String ward = req.getParameter("ward");
         String note = req.getParameter("note");
+        long shippingFee = 0;
+        try {
+            String feeParam = req.getParameter("shippingFee");
+            if (feeParam != null && !feeParam.isEmpty()) {
+                shippingFee = Long.parseLong(feeParam.trim());
+            }
+        } catch (NumberFormatException ignored) {
+        }
         try {
             AddressService addressService = new AddressService();
             int addressId = addressService.processCheckoutAddress(user.getId(), savedAddressId, fullName, phone,
@@ -43,8 +50,8 @@ public class CheckoutServlet extends HttpServlet {
             session.setAttribute("addressId", addressId);
             session.setAttribute("phone", phone);
             session.setAttribute("note", note);
+            session.setAttribute("shippingFee", shippingFee);
             resp.sendRedirect(req.getContextPath() + "/page/payment.jsp");
-
         } catch (Exception e) {
             e.printStackTrace();
             throw new ServletException("Checkout failed");

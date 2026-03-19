@@ -14,7 +14,7 @@ import java.net.URL;
 
 @WebServlet(name = "ProxyServlet", value = "/api/provinces/*")
 public class ProxyServlet extends HttpServlet {
-    private static final String API_BASE = "https://provinces.open-api.vn/api/v2";
+    private static final String API_BASE = "https://provinces.open-api.vn/api/v1";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -25,16 +25,14 @@ public class ProxyServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
         String queryString = request.getQueryString();
         String targetUrl;
-
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
             targetUrl = API_BASE + "/p/";
-
-        } else if (pathInfo.startsWith("/p/")) {
+        } else if (pathInfo.startsWith("/p/") || pathInfo.startsWith("/d/") || pathInfo.startsWith("/w/")
+                || pathInfo.equals("/version")) {
             targetUrl = API_BASE + pathInfo;
             if (queryString != null) {
                 targetUrl += "?" + queryString;
             }
-
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write("{\"error\": \"Unknown endpoint: " + pathInfo + "\"}");
@@ -55,8 +53,7 @@ public class ProxyServlet extends HttpServlet {
             System.out.println(" Response code: " + responseCode);
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 in = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream(), "UTF-8")
-                );
+                        new InputStreamReader(conn.getInputStream(), "UTF-8"));
                 StringBuilder content = new StringBuilder();
                 String inputLine;
 
@@ -78,7 +75,10 @@ public class ProxyServlet extends HttpServlet {
             response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
         } finally {
             if (in != null) {
-                try { in.close(); } catch (IOException e) { /* ignore */ }
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
             }
             if (conn != null) {
                 conn.disconnect();

@@ -30,6 +30,7 @@ public class EditAddressServlet extends HttpServlet {
             String addressLine = req.getParameter("addressLine");
             String province = req.getParameter("province");
             String district = req.getParameter("district");
+            String ward = req.getParameter("ward");
             boolean isDefault = req.getParameter("isDefault") != null;
             Address addr = new Address();
             addr.setId(id);
@@ -39,6 +40,7 @@ public class EditAddressServlet extends HttpServlet {
             addr.setAddressLine(addressLine);
             addr.setProvince(province);
             addr.setDistrict(district);
+            addr.setWard(ward);
             addr.setDefaultAddress(isDefault);
             AddressService addressService = new AddressService();
             boolean success = addressService.updateAddress(addr);

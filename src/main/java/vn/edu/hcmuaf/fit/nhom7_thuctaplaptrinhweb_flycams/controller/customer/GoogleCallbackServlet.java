@@ -27,7 +27,7 @@ import java.util.Map;
 public class GoogleCallbackServlet extends HttpServlet {
     private static final String CLIENT_ID = "75476416232-ge5966lp069m7494drdfhlh319d82t6l.apps.googleusercontent.com";
     private static final String CLIENT_SECRET = "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";
-    private static final String REDIRECT_URI = "http://localhost:8080/Nhom12LapTrinhWebFlycams/google-callback";
+    private static final String REDIRECT_URI = "http://localhost:8080/nhom7_thuctaplaptrinhweb_flycams/google-callback";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -37,7 +37,6 @@ public class GoogleCallbackServlet extends HttpServlet {
             return;
         }
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-
             HttpPost post = new HttpPost("https://oauth2.googleapis.com/token");
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("code", code));
@@ -51,14 +50,12 @@ public class GoogleCallbackServlet extends HttpServlet {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> tokenData = mapper.readValue(tokenJson, Map.class);
             String accessToken = (String) tokenData.get("access_token");
-
             HttpGet get = new HttpGet("https://www.googleapis.com/oauth2/v2/userinfo");
             get.setHeader("Authorization", "Bearer " + accessToken);
             CloseableHttpResponse userResponse = client.execute(get);
             String userJson = EntityUtils.toString(userResponse.getEntity());
             Map<String, Object> userInfo = mapper.readValue(userJson, Map.class);
             String email = (String) userInfo.get("email");
-
             UserDAO userDAO = new UserDAO();
             User user = userDAO.findByEmail(email);
             if (user == null) {
@@ -69,12 +66,12 @@ public class GoogleCallbackServlet extends HttpServlet {
             }
             request.getSession().setAttribute("user", user);
             response.sendRedirect(request.getContextPath() + "/home");
-
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/Login");
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
