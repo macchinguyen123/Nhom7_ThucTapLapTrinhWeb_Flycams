@@ -481,7 +481,7 @@
         }
         const payload = {
             orderId: currentOrderId,
-            userId: document.getElementById("dh-makh").innerText.replace("KH", ""),
+            userId: currentUserId,
             fullName: document.getElementById("dh-tenkh").value,
             email: document.getElementById("dh-email").value,
             phoneNumber: document.getElementById("dh-sdt").value,
