@@ -3,6 +3,7 @@ package vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.MailProperties;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -21,6 +22,7 @@ public class EmailSender {
             throw new RuntimeException("Lỗi load Mail.properties", e);
         }
     }
+
     public void sendVerificationEmail(
             String toEmail,
             String title,
@@ -59,6 +61,35 @@ public class EmailSender {
         } catch (MessagingException e) {
             e.printStackTrace();
             throw new RuntimeException("Lỗi gửi email", e);
+        }
+    }
+
+    public void sendOrderHtmlEmail(
+            String toEmail,
+            String title,
+            String htmlContent) {
+        Properties props = loadMailProperties();
+        String fromEmail = props.getProperty("mail.from");
+        String password = props.getProperty("mail.password");
+        props.put("mail.debug", "false");
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(fromEmail, password);
+            }
+        });
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(fromEmail));
+            message.setRecipients(
+                    Message.RecipientType.TO,
+                    InternetAddress.parse(toEmail));
+            message.setSubject(title);
+            message.setContent(htmlContent, "text/html; charset=UTF-8");
+            Transport.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi gửi email đơn hàng", e);
         }
     }
 }

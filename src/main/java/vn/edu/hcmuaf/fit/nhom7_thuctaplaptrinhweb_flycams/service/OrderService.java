@@ -21,12 +21,11 @@ public class OrderService {
 
     //Đặt hàng
     public int placeOrder(User user, int addressId, String phone, String note, String paymentMethod,
-            List<OrderItems> items, Carts cart) throws Exception {
+            List<OrderItems> items, Carts cart, double shippingFee) throws Exception {
         if (items == null || items.isEmpty()) {
             return 0;
         }
-
-        double totalPrice = 0;
+        double totalPrice = shippingFee;
         for (OrderItems item : items) {
             totalPrice += item.getPrice() * item.getQuantity();
         }
