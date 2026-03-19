@@ -307,9 +307,9 @@
                                     <label class="form-label">Trạng Thái Vận Chuyển</label>
                                     <select class="form-select" id="dh-ttvc">
                                         <option value="Đang xử lý">Đang xử lý</option>
-                                        <option value="Đang giao hàng">Đang giao hàng</option>
-                                        <option value="Giao thành công">Giao thành công</option>
-                                        <option value="Giao thất bại">Giao thất bại</option>
+                                        <option value="Đang giao">Đang giao hàng</option>
+                                        <option value="Hoàn thành">Giao thành công</option>
+                                        <option value="Hủy">Giao thất bại</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">

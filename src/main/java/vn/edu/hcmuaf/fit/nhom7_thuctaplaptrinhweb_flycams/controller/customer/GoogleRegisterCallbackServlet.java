@@ -26,7 +26,7 @@ import java.util.Map;
 public class GoogleRegisterCallbackServlet extends HttpServlet {
     private static final String CLIENT_ID = "75476416232-a03cpg0memv6kegoupj3sndro4bi9ek8.apps.googleusercontent.com";
     private static final String CLIENT_SECRET = "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";
-    private static final String REDIRECT_URI = "http://localhost:8080/Nhom12LapTrinhWebFlycams/google-register-callback";
+    private static final String REDIRECT_URI = "http://localhost:8080/nhom7_thuctaplaptrinhweb_flycams/google-register-callback";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -71,12 +71,12 @@ public class GoogleRegisterCallbackServlet extends HttpServlet {
             userDAO.insertGoogleUser(user);
             request.getSession().setAttribute("user", user);
             response.sendRedirect(request.getContextPath() + "/home");
-
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/Register");
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

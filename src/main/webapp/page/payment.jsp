@@ -74,22 +74,30 @@
             <c:forEach var="item" items="${items}">
                 <c:set var="total" value="${total + (item.price * item.quantity)}"/>
             </c:forEach>
+            <c:set var="shippingFee" value="${sessionScope.shippingFee != null ? sessionScope.shippingFee : 0}"/>
             <div class="d-flex justify-content-between">
                 <span>Tạm tính</span>
                 <span>
-                                        <fmt:formatNumber value="${total}" type="number"/> ₫
-                                    </span>
+                    <fmt:formatNumber value="${total}" type="number"/> ₫
+                </span>
             </div>
             <div class="d-flex justify-content-between mb-2">
                 <span>Phí vận chuyển</span>
-                <span>Miễn phí</span>
+                <span>
+                    <c:choose>
+                        <c:when test="${shippingFee > 0}">
+                            <fmt:formatNumber value="${shippingFee}" type="number"/> ₫
+                        </c:when>
+                        <c:otherwise>Miễn phí</c:otherwise>
+                    </c:choose>
+                </span>
             </div>
             <hr>
             <div class="d-flex justify-content-between fw-bold total">
                 <span>Tổng cộng</span>
                 <span>
-                                        <fmt:formatNumber value="${total}" type="number"/> ₫
-                                    </span>
+                    <fmt:formatNumber value="${total + shippingFee}" type="number"/> ₫
+                </span>
             </div>
         </c:if>
         <c:if test="${empty items}">

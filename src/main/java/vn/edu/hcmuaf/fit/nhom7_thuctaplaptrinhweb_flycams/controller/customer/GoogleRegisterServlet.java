@@ -11,7 +11,7 @@ import java.io.IOException;
 @WebServlet(name = "GoogleRegisterServlet", value = "/google-register")
 public class GoogleRegisterServlet extends HttpServlet {
     private static final String CLIENT_ID = "75476416232-a03cpg0memv6kegoupj3sndro4bi9ek8.apps.googleusercontent.com";
-    private static final String REDIRECT_URI = "http://localhost:8080/Nhom12LapTrinhWebFlycams/google-register-callback";
+    private static final String REDIRECT_URI = "http://localhost:8080/nhom7_thuctaplaptrinhweb_flycams/google-register-callback";
     private static final String SCOPE = "openid email profile";
 
     @Override
