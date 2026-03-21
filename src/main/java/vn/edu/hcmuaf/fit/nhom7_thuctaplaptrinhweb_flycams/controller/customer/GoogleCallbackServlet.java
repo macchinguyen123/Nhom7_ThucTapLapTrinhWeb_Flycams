@@ -25,9 +25,9 @@ import java.util.Map;
 
 @WebServlet(name = "GoogleCallbackServlet", value = "/google-callback")
 public class GoogleCallbackServlet extends HttpServlet {
-    private static final String CLIENT_ID = "75476416232-ge5966lp069m7494drdfhlh319d82t6l.apps.googleusercontent.com";
-    private static final String CLIENT_SECRET = "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";
-    private static final String REDIRECT_URI = "http://localhost:8080/nhom7_thuctaplaptrinhweb_flycams/google-callback";
+    private static final String CLIENT_ID = "501831076440-rur6e4ol3eov2skpnnhg6gkct4s5119d.apps.googleusercontent.com";
+    private static final String CLIENT_SECRET = "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";
+    private static final String REDIRECT_URI = "http://localhost:8080/Nhom7_ThucTapLapTrinhWeb_Flycams/google-callback";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -61,6 +61,14 @@ public class GoogleCallbackServlet extends HttpServlet {
             if (user == null) {
                 request.getSession().setAttribute("error",
                         "Email Google này chưa được đăng ký trong hệ thống");
+                response.sendRedirect(request.getContextPath() + "/Login");
+                return;
+            }
+            if (!user.isStatus()) {
+                String reason = user.getLockReason() != null ? user.getLockReason() : "Vi phạm chính sách.";
+                request.getSession().setAttribute("lockedError", "Tài khoản bạn đã bị khoá");
+                request.getSession().setAttribute("lockReason", reason);
+                request.getSession().setAttribute("lockedUserId", user.getId());
                 response.sendRedirect(request.getContextPath() + "/Login");
                 return;
             }

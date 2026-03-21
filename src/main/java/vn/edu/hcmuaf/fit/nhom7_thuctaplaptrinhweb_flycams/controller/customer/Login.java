@@ -33,6 +33,14 @@ public class Login extends HttpServlet {
             request.getRequestDispatcher("/page/login.jsp").forward(request, response);
             return;
         }
+        if (!user.isStatus()) {
+            String reason = user.getLockReason() != null ? user.getLockReason() : "Vi phạm chính sách.";
+            request.setAttribute("lockedError", "Tài khoản bạn đã bị khoá");
+            request.setAttribute("lockReason", reason);
+            request.setAttribute("lockedUserId", user.getId());
+            request.getRequestDispatcher("/page/login.jsp").forward(request, response);
+            return;
+        }
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
         System.out.println("LOGIN SESSION ID = " + session.getId());

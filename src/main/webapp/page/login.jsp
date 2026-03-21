@@ -143,5 +143,32 @@
         });
     </script>
 </c:if>
+<c:if test="${not empty lockedError or not empty sessionScope.lockedError}">
+    <c:set var="lErr" value="${not empty lockedError ? lockedError : sessionScope.lockedError}" />
+    <c:set var="lRea" value="${not empty lockReason ? lockReason : sessionScope.lockReason}" />
+    <c:set var="lUId" value="${not empty lockedUserId ? lockedUserId : sessionScope.lockedUserId}" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            Swal.fire({
+                icon: "error",
+                title: "${lErr}",
+                text: "Lý do: ${lRea}",
+                showCancelButton: true,
+                confirmButtonText: "Khiếu nại",
+                cancelButtonText: "Đóng",
+                confirmButtonColor: "#d33",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "${pageContext.request.contextPath}/submit-complaint?userId=${lUId}";
+                }
+            });
+        });
+    </script>
+    <%
+       request.getSession().removeAttribute("lockedError");
+       request.getSession().removeAttribute("lockReason");
+       request.getSession().removeAttribute("lockedUserId");
+    %>
+</c:if>
 </body>
 </html>

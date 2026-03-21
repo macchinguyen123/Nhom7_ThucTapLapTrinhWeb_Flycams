@@ -15,6 +15,7 @@ public class User implements Serializable {
     private String phoneNumber;
     private String avatar;
     private boolean status;
+    private String lockReason;
     private Date createdAt;
     private Date updatedAt;
 
@@ -63,6 +64,10 @@ public class User implements Serializable {
 
     public boolean isStatus() {
         return status;
+    }
+
+    public String getLockReason() {
+        return lockReason;
     }
 
     public Date getCreatedAt() {
@@ -115,6 +120,10 @@ public class User implements Serializable {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public void setLockReason(String lockReason) {
+        this.lockReason = lockReason;
     }
 
     public void setCreatedAt(Date createdAt) {
