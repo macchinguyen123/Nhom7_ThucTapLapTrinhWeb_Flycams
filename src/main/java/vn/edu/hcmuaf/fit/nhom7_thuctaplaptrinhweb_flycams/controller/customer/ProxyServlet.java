@@ -38,7 +38,6 @@ public class ProxyServlet extends HttpServlet {
             response.getWriter().write("{\"error\": \"Unknown endpoint: " + pathInfo + "\"}");
             return;
         }
-        System.out.println(" Proxy request to: " + targetUrl);
         HttpURLConnection conn = null;
         BufferedReader in = null;
         try {
@@ -50,7 +49,6 @@ public class ProxyServlet extends HttpServlet {
             conn.setRequestProperty("User-Agent", "Mozilla/5.0");
             conn.setRequestProperty("Accept", "application/json");
             int responseCode = conn.getResponseCode();
-            System.out.println(" Response code: " + responseCode);
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 in = new BufferedReader(
                         new InputStreamReader(conn.getInputStream(), "UTF-8"));
@@ -61,16 +59,12 @@ public class ProxyServlet extends HttpServlet {
                     content.append(inputLine);
                 }
                 String jsonResponse = content.toString();
-                System.out.println("Response length: " + jsonResponse.length());
                 response.getWriter().write(jsonResponse);
             } else {
-                System.err.println("API error: " + responseCode);
                 response.setStatus(responseCode);
                 response.getWriter().write("{\"error\": \"API returned code " + responseCode + "\"}");
             }
         } catch (Exception e) {
-            System.err.println(" Exception: " + e.getMessage());
-            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
         } finally {

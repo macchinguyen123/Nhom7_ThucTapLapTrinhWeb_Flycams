@@ -110,9 +110,6 @@ public class CategoryController extends HttpServlet {
         request.setAttribute("products", products);
         request.setAttribute("formatter", new PriceFormatter());
         request.getRequestDispatcher("/page/category.jsp").forward(request, response);
-
-        System.out.println("Category ID = " + categoryId);
-        System.out.println("Products count = " + products.size());
     }
 
     @Override

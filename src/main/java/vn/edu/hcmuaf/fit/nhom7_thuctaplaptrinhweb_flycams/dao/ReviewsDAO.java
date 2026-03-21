@@ -37,14 +37,6 @@ public class ReviewsDAO {
                     VALUES (?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE rating=?, content=?, createdAt=NOW()
                 """;
-
-
-        System.out.println("=== [DAO] saveReview ===");
-        System.out.println("userId    = " + userId);
-        System.out.println("productId = " + productId);
-        System.out.println("rating    = " + rating);
-        System.out.println("content   = " + content);
-
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);

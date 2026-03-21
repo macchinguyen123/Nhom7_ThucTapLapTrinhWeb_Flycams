@@ -43,7 +43,6 @@ public class Login extends HttpServlet {
         }
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
-        System.out.println("LOGIN SESSION ID = " + session.getId());
         response.sendRedirect(request.getContextPath() + "/home");
     }
 }

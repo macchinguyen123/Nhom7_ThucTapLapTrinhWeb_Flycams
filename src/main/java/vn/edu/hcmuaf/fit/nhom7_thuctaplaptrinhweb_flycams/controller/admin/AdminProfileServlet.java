@@ -7,7 +7,6 @@ import jakarta.servlet.annotation.*;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
 
-import java.io.File;
 import java.io.IOException;
 
 @WebServlet(name = "AdminProfileServlet", value = "/admin/profile")
@@ -111,36 +110,8 @@ public class AdminProfileServlet extends HttpServlet {
                     resp.sendRedirect(req.getContextPath() + "/admin/profile");
                     return;
                 }
-                String fileExtension = "";
-                int dotIndex = originalFileName.lastIndexOf('.');
-                if (dotIndex > 0) {
-                    fileExtension = originalFileName.substring(dotIndex);
-                }
-                String fileName = System.currentTimeMillis() + fileExtension;
                 String deploymentPath = getServletContext().getRealPath("/image/avatar/");
-                File deployDir = new File(deploymentPath);
-                // Tạo thư mục nếu chưa tồn tại
-                if (!deployDir.exists()) {
-                    deployDir.mkdirs();
-                }
-                String sourcePath = "D:/Nhom12LapTrinhWebFlycams/src/main/webapp/image/avatar/";
-                File sourceDir = new File(sourcePath);
-                if (!sourceDir.exists()) {
-                    sourceDir.mkdirs();
-                }
-                String deployFilePath = deploymentPath + File.separator + fileName;
-                avatarPart.write(deployFilePath);
-                String sourceFilePath = sourcePath + File.separator + fileName;
-                try {
-                    java.nio.file.Files.copy(
-                            java.nio.file.Paths.get(deployFilePath),
-                            java.nio.file.Paths.get(sourceFilePath),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    System.out.println("Avatar saved to source: " + sourceFilePath);
-                } catch (Exception copyEx) {
-                    System.err.println("Failed to save avatar to source directory: " + copyEx.getMessage());
-                }
-                System.out.println("Avatar saved to deployment: " + deployFilePath);
+                String fileName = vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.FileStorageUtil.saveFile(avatarPart, deploymentPath, "avatar");
                 currentAdmin.setAvatar(fileName);
             }
         } catch (Exception e) {

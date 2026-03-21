@@ -9,7 +9,7 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.FileStorageUtil;
 
 @WebServlet(name = "UpdateAvatar", value = "/UpdateAvatar")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
@@ -35,43 +35,22 @@ public class UpdateAvatarController extends HttpServlet {
             return;
         }
 
-        String rawFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-        String sanitizedFileName = rawFileName.replaceAll("[^a-zA-Z0-9\\\\. -]", "_").replace(" ", "_");
-        String newFileName = user.getId() + "_" + System.currentTimeMillis() + "_" + sanitizedFileName;
-        String deploymentPath = getServletContext().getRealPath("/") + "image" + File.separator + "avatar";
-        String sourcePath = "D:/Nhom12LapTrinhWebFlycams/src/main/webapp/image/avatar";
-        File deployDir = new File(deploymentPath);
-        if (!deployDir.exists())
-            deployDir.mkdirs();
-
-        File sourceDir = new File(sourcePath);
-        if (!sourceDir.exists())
-            sourceDir.mkdirs();
-
-        String filePathDeploy = deploymentPath + File.separator + newFileName;
-        String filePathSource = sourcePath + File.separator + newFileName;
-
-        filePart.write(filePathDeploy);
         try {
-            java.nio.file.Files.copy(Paths.get(filePathDeploy), Paths.get(filePathSource),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Avatar saved to source: " + filePathSource);
+            String deploymentPath = getServletContext().getRealPath("/") + "image" + File.separator + "avatar";
+            String newFileName = FileStorageUtil.saveFile(filePart, deploymentPath, "avatar");
+            boolean updated = authService.updateAvatar(user.getId(), newFileName);
+            if (updated) {
+                user.setAvatar(newFileName);
+                session.setAttribute("user", user);
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(newFileName);
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         } catch (Exception e) {
-            System.err.println("Failed to save avatar to source directory: " + e.getMessage());
-        }
-
-        System.out.println("Avatar saved to deployment: " + filePathDeploy);
-
-        boolean updated = authService.updateAvatar(user.getId(), newFileName);
-        if (updated) {
-            user.setAvatar(newFileName);
-            session.setAttribute("user", user);
-            System.out.println("User avatar updated in DB and session: " + newFileName);
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write(newFileName);
-        } else {
-            System.out.println("Failed to update user avatar in DB for userId: " + user.getId());
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Lỗi: " + e.getMessage());
         }
     }
 }

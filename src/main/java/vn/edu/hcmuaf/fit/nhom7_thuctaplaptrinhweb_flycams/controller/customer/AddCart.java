@@ -22,7 +22,6 @@ public class AddCart extends HttpServlet {
         try {
             String pid = request.getParameter("productId");
             String quantityStr = request.getParameter("quantity");
-            System.out.println("[AddCart] ProductId: " + pid + ", Quantity: " + quantityStr);
             if (pid == null || pid.isEmpty()) {
                 response.getWriter().write("{\"success\":false,\"message\":\"Thiếu ID sản phẩm\"}");
                 return;
@@ -37,10 +36,8 @@ public class AddCart extends HttpServlet {
             boolean added = cartService.addToCart(cart, productId, quantity);
             if (added) {
                 session.setAttribute("cart", cart);
-                System.out.println("[AddCart] Added to cart. Total items: " + cart.totalQuantity());
                 response.getWriter().write("{\"success\":true,\"totalQuantity\":" + cart.totalQuantity() + "}");
             } else {
-                System.out.println("[AddCart] Product not found for ID: " + productId);
                 response.getWriter().write("{\"success\":false,\"message\":\"Sản phẩm không tồn tại\"}");
             }
         } catch (Exception e) {

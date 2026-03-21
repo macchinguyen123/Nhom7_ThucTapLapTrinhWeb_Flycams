@@ -21,14 +21,12 @@ public class WishlistService {
     // Thêm một sản phẩm vào wishlist của người dùng
     public boolean add(int userId, int productId) {
         boolean result = wishlistDAO.addToWishlist(userId, productId);
-        System.out.println("[SERVICE] Add wishlist: userId=" + userId + ", productId=" + productId + ", result=" + result);
         return result;
     }
 
     //Xóa một sản phẩm khỏi wishlist của người dùng
     public boolean remove(int userId, int productId) {
         boolean result = wishlistDAO.removeFromWishlist(userId, productId);
-        System.out.println("[SERVICE] Remove wishlist: userId=" + userId + ", productId=" + productId + ", result=" + result);
         return result;
     }
 
@@ -38,10 +36,8 @@ public class WishlistService {
         boolean result;
         if (wishlistDAO.existsInWishlist(userId, productId)) {
             result = wishlistDAO.removeFromWishlist(userId, productId);
-            System.out.println("[SERVICE] Toggle remove: userId=" + userId + ", productId=" + productId + ", result=" + result);
         } else {
             result = wishlistDAO.addToWishlist(userId, productId);
-            System.out.println("[SERVICE] Toggle add: userId=" + userId + ", productId=" + productId + ", result=" + result);
         }
         return result;
     }

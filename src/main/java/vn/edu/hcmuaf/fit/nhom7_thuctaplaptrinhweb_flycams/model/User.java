@@ -13,6 +13,7 @@ public class User implements Serializable {
     private String username;
     private String password;
     private String phoneNumber;
+    private String cccd;
     private String avatar;
     private boolean status;
     private String lockReason;
@@ -56,6 +57,10 @@ public class User implements Serializable {
 
     public String getPhoneNumber() {
         return phoneNumber;
+    }
+
+    public String getCccd() {
+        return cccd;
     }
 
     public String getAvatar() {
@@ -112,6 +117,10 @@ public class User implements Serializable {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public void setCccd(String cccd) {
+        this.cccd = cccd;
     }
 
     public void setAvatar(String avatar) {

@@ -37,19 +37,15 @@ public class WishlistController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("=== [WISHLIST] POST REQUEST ===");
         HttpSession session = request.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("user") : null;
         response.setContentType("application/json;charset=UTF-8");
         if (user == null) {
-            System.out.println("[WISHLIST] User chưa đăng nhập");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"success\":false,\"message\":\"NOT_LOGIN\"}");
             return;
         }
         String action = request.getParameter("action");
-        System.out.println("[WISHLIST] UserId = " + user.getId());
-        System.out.println("[WISHLIST] Action = " + action);
         if (action == null || action.isBlank()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"success\":false,\"message\":\"ACTION_NULL\"}");
@@ -61,7 +57,6 @@ public class WishlistController extends HttpServlet {
             case "remove":
             case "toggle": {
                 String productIdRaw = request.getParameter("productId");
-                System.out.println("[WISHLIST] ProductId = " + productIdRaw);
 
                 if (productIdRaw == null || productIdRaw.isBlank()) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -73,7 +68,6 @@ public class WishlistController extends HttpServlet {
                 try {
                     productId = Integer.parseInt(productIdRaw);
                 } catch (NumberFormatException e) {
-                    System.out.println("[WISHLIST] ProductId không hợp lệ: " + productIdRaw);
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     response.getWriter().write("{\"success\":false,\"message\":\"PRODUCT_ID_INVALID\"}");
                     return;
@@ -93,7 +87,6 @@ public class WishlistController extends HttpServlet {
             }
             case "removeSelected": {
                 String idsRaw = request.getParameter("productIds"); // chuỗi CSV từ JS
-                System.out.println("[WISHLIST] ProductIds = " + idsRaw);
 
                 if (idsRaw != null && !idsRaw.isBlank()) {
                     String[] arr = idsRaw.split(",");
@@ -105,7 +98,6 @@ public class WishlistController extends HttpServlet {
                             if (!removed)
                                 success = false; // nếu có cái nào xóa fail thì báo fail
                         } catch (NumberFormatException e) {
-                            System.out.println("[WISHLIST] ProductId không hợp lệ: " + idStr);
                             success = false;
                         }
                     }
@@ -115,7 +107,6 @@ public class WishlistController extends HttpServlet {
                 break;
             }
             default:
-                System.out.println("[WISHLIST] Action không hợp lệ: " + action);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("{\"success\":false,\"message\":\"ACTION_INVALID\"}");
                 return;

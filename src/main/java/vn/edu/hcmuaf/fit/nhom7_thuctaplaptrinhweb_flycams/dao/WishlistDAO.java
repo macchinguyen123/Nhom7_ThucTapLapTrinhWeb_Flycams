@@ -99,7 +99,6 @@ public class WishlistDAO {
             ps.setInt(1, userId);
             ps.setInt(2, productId);
             int rows = ps.executeUpdate();
-            System.out.println("[DAO] removeFromWishlist userId=" + userId + ", productId=" + productId + ", rows=" + rows);
             return rows > 0;
         } catch (SQLException e) {
             e.printStackTrace();

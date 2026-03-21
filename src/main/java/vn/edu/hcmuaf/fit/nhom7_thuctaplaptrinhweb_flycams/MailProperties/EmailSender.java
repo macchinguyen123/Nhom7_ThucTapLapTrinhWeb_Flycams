@@ -55,9 +55,7 @@ public class EmailSender {
                     "<p>Mã có hiệu lực trong 5 phút.</p>";
 
             message.setContent(htmlContent, "text/html; charset=UTF-8");
-            //sử dụng Transport.send để tự động xử lý kết nối và giao thức
             Transport.send(message);
-            System.out.println(" Gửi email thành công: " + toEmail);
         } catch (MessagingException e) {
             e.printStackTrace();
             throw new RuntimeException("Lỗi gửi email", e);
