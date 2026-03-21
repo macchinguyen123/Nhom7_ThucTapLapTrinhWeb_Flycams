@@ -165,6 +165,8 @@
                     <button class="order-tab" data-status="OUT_FOR_DELIVERY">Đang giao</button>
                     <button class="order-tab" data-status="DELIVERED">Hoàn thành</button>
                     <button class="order-tab" data-status="CANCELLED">Hủy</button>
+                    <button class="order-tab" data-status="RETURN_REQUESTED">Yêu cầu trả hàng</button>
+                    <button class="order-tab" data-status="RETURNED">Đã trả hàng</button>
                 </div>
                 <h3>Hóa đơn gần đây</h3>
                 <table>
@@ -206,6 +208,12 @@
                                     <c:when test="${o.status.name() eq 'CANCELLED'}">
                                         <span class="badge bg-danger">Đã huỷ</span>
                                     </c:when>
+                                    <c:when test="${o.status.name() eq 'RETURN_REQUESTED'}">
+                                        <span class="badge bg-info text-dark">Yêu cầu trả hàng</span>
+                                    </c:when>
+                                    <c:when test="${o.status.name() eq 'RETURNED'}">
+                                        <span class="badge bg-secondary">Đã trả hàng</span>
+                                    </c:when>
                                 </c:choose>
                             </td>
                             <td>
@@ -228,6 +236,18 @@
                                             <i class="bi bi-trash"></i> Huỷ đơn
                                         </button>
                                     </form>
+                                </c:if>
+                                <c:if test="${o.returnable}">
+                                    <button type="button" class="btn btn-warning btn-sm"
+                                            onclick="openReturnModal(${o.id})">
+                                        <i class="bi bi-arrow-return-left"></i> Trả hàng
+                                    </button>
+                                </c:if>
+                                <c:if test="${o.status.name() eq 'OUT_FOR_DELIVERY'}">
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            onclick="openReceiveModal(${o.id})">
+                                        <i class="bi bi-check2-circle"></i> Đã nhận hàng
+                                    </button>
                                 </c:if>
                             </td>
                         </tr>
@@ -274,6 +294,78 @@
                                 <button type="submit" class="btn btn-danger">
                                     <i class="bi bi-trash-fill me-1"></i>
                                     Xác nhận hủy đơn
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal fade" id="returnModal" tabindex="-1"
+                 aria-labelledby="returnModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form method="post" action="${pageContext.request.contextPath}/personal">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title" id="returnModalLabel">
+                                    <i class="bi bi-arrow-return-left me-2"></i>
+                                    Yêu cầu trả hàng
+                                </h5>
+                                <button type="button" class="btn-close"
+                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="action" value="returnOrder">
+                                <input type="hidden" name="orderId" id="returnOrderId">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Bạn có chắc chắn muốn trả đơn hàng này? Việc trả hàng chỉ được phép trong vòng 30 ngày kể từ khi hoàn thành đơn.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Đóng
+                                </button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                    Yêu cầu trả hàng
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal fade" id="receiveModal" tabindex="-1"
+                 aria-labelledby="receiveModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form method="post" action="${pageContext.request.contextPath}/personal">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="receiveModalLabel">
+                                    <i class="bi bi-check2-circle me-2"></i>
+                                    Xác nhận nhận hàng
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="action" value="receiveOrder">
+                                <input type="hidden" name="orderId" id="receiveOrderId">
+                                <div class="alert alert-success" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Bạn xác nhận đã nhận được đơn hàng này thành công? Trạng thái sẽ cập nhật thành Hoàn thành.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Đóng
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                    Đã nhận hàng
                                 </button>
                             </div>
                         </div>
@@ -520,6 +612,22 @@
         document.getElementById("cancelOrderId").value = orderId;
         const modal = new bootstrap.Modal(
             document.getElementById("cancelModal")
+        );
+        modal.show();
+    }
+
+    function openReturnModal(orderId) {
+        document.getElementById("returnOrderId").value = orderId;
+        const modal = new bootstrap.Modal(
+            document.getElementById("returnModal")
+        );
+        modal.show();
+    }
+
+    function openReceiveModal(orderId) {
+        document.getElementById("receiveOrderId").value = orderId;
+        const modal = new bootstrap.Modal(
+            document.getElementById("receiveModal")
         );
         modal.show();
     }

@@ -88,6 +88,14 @@ public class OrderService {
                 o.setStatusLabel("Đã hủy");
                 o.setStatusClass("da-huy");
             }
+            case RETURN_REQUESTED -> {
+                o.setStatusLabel("Yêu cầu trả hàng");
+                o.setStatusClass("yeu-cau-tra-hang");
+            }
+            case RETURNED -> {
+                o.setStatusLabel("Đã trả hàng");
+                o.setStatusClass("da-tra-hang");
+            }
             default -> {
                 // Giữ trạng thái mặc định
             }
@@ -112,6 +120,16 @@ public class OrderService {
     // Hủy đơn hàng
     public void cancelOrder(int orderId, int userId) {
         ordersDAO.cancelOrder(orderId, userId);
+    }
+
+    // Trả đơn hàng
+    public boolean returnOrder(int orderId, int userId) {
+        return ordersDAO.returnOrder(orderId, userId);
+    }
+
+    // Xác nhận đã nhận hàng
+    public boolean receiveOrder(int orderId, int userId) {
+        return ordersDAO.receiveOrder(orderId, userId);
     }
 
     // Kiểm tra người dùng đã từng mua sản phẩm hay chưa, để ktr đánh giá
@@ -163,4 +181,5 @@ public class OrderService {
         return orderDaoAdmin.updateOrderFull(orderId, userId, fullName, email, phoneNumber,
                 addressLine, province, district, paymentMethod, status, note, completedAt);
     }
+
 }

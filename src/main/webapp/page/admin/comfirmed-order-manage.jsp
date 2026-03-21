@@ -129,6 +129,12 @@
                     <button class="btn btn-outline-danger filter" data-status="Giao thất bại">
                         <i class="bi bi-x-circle"></i> Thất bại
                     </button>
+                    <button class="btn btn-outline-info filter" data-status="Yêu cầu trả hàng">
+                        <i class="bi bi-arrow-return-left"></i> Yêu cầu trả
+                    </button>
+                    <button class="btn btn-outline-secondary filter" data-status="Đã trả hàng">
+                        <i class="bi bi-check-all"></i> Đã trả
+                    </button>
                 </div>
                 <div class="input-group shadow-sm" style="max-width: 300px;">
                                     <span class="input-group-text bg-primary text-white"><i
@@ -310,6 +316,8 @@
                                         <option value="Đang giao">Đang giao hàng</option>
                                         <option value="Hoàn thành">Giao thành công</option>
                                         <option value="Hủy">Giao thất bại</option>
+                                        <option value="Yêu cầu trả hàng">Yêu cầu trả hàng</option>
+                                        <option value="Đã trả hàng">Đã trả hàng</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">

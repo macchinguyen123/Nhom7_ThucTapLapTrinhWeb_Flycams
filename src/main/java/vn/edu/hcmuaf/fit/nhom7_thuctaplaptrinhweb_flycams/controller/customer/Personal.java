@@ -120,7 +120,38 @@ public class Personal extends HttpServlet {
                 return;
             } catch (NumberFormatException e) {
             }
+        } else if ("returnOrder".equals(action)) {
+            try {
+                int orderId = Integer.parseInt(request.getParameter("orderId"));
+                boolean success = orderService.returnOrder(orderId, user.getId());
+                if (success) {
+                    System.out.println(" Order #" + orderId + " returned by user #" + user.getId());
+                    response.sendRedirect(request.getContextPath() + "/personal?tab=orders&message=Y%C3%AAu%20c%E1%BA%A7u%20tr%E1%BA%A3%20h%C3%A0ng%20th%C3%A0nh%20c%C3%B4ng&status=success");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/personal?tab=orders&message=Kh%C3%B4ng%20th%E1%BB%83%20tr%E1%BA%A3%20h%C3%A0ng&status=error");
+                }
+                return;
+            } catch (NumberFormatException e) {
+                System.err.println(" Return order failed: " + e.getMessage());
+            }
+        } else if ("receiveOrder".equals(action)) {
+            try {
+                int orderId = Integer.parseInt(request.getParameter("orderId"));
+                boolean success = orderService.receiveOrder(orderId, user.getId());
+                String message = success
+                        ? "Xác nhận nhận hàng thành công"
+                        : "Không thể xác nhận nhận hàng";
+                String status = success ? "success" : "error";
+
+                response.sendRedirect(request.getContextPath()
+                        + "/personal?tab=orders"
+                        + "&message=" + java.net.URLEncoder.encode(message, "UTF-8")
+                        + "&status=" + status);
+                return;
+            } catch (NumberFormatException e) {
+                System.err.println("Receive order failed: " + e.getMessage());
+            }
+            response.sendRedirect(request.getContextPath() + "/personal");
         }
-        response.sendRedirect(request.getContextPath() + "/personal");
     }
 }

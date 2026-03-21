@@ -22,7 +22,9 @@ public class Orders implements Serializable {
         PROCESSING("Đang xử lý"),
         OUT_FOR_DELIVERY("Đang giao"),
         DELIVERED("Hoàn thành"),
-        CANCELLED("Hủy");
+        CANCELLED("Hủy"),
+        RETURN_REQUESTED("Yêu cầu trả hàng"),
+        RETURNED("Đã trả hàng");
 
         private final String dbValue;
 
@@ -43,6 +45,8 @@ public class Orders implements Serializable {
                 case "Đang giao" -> OUT_FOR_DELIVERY;
                 case "Hoàn thành" -> DELIVERED;
                 case "Hủy" -> CANCELLED;
+                case "Yêu cầu trả hàng" -> RETURN_REQUESTED;
+                case "Đã trả hàng" -> RETURNED;
                 default -> PENDING;
             };
         }
@@ -190,4 +194,12 @@ public class Orders implements Serializable {
         this.fullAddress = fullAddress;
     }
 
+    public boolean isReturnable() {
+        if (this.status != Status.DELIVERED || this.completedAt == null) {
+            return false;
+        }
+        long diffInMillis = System.currentTimeMillis() - this.completedAt.getTime();
+        long diffInDays = diffInMillis / (1000L * 60 * 60 * 24);
+        return diffInDays <= 30;
+    }
 }
