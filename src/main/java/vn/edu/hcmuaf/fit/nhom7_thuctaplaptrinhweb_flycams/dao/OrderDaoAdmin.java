@@ -113,7 +113,6 @@ public class OrderDaoAdmin {
         }
         return map;
     }
-
     public List<Map<String, Object>> getOrderItems(int orderId) {
         List<Map<String, Object>> list = new ArrayList<>();
 
@@ -145,7 +144,6 @@ public class OrderDaoAdmin {
         }
         return list;
     }
-
     public boolean updateOrderStatusAndShippingCode(int orderId, String status, String shippingCode) {
         String sql = "UPDATE orders SET `status` = ?, `shippingCode` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -160,7 +158,6 @@ public class OrderDaoAdmin {
             return false;
         }
     }
-
     public boolean updateOrderStatus(int orderId, String status) {
         String sql = "UPDATE orders SET `status` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -174,7 +171,6 @@ public class OrderDaoAdmin {
             return false;
         }
     }
-
     public List<Orders> getOrdersForAdmin() {
         List<Orders> list = new ArrayList<>();
         String sql = """
@@ -195,32 +191,23 @@ public class OrderDaoAdmin {
                     WHERE o.status <> 'Xác nhận'
                     ORDER BY o.createdAt DESC
                 """;
-
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Orders o = new Orders();
-
                 o.setId(rs.getInt("id"));
                 o.setUserId(rs.getInt("user_id"));
                 o.setShippingCode(rs.getString("shippingCode"));
-
                 Orders.Status status = Orders.Status.fromDB(rs.getString("status"));
                 o.setStatus(status);
-
                 o.setCreatedAt(rs.getTimestamp("createdAt"));
 
-                // Thêm completedAt
                 Timestamp completedTs = rs.getTimestamp("completedAt");
                 o.setCompletedAt(completedTs != null ? completedTs : null);
-
                 o.setFullAddress(rs.getString("fullAddress"));
-
-                // set label + class cho view
                 setStatusView(o);
-
                 list.add(o);
             }
         } catch (Exception e) {
@@ -247,13 +234,20 @@ public class OrderDaoAdmin {
                 o.setStatusLabel("Đã hủy");
                 o.setStatusClass("bg-danger");
             }
+            case RETURN_REQUESTED -> {
+                o.setStatusLabel("Yêu cầu trả hàng");
+                o.setStatusClass("bg-info text-dark");
+            }
+            case RETURNED -> {
+                o.setStatusLabel("Đã trả hàng");
+                o.setStatusClass("bg-secondary");
+            }
             default -> {
                 o.setStatusLabel("Xác nhận");
                 o.setStatusClass("bg-secondary");
             }
         }
     }
-
     public boolean updateOrderFull(
             int orderId,
             int userId,

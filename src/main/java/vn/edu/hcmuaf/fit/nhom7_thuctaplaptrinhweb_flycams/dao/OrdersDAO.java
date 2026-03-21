@@ -54,6 +54,8 @@ public class OrdersDAO {
             case "Đang giao" -> Orders.Status.OUT_FOR_DELIVERY;
             case "Hoàn thành" -> Orders.Status.DELIVERED;
             case "Hủy" -> Orders.Status.CANCELLED;
+            case "Yêu cầu trả hàng" -> Orders.Status.RETURN_REQUESTED;
+            case "Đã trả hàng" -> Orders.Status.RETURNED;
             default -> Orders.Status.PENDING;
         };
     }
@@ -274,15 +276,58 @@ public class OrdersDAO {
             e.printStackTrace();
         }
     }
+    public boolean returnOrder(int orderId, int userId) {
+        String alterSql = "ALTER TABLE orders MODIFY COLUMN status ENUM('Xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Hủy', 'Yêu cầu trả hàng', 'Đã trả hàng')";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement psAlter = con.prepareStatement(alterSql)) {
+            psAlter.executeUpdate();
+            System.out.println("Auto-patched orders status ENUM.");
+        } catch (Exception e) {
+            System.out.println("Could not alter table (might already be altered or not enum): " + e.getMessage());
+        }
+        String sql = """
+        UPDATE orders
+        SET status = 'Yêu cầu trả hàng'
+        WHERE id = ?
+          AND user_id = ?
+          AND status = 'Hoàn thành'
+    """;
 
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            int affected = ps.executeUpdate();
+            return affected > 0;
 
-    /**
-     * Kiểm tra xem user đã mua sản phẩm này chưa
-     * @param userId ID của user
-     * @param productId ID của sản phẩm
-     * @return true nếu đã mua, false nếu chưa
-     */
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean receiveOrder(int orderId, int userId) {
+        String sql = """
+        UPDATE orders
+        SET status = 'Hoàn thành', completedAt = NOW()
+        WHERE id = ?
+          AND user_id = ?
+          AND status = 'Đang giao'
+    """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean hasUserPurchasedProduct(int userId, int productId) {
         String sql = """
             SELECT COUNT(*) > 0
