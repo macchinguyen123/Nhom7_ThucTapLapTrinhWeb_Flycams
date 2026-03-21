@@ -29,7 +29,6 @@ public class ProductSaveServlet extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
         try {
             String json = req.getReader().lines().collect(Collectors.joining());
-            System.out.println("Received JSON: " + json); // debug JSON
             ObjectMapper mapper = new ObjectMapper();
             Product product = mapper.readValue(json, Product.class);
             int productId = productService.saveProduct(product);

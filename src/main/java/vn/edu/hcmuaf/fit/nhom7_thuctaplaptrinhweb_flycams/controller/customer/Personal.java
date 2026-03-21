@@ -39,7 +39,6 @@ public class Personal extends HttpServlet {
         }
 
         User sessionUser = (User) session.getAttribute("user");
-        System.out.println(" PERSONAL PAGE - USER ID: " + sessionUser.getId());
         User user;
         String refresh = request.getParameter("refresh");
 
@@ -52,18 +51,13 @@ public class Personal extends HttpServlet {
         request.setAttribute("user", user);
         long t2 = System.currentTimeMillis();
         List<Orders> orders = orderService.getOrdersByUser(user.getId());
-        System.out
-                .println("️ getOrdersByUser: " + (System.currentTimeMillis() - t2) + "ms | Orders: " + orders.size());
         request.setAttribute("orders", orders);
 
         try {
             long t6 = System.currentTimeMillis();
             List<Address> addresses = addressService.findByUserId(user.getId());
-            System.out.println(" getAddressesByUserId: " + (System.currentTimeMillis() - t6) + "ms | Addresses: "
-                    + addresses.size());
             request.setAttribute("addresses", addresses);
         } catch (SQLException e) {
-            System.err.println(" Error loading addresses: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -76,13 +70,9 @@ public class Personal extends HttpServlet {
 
                 long t3 = System.currentTimeMillis();
                 selectedOrder = orderService.getOrderById(orderId, user.getId());
-                System.out.println("️ getOrderById: " + (System.currentTimeMillis() - t3) + "ms");
-
                 if (selectedOrder != null) {
                     long t4 = System.currentTimeMillis();
                     orderItems = orderService.getOrderItems(orderId);
-                    System.out.println(" getOrderItems: " + (System.currentTimeMillis() - t4) + "ms | Items: "
-                            + orderItems.size());
                     LocalDateTime created = selectedOrder.getCreatedAt()
                             .toInstant()
                             .atZone(ZoneId.systemDefault())
@@ -94,12 +84,10 @@ public class Personal extends HttpServlet {
                     request.setAttribute("orderItems", orderItems);
                     long t5 = System.currentTimeMillis();
                     Map<String, String> shippingInfo = orderService.getShippingInfoByOrder(orderId);
-                    System.out.println(" getShippingInfo: " + (System.currentTimeMillis() - t5) + "ms");
                     request.setAttribute("shippingInfo", shippingInfo);
                     request.setAttribute("activeTab", "orders");
                 }
             } catch (NumberFormatException e) {
-                System.err.println(" Invalid orderId: " + orderIdParam);
             }
         }
         String tabParam = request.getParameter("tab");
@@ -110,7 +98,6 @@ public class Personal extends HttpServlet {
         }
         request.setAttribute("selectedOrder", selectedOrder);
         long totalTime = System.currentTimeMillis() - startTime;
-        System.out.println(" TOTAL SERVLET TIME: " + totalTime + "ms\n");
         request.getRequestDispatcher("/page/personal-page.jsp").forward(request, response);
     }
 
@@ -129,12 +116,9 @@ public class Personal extends HttpServlet {
             try {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
                 orderService.cancelOrder(orderId, user.getId());
-                System.out.println(" Order #" + orderId + " cancelled by user #" + user.getId());
                 response.sendRedirect(request.getContextPath() + "/personal?tab=orders");
                 return;
-
             } catch (NumberFormatException e) {
-                System.err.println(" Cancel order failed: " + e.getMessage());
             }
         }
         response.sendRedirect(request.getContextPath() + "/personal");

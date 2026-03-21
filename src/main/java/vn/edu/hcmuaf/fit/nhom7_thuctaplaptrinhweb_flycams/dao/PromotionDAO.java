@@ -209,8 +209,7 @@ public class PromotionDAO {
                     ps.setDouble(2, p.getDiscountValue());
                     ps.setDouble(3, p.getDiscountValue());
                     ps.setDouble(4, p.getDiscountValue());
-                    int rowsUpdated = ps.executeUpdate();
-                    System.out.println(" Updated " + rowsUpdated + " products (ALL)");
+                    ps.executeUpdate();
                 }
 
             } else if ("PRODUCT".equals(scope) && !productIds.isEmpty()) {
@@ -227,7 +226,6 @@ public class PromotionDAO {
                     ps.setDouble(2, p.getDiscountValue());
                     ps.setDouble(3, p.getDiscountValue());
                     int rowsUpdated = ps.executeUpdate();
-                    System.out.println(" Updated " + rowsUpdated + " products (PRODUCT)");
                 }
 
             } else if ("CATEGORY".equals(scope) && !categoryIds.isEmpty()) {
@@ -244,12 +242,10 @@ public class PromotionDAO {
                     ps.setDouble(2, p.getDiscountValue());
                     ps.setDouble(3, p.getDiscountValue());
                     int rowsUpdated = ps.executeUpdate();
-                    System.out.println(" Updated " + rowsUpdated + " products in category");
                 }
             }
 
         } catch (Exception e) {
-            System.out.println(" Error applying promotion:");
             e.printStackTrace();
         }
     }

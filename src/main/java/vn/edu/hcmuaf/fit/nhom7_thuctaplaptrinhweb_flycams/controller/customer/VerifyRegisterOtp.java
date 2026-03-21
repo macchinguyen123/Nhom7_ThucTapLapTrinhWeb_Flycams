@@ -46,9 +46,15 @@ public class VerifyRegisterOtp extends HttpServlet {
             request.getRequestDispatcher("/page/otp.jsp").forward(request, response);
             return;
         }
-        userDAO.insertUser(user);
-        session.invalidate();
-        response.sendRedirect(request.getContextPath() + "/page/register-success.jsp");
+        if (userDAO.activateUser(user.getEmail())) {
+            session.removeAttribute("registerUser");
+            session.removeAttribute("registerOtp");
+            session.removeAttribute("registerOtpExpire");
+            response.sendRedirect(request.getContextPath() + "/page/register-success.jsp");
+        } else {
+            request.setAttribute("error", "Kích hoạt tài khoản thất bại. Vui lòng thử lại.");
+            request.getRequestDispatcher("/page/otp.jsp").forward(request, response);
+        }
     }
 
 }

@@ -19,7 +19,9 @@ public class OrderActionServlet extends HttpServlet {
             throws ServletException, IOException {
 
     }
+
     private OrderService orderService = new OrderService();
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
@@ -27,9 +29,6 @@ public class OrderActionServlet extends HttpServlet {
             req.setCharacterEncoding("UTF-8");
             String idStr = req.getParameter("id");
             String action = req.getParameter("action");
-            System.out.println("Content-Type: " + req.getContentType());
-            System.out.println("ID = [" + idStr + "]");
-            System.out.println("ACTION = [" + action + "]");
             if (idStr == null || idStr.isEmpty()) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("success", false);

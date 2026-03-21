@@ -240,10 +240,7 @@ public class OrdersDAO {
                 Product product = new Product();
                 product.setId(rs.getInt("product_id"));
                 product.setProductName(rs.getString("productName"));
-
-                // LẤY imageUrl và IN RA ĐỂ DEBUG
                 String imageUrl = rs.getString("imageUrl");
-                System.out.println(" Product ID: " + product.getId() + " → Image: " + imageUrl);
 
                 product.setMainImage(imageUrl);
 

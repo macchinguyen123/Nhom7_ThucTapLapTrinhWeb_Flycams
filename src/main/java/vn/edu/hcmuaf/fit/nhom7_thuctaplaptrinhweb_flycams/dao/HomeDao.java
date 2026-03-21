@@ -40,7 +40,7 @@ public class HomeDao {
                 LIMIT ?
                 """;
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -53,11 +53,6 @@ public class HomeDao {
                 p.setAvgRating(rs.getDouble("avgRating"));
                 p.setReviewCount(rs.getInt("reviewCount"));
                 list.add(p);
-                System.out.println("Thành công");
-                System.out.println(
-                        "[HomeDao] id=" + p.getId() +
-                                ", rating=" + p.getAvgRating() +
-                                ", reviews=" + p.getReviewCount());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,7 +84,7 @@ public class HomeDao {
                     LIMIT ?
                 """;
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -102,9 +97,6 @@ public class HomeDao {
                 p.setAvgRating(rs.getDouble("avgRating"));
                 p.setReviewCount(rs.getInt("reviewCount"));
                 list.add(p);
-                System.out.println(
-                        "[TopReview] id=" + p.getId() +
-                                ", reviews=" + p.getReviewCount());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,7 +129,7 @@ public class HomeDao {
                     LIMIT ?
                 """;
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, categoryId);
             ps.setInt(2, limit);
             ResultSet rs = ps.executeQuery();
@@ -172,7 +164,7 @@ public class HomeDao {
                     LIMIT ?
                 """;
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -197,7 +189,7 @@ public class HomeDao {
 
     /**
      * Lấy danh sách sản phẩm có lượt xem cao nhất
-     * 
+     *
      * @param limit Số lượng sản phẩm cần lấy
      * @return Danh sách sản phẩm được sắp xếp theo lượt xem giảm dần
      */
@@ -229,7 +221,7 @@ public class HomeDao {
                 """;
 
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
@@ -246,11 +238,6 @@ public class HomeDao {
                 p.setReviewCount(rs.getInt("reviewCount"));
 
                 list.add(p);
-
-                System.out.println(
-                        "[TopViewed] id=" + p.getId() +
-                                ", views=" + p.getView() +
-                                ", reviews=" + p.getReviewCount());
             }
         } catch (Exception e) {
             e.printStackTrace();

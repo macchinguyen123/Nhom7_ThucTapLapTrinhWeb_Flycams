@@ -26,7 +26,6 @@ public class ReviewServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
         User user = (User) request.getSession().getAttribute("user");
-        System.out.println("[Servlet] user = " + user);
 
         if (user == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -37,9 +36,6 @@ public class ReviewServlet extends HttpServlet {
             String productIdRaw = request.getParameter("product_id");
             String ratingRaw = request.getParameter("rating");
             String content = request.getParameter("content");
-            System.out.println("[Servlet] product_id = " + productIdRaw);
-            System.out.println("[Servlet] rating     = " + ratingRaw);
-            System.out.println("[Servlet] content    = " + content);
             if (productIdRaw == null || ratingRaw == null || content == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("{\"status\":\"error\",\"message\":\"Thiếu thông tin\"}");

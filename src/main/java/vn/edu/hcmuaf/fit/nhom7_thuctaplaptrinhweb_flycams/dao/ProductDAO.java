@@ -244,7 +244,6 @@ public class ProductDAO {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    System.out.println("[ProductDAO] Found product name = " + rs.getString("productName"));
                     Product p = new Product(
                             rs.getInt("id"),
                             rs.getInt("category_id"),
@@ -294,10 +293,6 @@ public class ProductDAO {
 
     public List<Product> getRelatedProducts(int categoryId, int excludeProductId, int limit) {
         List<Product> list = new ArrayList<>();
-        System.out.println("===== [getRelatedProducts] START =====");
-        System.out.println("categoryId = " + categoryId);
-        System.out.println("excludeProductId = " + excludeProductId);
-        System.out.println("limit = " + limit);
         String sql = """
                     SELECT p.*, i.imageUrl, COUNT(r.id) AS reviewCount,  IFNULL(AVG(r.rating), 0) AS avgRating
                     FROM products p
@@ -311,16 +306,13 @@ public class ProductDAO {
                     ORDER BY RAND()
                     LIMIT ?
                 """;
-        System.out.println("SQL = \n" + sql);
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, categoryId);
             ps.setInt(2, excludeProductId);
             ps.setInt(3, limit);
             ResultSet rs = ps.executeQuery();
-            int count = 0;
             while (rs.next()) {
-                count++;
                 Product p = new Product(
                         rs.getInt("id"),
                         rs.getInt("category_id"),
@@ -339,12 +331,9 @@ public class ProductDAO {
                 p.setReviewCount(rs.getInt("reviewCount"));
                 list.add(p);
             }
-            System.out.println("→ Total related products found = " + count);
         } catch (Exception e) {
-            System.out.println(" ERROR in getRelatedProducts");
             e.printStackTrace();
         }
-        System.out.println("===== [getRelatedProducts] END =====");
         return list;
     }
 
@@ -396,7 +385,6 @@ public class ProductDAO {
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (Exception e) {
-            System.err.println("Error incrementing view count for product " + productId);
             e.printStackTrace();
             return false;
         }

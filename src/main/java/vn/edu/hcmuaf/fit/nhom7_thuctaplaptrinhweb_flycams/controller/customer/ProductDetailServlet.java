@@ -49,8 +49,6 @@ public class ProductDetailServlet extends HttpServlet {
 
         int discountPercent = calculateDiscountPercent(product.getPrice(), product.getFinalPrice());
         request.setAttribute("discountPercent", discountPercent);
-        System.out.println("DEBUG: discountPercent = " + discountPercent); // ← THÊM DÒNG NÀY
-
         double avgRating = reviewService.getAverageRating(id);
         int reviewCount = reviewService.countReviews(id);
 

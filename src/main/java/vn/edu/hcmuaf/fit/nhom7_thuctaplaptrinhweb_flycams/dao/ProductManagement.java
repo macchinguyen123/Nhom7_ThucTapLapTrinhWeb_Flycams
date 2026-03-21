@@ -29,10 +29,8 @@ public class ProductManagement {
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 int id = rs.getInt(1);
-                System.out.println("Insert successful, generated ID: " + id);
                 return id;
             }
-            System.out.println("Insert executed but no ID returned.");
         }
         return 0;
     }

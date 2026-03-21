@@ -48,8 +48,8 @@ public class UserDAO {
         return null; //mật khẩu không đúng hoặc không tìm thấy user
     }
     public boolean insertUser(User user) {
-        String sql = "INSERT INTO users (roleId, fullName, birthDate, gender, email, username, password, phoneNumber, avatar, status, createdAt, updatedAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        String sql = "INSERT INTO users (roleId, fullName, birthDate, gender, email, username, password, phoneNumber, cccd, avatar, status, createdAt, updatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, user.getRoleId());
@@ -66,9 +66,10 @@ public class UserDAO {
             ps.setString(6, user.getUsername());
             ps.setString(7, user.getPassword());
             ps.setString(8, user.getPhoneNumber());
+            ps.setString(9, user.getCccd());
             //avatar
-            ps.setString(9, user.getAvatar() == null ? "default.png" : user.getAvatar());
-            ps.setBoolean(10, user.isStatus());
+            ps.setString(10, user.getAvatar() == null ? "default.png" : user.getAvatar());
+            ps.setBoolean(11, user.isStatus());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,6 +107,18 @@ public class UserDAO {
             ps.setString(1, phoneNumber);
             ResultSet rs = ps.executeQuery();
             return rs.next(); //nếu có dòng -> sđt đã tồn tại
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public boolean isCccdExists(String cccd) {
+        String sql = "SELECT id FROM users WHERE cccd = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, cccd);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -240,12 +253,9 @@ public class UserDAO {
             } else {
                 ps.setNull(6, Types.DATE);
             }
-            ps.setInt(7, user.getId());
             int rowsAffected = ps.executeUpdate();
-            System.out.println("Update rows affected: " + rowsAffected); // Debug
             return rowsAffected > 0;
         } catch (SQLException e) {
-            System.err.println("Error in updateProfileAdmin:");
             e.printStackTrace();
             return false;
         }
@@ -573,6 +583,18 @@ public class UserDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, avatar);
             ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean activateUser(String email) {
+        String sql = "UPDATE users SET status = 1 WHERE email = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

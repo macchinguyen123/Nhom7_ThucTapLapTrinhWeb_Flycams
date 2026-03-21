@@ -52,7 +52,8 @@ public class DBConnection {
 
     public static Connection getConnection() {
         try {
-            return dataSource.getConnection();
+            Connection conn = dataSource.getConnection();
+            return conn;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

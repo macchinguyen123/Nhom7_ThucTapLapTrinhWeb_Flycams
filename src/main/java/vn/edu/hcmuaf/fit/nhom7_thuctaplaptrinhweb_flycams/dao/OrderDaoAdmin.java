@@ -30,8 +30,8 @@ public class OrderDaoAdmin {
                 """;
 
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Orders o = new Orders();
@@ -79,14 +79,14 @@ public class OrderDaoAdmin {
                             a.district, ', ',
                             a.province
                         ) AS fullAddress
-
+                
                     FROM orders o
                     JOIN users u ON o.user_id = u.id
                     LEFT JOIN addresses a ON o.address_id = a.id
                     WHERE o.id = ?
                 """;
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -128,27 +128,16 @@ public class OrderDaoAdmin {
                 """;
 
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
-            int count = 0;
             while (rs.next()) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("productName", rs.getString("productName"));
                 map.put("quantity", rs.getInt("quantity"));
                 map.put("price", rs.getDouble("price"));
                 list.add(map);
-                count++;
-
-                String productName = rs.getString("productName");
-                int quantity = rs.getInt("quantity");
-                double price = rs.getDouble("price");
-                System.out.println("Item " + count + ": "
-                        + productName + " | "
-                        + quantity + " | "
-                        + price);
-                System.out.println("Thành công");
             }
 
         } catch (Exception e) {
@@ -160,17 +149,12 @@ public class OrderDaoAdmin {
     public boolean updateOrderStatusAndShippingCode(int orderId, String status, String shippingCode) {
         String sql = "UPDATE orders SET `status` = ?, `shippingCode` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            System.out.println("Update orderId=" + orderId + ", status=" + status + ", shippingCode=" + shippingCode);
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setString(2, shippingCode);
             ps.setInt(3, orderId);
-
             int rows = ps.executeUpdate();
             return rows > 0;
-
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -180,18 +164,11 @@ public class OrderDaoAdmin {
     public boolean updateOrderStatus(int orderId, String status) {
         String sql = "UPDATE orders SET `status` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            System.out.println("Update orderId=" + orderId + ", status=" + status);
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, orderId);
-
             int rows = ps.executeUpdate();
-            System.out.println("Rows affected = " + rows);
-
             return rows > 0;
-
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -200,7 +177,6 @@ public class OrderDaoAdmin {
 
     public List<Orders> getOrdersForAdmin() {
         List<Orders> list = new ArrayList<>();
-
         String sql = """
                     SELECT
                         o.id,
@@ -221,8 +197,8 @@ public class OrderDaoAdmin {
                 """;
 
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Orders o = new Orders();

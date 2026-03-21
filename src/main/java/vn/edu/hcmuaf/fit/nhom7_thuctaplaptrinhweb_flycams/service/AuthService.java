@@ -4,6 +4,7 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.MailProperties.EmailSe
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.UserDAO;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.PasswordUtil;
+
 import java.sql.Date;
 
 public class AuthService {
@@ -26,7 +27,7 @@ public class AuthService {
     }
     //đăng ký
     public RegisterDTO prepareRegister(String fullName, String email, String username,
-            String password, String phone, Date birthday) {
+                                       String password, String phone, String cccd, Date birthday) {
         //tạo User
         User user = new User();
         user.setFullName(fullName);
@@ -34,9 +35,12 @@ public class AuthService {
         user.setUsername(username);
         user.setPassword(PasswordUtil.hashPassword(password));
         user.setPhoneNumber(phone);
+        user.setCccd(cccd);
         user.setRoleId(2);
-        user.setStatus(true);
+        user.setStatus(false); // Chưa kích hoạt
         user.setBirthDate(birthday);
+        // Lưu user vào DB trước khi gửi OTP
+        userDAO.insertUser(user);
         //sinh OTP 4 số
         String otp = String.valueOf((int) (Math.random() * 9000) + 1000);
         long expireTime = System.currentTimeMillis() + 5 * 60 * 1000;
@@ -47,7 +51,7 @@ public class AuthService {
     }
     //đổi mật khẩu có xác thực OTP
     public String changePassword(int userId, String email, String currentPass, String newPass, String confirmPass,
-            String expectedOtp, String inputOtp) {
+                                 String expectedOtp, String inputOtp) {
         if (expectedOtp == null || !expectedOtp.equals(inputOtp)) {
             return "Mã OTP không đúng hoặc chưa được gửi";
         }
