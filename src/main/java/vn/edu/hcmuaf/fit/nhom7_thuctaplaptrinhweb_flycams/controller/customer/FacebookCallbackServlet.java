@@ -68,6 +68,14 @@ public class FacebookCallbackServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/Login");
                 return;
             }
+            if (!user.isStatus()) {
+                String reason = user.getLockReason() != null ? user.getLockReason() : "Vi phạm chính sách.";
+                request.getSession().setAttribute("lockedError", "Tài khoản bạn đã bị khoá");
+                request.getSession().setAttribute("lockReason", reason);
+                request.getSession().setAttribute("lockedUserId", user.getId());
+                response.sendRedirect(request.getContextPath() + "/Login");
+                return;
+            }
             request.getSession().setAttribute("user", user);
             response.sendRedirect(request.getContextPath() + "/home");
         } catch (Exception e) {

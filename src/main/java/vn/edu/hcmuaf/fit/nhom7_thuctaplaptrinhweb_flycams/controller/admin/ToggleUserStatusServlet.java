@@ -25,7 +25,8 @@ public class ToggleUserStatusServlet extends HttpServlet {
             int id = Integer.parseInt(request.getParameter("id"));
             int statusInt = Integer.parseInt(request.getParameter("status"));
             boolean newStatus = (statusInt == 1);
-            boolean success = customerService.updateStatus(id, newStatus);
+            String lockReason = request.getParameter("lockReason");
+            boolean success = customerService.updateStatusWithReason(id, newStatus, lockReason);
             response.setContentType("application/json");
             response.getWriter().write("{\"success\": " + success + "}");
         } catch (Exception e) {

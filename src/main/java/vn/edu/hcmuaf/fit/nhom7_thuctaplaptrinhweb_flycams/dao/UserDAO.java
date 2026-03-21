@@ -38,6 +38,7 @@ public class UserDAO {
                     user.setGender(rs.getString("gender"));
                     user.setBirthDate(rs.getDate("birthDate"));
                     user.setStatus(rs.getBoolean("status"));
+                    user.setLockReason(rs.getString("lockReason"));
                     return user;
                 }
             }
@@ -181,6 +182,7 @@ public class UserDAO {
                 user.setPhoneNumber(rs.getString("phoneNumber"));
                 user.setAvatar(rs.getString("avatar"));
                 user.setStatus(rs.getBoolean("status"));
+                user.setLockReason(rs.getString("lockReason"));
                 user.setCreatedAt(rs.getTimestamp("createdAt"));
                 user.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 return user;
@@ -288,6 +290,7 @@ public class UserDAO {
                     u.setGender(rs.getString("gender"));
                     u.setBirthDate(rs.getDate("birthDate"));
                     u.setStatus(rs.getBoolean("status"));
+                    u.setLockReason(rs.getString("lockReason"));
                     u.setPassword(rs.getString("password"));
                     u.setAddress("Chưa cập nhật");
                     list.add(u);
@@ -338,6 +341,7 @@ public class UserDAO {
                     u.setGender(rs.getString("gender"));
                     u.setBirthDate(rs.getDate("birthDate"));
                     u.setStatus(rs.getBoolean("status"));
+                    u.setLockReason(rs.getString("lockReason"));
                     u.setPassword(rs.getString("password"));
                     u.setAddress("Chưa cập nhật");
                     list.add(u);
@@ -408,6 +412,19 @@ public class UserDAO {
         }
         return false;
     }
+    public boolean updateStatusWithReason(int userId, boolean status, String lockReason) {
+        String sql = "UPDATE users SET status=?, lockReason=? WHERE id=?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, status);
+            ps.setString(2, lockReason);
+            ps.setInt(3, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     public User getUserById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
         try (Connection conn = getConnection();
@@ -426,7 +443,8 @@ public class UserDAO {
                 user.setPassword(rs.getString("password"));
                 user.setPhoneNumber(rs.getString("phoneNumber"));
                 user.setAvatar(rs.getString("avatar"));
-                user.setStatus(rs.getInt("status") == 1); //DB kiểu int, model kiểu boolean
+                user.setStatus(rs.getBoolean("status"));
+                user.setLockReason(rs.getString("lockReason"));
                 user.setCreatedAt(rs.getTimestamp("createdAt"));
                 user.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 return user;
@@ -454,6 +472,7 @@ public class UserDAO {
                 user.setPhoneNumber(rs.getString("phoneNumber"));
                 user.setAvatar(rs.getString("avatar"));
                 user.setStatus(rs.getBoolean("status"));
+                user.setLockReason(rs.getString("lockReason"));
                 user.setCreatedAt(rs.getTimestamp("createdAt"));
                 user.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 return user;

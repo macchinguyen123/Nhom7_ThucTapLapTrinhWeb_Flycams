@@ -92,11 +92,10 @@
                         <option value="">-- Chọn Phường/Xã --</option>
                     </select>
                 </div>
-                <%-- Hidden fields lưu GHN IDs để tính phí và đặt hàng --%>
-                <input type="hidden" name="ghn_province_id"  id="ghnProvinceId">
-                <input type="hidden" name="ghn_district_id"  id="ghnDistrictId">
-                <input type="hidden" name="ghn_ward_code"    id="ghnWardCode">
-                <input type="hidden" name="shippingFee"      id="shippingFeeInput" value="0">
+                <input type="hidden" name="ghn_province_id" id="ghnProvinceId">
+                <input type="hidden" name="ghn_district_id" id="ghnDistrictId">
+                <input type="hidden" name="ghn_ward_code" id="ghnWardCode">
+                <input type="hidden" name="shippingFee" id="shippingFeeInput" value="0">
             </div>
             <div class="mt-3">
                                 <textarea name="note" rows="5" class="form-control"
@@ -152,23 +151,23 @@
     </div>
 </div>
 <script>
-    const GHN_API   = "${pageContext.request.contextPath}/ghn";
+    const GHN_API = "${pageContext.request.contextPath}/ghn";
     const provinceSelect = document.getElementById("province");
     const districtSelect = document.getElementById("district");
-    const wardSelect     = document.getElementById("ward");
+    const wardSelect = document.getElementById("ward");
     const savedAddressSelect = document.getElementById("savedAddress");
-    const fullNameInput  = document.getElementById("fullName");
-    const phoneInput     = document.getElementById("phoneNumber");
-    const addressInput   = document.getElementById("addressLine");
+    const fullNameInput = document.getElementById("fullName");
+    const phoneInput = document.getElementById("phoneNumber");
+    const addressInput = document.getElementById("addressLine");
     const manualInputFields = document.getElementById("manualInputFields");
 
-    const ghnProvinceIdInput  = document.getElementById("ghnProvinceId");
-    const ghnDistrictIdInput  = document.getElementById("ghnDistrictId");
-    const ghnWardCodeInput    = document.getElementById("ghnWardCode");
-    const shippingFeeInput    = document.getElementById("shippingFeeInput");
-    const shippingFeeDisplay  = document.getElementById("shippingFeeDisplay");
-    const totalDisplay        = document.getElementById("totalDisplay");
-    const subtotalEl          = document.getElementById("subtotalValue");
+    const ghnProvinceIdInput = document.getElementById("ghnProvinceId");
+    const ghnDistrictIdInput = document.getElementById("ghnDistrictId");
+    const ghnWardCodeInput = document.getElementById("ghnWardCode");
+    const shippingFeeInput = document.getElementById("shippingFeeInput");
+    const shippingFeeDisplay = document.getElementById("shippingFeeDisplay");
+    const totalDisplay = document.getElementById("totalDisplay");
+    const subtotalEl = document.getElementById("subtotalValue");
 
     const subtotal = subtotalEl ? parseFloat(subtotalEl.value) : 0;
 
@@ -179,8 +178,8 @@
             if (json.code !== 200) throw new Error(json.message || "GHN error");
             json.data.forEach(p => {
                 const opt = document.createElement("option");
-                opt.value        = p.ProvinceName;
-                opt.textContent  = p.ProvinceName;
+                opt.value = p.ProvinceName;
+                opt.textContent = p.ProvinceName;
                 opt.dataset.ghnId = p.ProvinceID;
                 provinceSelect.appendChild(opt);
             });
@@ -212,8 +211,8 @@
                 if (json.code !== 200) throw new Error(json.message);
                 json.data.forEach(d => {
                     const dOpt = document.createElement("option");
-                    dOpt.value        = d.DistrictName;
-                    dOpt.textContent  = d.DistrictName;
+                    dOpt.value = d.DistrictName;
+                    dOpt.textContent = d.DistrictName;
                     dOpt.dataset.ghnId = d.DistrictID;
                     districtSelect.appendChild(dOpt);
                 });
@@ -239,8 +238,8 @@
                 if (json.code !== 200) throw new Error(json.message);
                 (json.data || []).forEach(w => {
                     const wOpt = document.createElement("option");
-                    wOpt.value        = w.WardName;
-                    wOpt.textContent  = w.WardName;
+                    wOpt.value = w.WardName;
+                    wOpt.textContent = w.WardName;
                     wOpt.dataset.code = w.WardCode;
                     wardSelect.appendChild(wOpt);
                 });
@@ -249,10 +248,30 @@
             .catch(err => console.error("Lỗi load phường GHN:", err));
     });
 
+    function findOptionByText(selectEl, text) {
+        if (!text) return null;
+        text = text.trim().toLowerCase();
+        const opts = Array.from(selectEl.options);
+        let match = opts.find(o => o.value.trim().toLowerCase() === text);
+        if (match) return match;
+        const normalize = s => s.replace(/(thành phố|tỉnh|quận|huyện|thị xã|phường|xã|thị trấn)\s+/gi, "").trim();
+        const normText = normalize(text);
+        if (normText) {
+            match = opts.find(o => normalize(o.value.trim().toLowerCase()) === normText);
+            if (match) return match;
+            match = opts.find(o => {
+                const normO = normalize(o.value.trim().toLowerCase());
+                return normO.includes(normText) || normText.includes(normO);
+            });
+            if (match) return match;
+        }
+        return null;
+    }
+
     // ─── Chọn Phường → tính phí ship ─────────────────────────────────────────
     wardSelect.addEventListener("change", function () {
         const opt = this.options[this.selectedIndex];
-        const wardCode      = opt.dataset.code || "";
+        const wardCode = opt.dataset.code || "";
         ghnWardCodeInput.value = wardCode;
 
         const districtId = ghnDistrictIdInput.value;
@@ -286,9 +305,9 @@
     savedAddressSelect.addEventListener("change", function () {
         const opt = this.options[this.selectedIndex];
         if (!opt.value) {
-            fullNameInput.value  = "";
-            phoneInput.value     = "";
-            addressInput.value   = "";
+            fullNameInput.value = "";
+            phoneInput.value = "";
+            addressInput.value = "";
             resetProvince();
             resetDistrict();
             resetWard();
@@ -297,19 +316,19 @@
             manualInputFields.style.opacity = "1";
             return;
         }
-        fullNameInput.value  = opt.dataset.name    || "";
-        phoneInput.value     = opt.dataset.phone   || "";
-        addressInput.value   = opt.dataset.address || "";
+        fullNameInput.value = opt.dataset.name || "";
+        phoneInput.value = opt.dataset.phone || "";
+        addressInput.value = opt.dataset.address || "";
 
-        const savedProvince  = opt.dataset.province  || "";
-        const savedDistrict  = opt.dataset.district  || "";
-        const savedWard      = opt.dataset.ward      || "";
+        const savedProvince = opt.dataset.province || "";
+        const savedDistrict = opt.dataset.district || "";
+        const savedWard = opt.dataset.ward || "";
 
         // Tìm tỉnh trong dropdown và chọn
         if (savedProvince) {
-            const pOpt = Array.from(provinceSelect.options).find(o => o.value === savedProvince);
+            const pOpt = findOptionByText(provinceSelect, savedProvince);
             if (pOpt) {
-                provinceSelect.value = savedProvince;
+                provinceSelect.value = pOpt.value;
                 ghnProvinceIdInput.value = pOpt.dataset.ghnId || "";
                 // Load quận theo tỉnh GHN
                 const ghnProvinceId = pOpt.dataset.ghnId;
@@ -321,7 +340,7 @@
                             if (json.code !== 200) return;
                             json.data.forEach(d => {
                                 const dOpt = document.createElement("option");
-                                dOpt.value       = d.DistrictName;
+                                dOpt.value = d.DistrictName;
                                 dOpt.textContent = d.DistrictName;
                                 dOpt.dataset.ghnId = d.DistrictID;
                                 districtSelect.appendChild(dOpt);
@@ -329,9 +348,9 @@
                             districtSelect.disabled = false;
                             // Tự động chọn quận đã lưu
                             if (savedDistrict) {
-                                const dOpt = Array.from(districtSelect.options).find(o => o.value === savedDistrict);
+                                const dOpt = findOptionByText(districtSelect, savedDistrict);
                                 if (dOpt) {
-                                    districtSelect.value = savedDistrict;
+                                    districtSelect.value = dOpt.value;
                                     ghnDistrictIdInput.value = dOpt.dataset.ghnId || "";
                                     const ghnDistrictId = dOpt.dataset.ghnId;
                                     if (ghnDistrictId) {
@@ -342,7 +361,7 @@
                                                 if (wJson.code !== 200) return;
                                                 (wJson.data || []).forEach(w => {
                                                     const wOpt = document.createElement("option");
-                                                    wOpt.value       = w.WardName;
+                                                    wOpt.value = w.WardName;
                                                     wOpt.textContent = w.WardName;
                                                     wOpt.dataset.code = w.WardCode;
                                                     wardSelect.appendChild(wOpt);
@@ -350,9 +369,9 @@
                                                 wardSelect.disabled = false;
                                                 // Tự động chọn phường đã lưu
                                                 if (savedWard) {
-                                                    const wOpt = Array.from(wardSelect.options).find(o => o.value === savedWard);
+                                                    const wOpt = findOptionByText(wardSelect, savedWard);
                                                     if (wOpt) {
-                                                        wardSelect.value = savedWard;
+                                                        wardSelect.value = wOpt.value;
                                                         ghnWardCodeInput.value = wOpt.dataset.code || "";
                                                         // Tính phí ship tự động
                                                         triggerFeeCalc(ghnDistrictId, wOpt.dataset.code);
@@ -389,7 +408,9 @@
                     totalDisplay.textContent = formatVND(subtotal + fee) + " ₫";
                 }
             })
-            .catch(() => { shippingFeeDisplay.textContent = "Lỗi"; });
+            .catch(() => {
+                shippingFeeDisplay.textContent = "Lỗi";
+            });
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -397,27 +418,32 @@
         provinceSelect.value = "";
         ghnProvinceIdInput.value = "";
     }
+
     function resetDistrict() {
         districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
         districtSelect.disabled = true;
         ghnDistrictIdInput.value = "";
     }
+
     function resetWard() {
         wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
         wardSelect.disabled = true;
         ghnWardCodeInput.value = "";
     }
+
     function resetShippingFee() {
         if (shippingFeeDisplay) shippingFeeDisplay.textContent = "—";
-        if (shippingFeeInput)   shippingFeeInput.value = 0;
+        if (shippingFeeInput) shippingFeeInput.value = 0;
         if (totalDisplay && subtotalEl) totalDisplay.textContent = formatVND(subtotal) + " ₫";
     }
+
     function toggleRequiredFields(isRequired) {
         manualInputFields.querySelectorAll('input, select').forEach(f => {
             if (isRequired) f.setAttribute('required', 'required');
-            else            f.removeAttribute('required');
+            else f.removeAttribute('required');
         });
     }
+
     function formatVND(n) {
         return Math.round(n).toLocaleString('vi-VN');
     }

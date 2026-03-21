@@ -163,6 +163,10 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="text-primary fw-bold"><i class="bi bi-person-lines-fill"></i> Quản Lý Tài Khoản</h4>
             <div class="d-flex align-items-center gap-2">
+                <a href="${pageContext.request.contextPath}/admin/complaints"
+                   class="btn btn-warning shadow-sm fw-semibold">
+                    <i class="bi bi-card-text"></i> Danh sách khiếu nại
+                </a>
                 <form class="d-flex" role="search" style="max-width: 300px;">
                     <div class="input-group">
                                             <span class="input-group-text bg-primary text-white">
@@ -221,9 +225,18 @@
                             <td class="text-center">
                                 <button
                                         class="btn btn-sm ${u.status ? 'btn-success' : 'btn-danger'}"
-                                        onclick="toggleLock(this, ${u.id})">
+                                        onclick="toggleLock(this, ${u.id})"
+                                        data-lock-reason="${u.lockReason}"
+                                        title="${not empty u.lockReason ? u.lockReason : (u.status ? 'Đang hoạt động' : '')}">
                                     <i class="bi ${u.status ? 'bi-unlock-fill' : 'bi-lock-fill'}"></i>
                                 </button>
+                                <c:if test="${not empty u.lockReason and !u.status}">
+        <span class="d-block mt-1"
+              style="max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; color:#dc3545;"
+              title="${u.lockReason}">
+            <i class="bi bi-info-circle"></i> ${fn:substring(u.lockReason, 0, 15)}${fn:length(u.lockReason) > 15 ? '...' : ''}
+        </span>
+                                </c:if>
                             </td>
                             <td class="text-center">
                                 <a href="${pageContext.request.contextPath}/admin/customer-detail?id=${u.id}"
@@ -411,6 +424,73 @@
         </c:if>
     </main>
 </div>
+<div class="modal fade" id="lockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-lock-fill me-2"></i>Khóa Tài Khoản
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-danger bg-opacity-10 rounded-3">
+                    <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+                    <div>
+                        <div class="fw-semibold text-danger">Xác nhận khóa tài khoản</div>
+                        <small class="text-muted">Người dùng sẽ không thể đăng nhập sau khi bị khóa.</small>
+                    </div>
+                </div>
+                <label class="form-label fw-semibold">
+                    Lý do khóa <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-danger text-white">
+                        <i class="bi bi-chat-left-text"></i>
+                    </span>
+                    <textarea id="lockReasonInput" class="form-control" rows="3"
+                              placeholder="Nhập lý do khóa tài khoản..."></textarea>
+                </div>
+                <div id="lockReasonError" class="text-danger small mt-1" style="display:none;">
+                    <i class="bi bi-exclamation-circle"></i> Vui lòng nhập lý do khóa.
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted fw-semibold">Chọn nhanh:</small>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <span class="badge bg-light text-dark border preset-reason" style="cursor:pointer;">
+                            Vi phạm điều khoản
+                        </span>
+                        <span class="badge bg-light text-dark border preset-reason" style="cursor:pointer;">
+                            Hành vi gian lận
+                        </span>
+                        <span class="badge bg-light text-dark border preset-reason" style="cursor:pointer;">
+                            Spam hệ thống
+                        </span>
+                        <span class="badge bg-light text-dark border preset-reason" style="cursor:pointer;">
+                            Yêu cầu từ người dùng
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmLockBtn">
+                    <i class="bi bi-lock-fill me-1"></i>Xác nhận khóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="actionToast" class="toast align-items-center border-0 text-white" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="toastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 <script>
     document.querySelectorAll('.has-submenu .menu-item').forEach(item => {
         item.addEventListener('click', function (e) {
@@ -435,27 +515,84 @@
             }
         });
     });
+    let _lockBtn = null;
+    let _lockUserId = null;
 
     function toggleLock(btn, userId) {
-        const icon = btn.querySelector("i");
         const isLocked = btn.classList.contains("btn-danger");
-        const newStatus = isLocked ? 1 : 0;
-        fetch("toggle-user-status", {
-            method: "POST",
-            headers: {"Content-Type": "application/x-www-form-urlencoded"},
-            body: "id=" + userId + "&status=" + newStatus
-        });
         if (isLocked) {
-            btn.classList.remove("btn-danger");
-            btn.classList.add("btn-success");
-            icon.classList.remove("bi-lock-fill");
-            icon.classList.add("bi-unlock-fill");
+            const params = new URLSearchParams();
+            params.append("id", userId);
+            params.append("status", 1);
+            params.append("lockReason", "");
+            fetch("toggle-user-status", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: params.toString()
+            }).then(() => showActionToast("Đã mở khóa tài khoản thành công!", "success"));
+            btn.classList.replace("btn-danger", "btn-success");
+            btn.querySelector("i").classList.replace("bi-lock-fill", "bi-unlock-fill");
+            btn.title = "Đang hoạt động";
+            btn.dataset.lockReason = "";
+            const reasonSpan = btn.parentElement.querySelector("span.d-block");
+            if (reasonSpan) reasonSpan.remove();
         } else {
-            btn.classList.remove("btn-success");
-            btn.classList.add("btn-danger");
-            icon.classList.remove("bi-unlock-fill");
-            icon.classList.add("bi-lock-fill");
+            _lockBtn = btn;
+            _lockUserId = userId;
+            document.getElementById("lockReasonInput").value = "";
+            document.getElementById("lockReasonError").style.display = "none";
+            new bootstrap.Modal(document.getElementById("lockModal")).show();
         }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".preset-reason").forEach(badge => {
+            badge.addEventListener("click", function () {
+                document.getElementById("lockReasonInput").value = this.textContent.trim();
+                document.getElementById("lockReasonError").style.display = "none";
+            });
+        });
+        document.getElementById("confirmLockBtn").addEventListener("click", function () {
+            const reason = document.getElementById("lockReasonInput").value.trim();
+            if (!reason) {
+                document.getElementById("lockReasonError").style.display = "block";
+                return;
+            }
+            const params = new URLSearchParams();
+            params.append("id", _lockUserId);
+            params.append("status", 0);
+            params.append("lockReason", reason);
+            fetch("toggle-user-status", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: params.toString()
+            }).then(() => showActionToast("Đã khóa tài khoản thành công!", "danger"));
+            _lockBtn.classList.replace("btn-success", "btn-danger");
+            _lockBtn.querySelector("i").classList.replace("bi-unlock-fill", "bi-lock-fill");
+            _lockBtn.title = reason;
+            _lockBtn.dataset.lockReason = reason;
+            const reasonSpan = _lockBtn.parentElement.querySelector("span.d-block");
+            if (reasonSpan) {
+                reasonSpan.textContent = reason.length > 15 ? reason.substring(0, 15) + "..." : reason;
+                reasonSpan.title = reason;
+            } else {
+                const span = document.createElement("span");
+                span.className = "d-block mt-1";
+                span.style.cssText = "max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#dc3545;";
+                span.innerHTML = `<i class="bi bi-info-circle"></i> ` + (reason.length > 15 ? reason.substring(0, 15) + "..." : reason);
+                span.title = reason;
+                _lockBtn.parentElement.appendChild(span);
+            }
+            bootstrap.Modal.getInstance(document.getElementById("lockModal")).hide();
+        });
+    });
+
+    function showActionToast(message, type) {
+        const toast = document.getElementById("actionToast");
+        const toastMsg = document.getElementById("toastMessage");
+        toast.className = `toast align-items-center border-0 text-white bg-${type}`;
+        toastMsg.textContent = message;
+        new bootstrap.Toast(toast, {delay: 3000}).show();
     }
 
     document.addEventListener("DOMContentLoaded", function () {

@@ -27,6 +27,11 @@ public class CustomerService {
     public boolean updateStatus(int userId, boolean status) {
         return userDAO.updateStatus(userId, status);
     }
+    
+    //Cập nhật trạng thái người dùng kèm lý do khóa
+    public boolean updateStatusWithReason(int userId, boolean status, String lockReason) {
+        return userDAO.updateStatusWithReason(userId, status, lockReason);
+    }
 
     //Cập nhật thông tin người dùng
     public boolean updateUser(User user) {

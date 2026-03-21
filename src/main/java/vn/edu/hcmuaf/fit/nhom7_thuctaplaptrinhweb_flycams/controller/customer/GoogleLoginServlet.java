@@ -10,8 +10,8 @@ import java.io.IOException;
 
 @WebServlet(name = "GoogleLoginServlet", value = "/google-login")
 public class GoogleLoginServlet extends HttpServlet {
-    private static final String CLIENT_ID = "75476416232-ge5966lp069m7494drdfhlh319d82t6l.apps.googleusercontent.com";
-    private static final String REDIRECT_URI = "http://localhost:8080/nhom7_thuctaplaptrinhweb_flycams/google-callback";
+    private static final String CLIENT_ID = "501831076440-rur6e4ol3eov2skpnnhg6gkct4s5119d.apps.googleusercontent.com";
+    private static final String REDIRECT_URI = "http://localhost:8080/Nhom7_ThucTapLapTrinhWeb_Flycams/google-callback";
     private static final String SCOPE = "openid email profile";
 
     @Override
