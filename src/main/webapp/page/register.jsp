@@ -52,7 +52,8 @@
             <div class="field">
                 <label for="phone">Số điện thoại</label>
                 <input type="tel" id="phone" name="phoneNumber" placeholder="Nhập số điện thoại"
-                       value="${phoneNumber}" required oninput="validateForm()">
+                       value="${phoneNumber}" required oninput="onlyNumber(this); validateForm()"
+                       onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                 <p class="error" id="phone_error"></p>
                 <c:if test="${not empty phoneError}">
                     <p class="error"> ${phoneError}</p>
@@ -134,10 +135,14 @@
         const confirm = document.getElementById('confirm').value;
         const submitBtn = document.getElementById('submitBtn');
         let isValid = true;
-        const usernameRegex = /^[a-zA-Z0-9À-ỹ\s]{6,20}$/;
+        const usernameSpecialCharRegex = /[^a-zA-Z0-9À-ỹ\s]/;
+        const usernameLengthRegex = /^[a-zA-Z0-9À-ỹ\s]{6,20}$/;
         if (username.length > 0) {
-            if (!usernameRegex.test(username)) {
-                document.getElementById('username_error').textContent = "6-20 ký tự, không ký tự đặc biệt";
+            if (usernameSpecialCharRegex.test(username)) {
+                document.getElementById('username_error').textContent = "Không được có ký tự đặc biệt";
+                isValid = false;
+            } else if (username.length < 6 || username.length > 20) {
+                document.getElementById('username_error').textContent = "Cần 6-20 ký tự";
                 isValid = false;
             } else {
                 document.getElementById('username_error').textContent = "";
@@ -165,13 +170,22 @@
         } else {
             document.getElementById('birthday_error').textContent = "";
         }
+        const validPrefixes = [
+            '032','033','034','035','036','037','038','039','086','096','097','098','070','076','077','078','079',
+            '089','090','093','056','058','092','059','099','081','082','083','084','085','088','091','094',];
         const phoneRegex = /^0\d{9}$/;
         if (phone.length > 0) {
             if (phone[0] !== '0') {
                 document.getElementById('phone_error').textContent = "Số điện thoại phải bắt đầu bằng số 0";
                 isValid = false;
+            } else if (phone.length < 10) {
+                document.getElementById('phone_error').textContent = "SĐT phải đúng 10 chữ số";
+                isValid = false;
             } else if (!phoneRegex.test(phone)) {
                 document.getElementById('phone_error').textContent = "SĐT phải đúng 10 chữ số";
+                isValid = false;
+            } else if (!validPrefixes.some(prefix => phone.startsWith(prefix))) {
+                document.getElementById('phone_error').textContent = "Vui lòng sử dụng số điện thoại Việt Nam";
                 isValid = false;
             } else {
                 document.getElementById('phone_error').textContent = "";
@@ -203,8 +217,20 @@
         }
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         if (password.length > 0) {
-            if (!passwordRegex.test(password)) {
-                document.getElementById('password_error').textContent = "Ít nhất 8 ký tự, có chữ hoa, thường, số, ký hiệu";
+            if (password.length < 8) {
+                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 8 ký tự";
+                isValid = false;
+            } else if (!/[A-Z]/.test(password)) {
+                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 chữ hoa";
+                isValid = false;
+            } else if (!/[a-z]/.test(password)) {
+                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 chữ thường";
+                isValid = false;
+            } else if (!/\d/.test(password)) {
+                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 chữ số";
+                isValid = false;
+            } else if (!/[\W_]/.test(password)) {
+                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 ký tự đặc biệt";
                 isValid = false;
             } else {
                 document.getElementById('password_error').textContent = "";
@@ -222,7 +248,8 @@
         } else {
             document.getElementById('confirm_error').textContent = "";
         }
-        if (!usernameRegex.test(username) ||
+        const usernameValid = !usernameSpecialCharRegex.test(username) && usernameLengthRegex.test(username);
+        if (!usernameValid ||
             fullname.trim() === "" || 
             !birthday || 
             !phoneRegex.test(phone) || 
@@ -257,6 +284,9 @@
         }
         validateForm();
     });
+    function onlyNumber(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+    }
 </script>
 </body>
 </html>
