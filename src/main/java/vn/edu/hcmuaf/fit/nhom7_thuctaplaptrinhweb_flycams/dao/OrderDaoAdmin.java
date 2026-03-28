@@ -30,8 +30,8 @@ public class OrderDaoAdmin {
                 """;
 
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Orders o = new Orders();
@@ -68,6 +68,7 @@ public class OrderDaoAdmin {
                         o.shippingCode,
                         o.paymentMethod,
                         o.note,
+                        o.shippingFee,
                         o.status,
                         o.user_id,
                         u.fullName,
@@ -79,14 +80,14 @@ public class OrderDaoAdmin {
                             a.district, ', ',
                             a.province
                         ) AS fullAddress
-                
+
                     FROM orders o
                     JOIN users u ON o.user_id = u.id
                     LEFT JOIN addresses a ON o.address_id = a.id
                     WHERE o.id = ?
                 """;
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -101,6 +102,8 @@ public class OrderDaoAdmin {
                 map.put("shippingCode", rs.getString("shippingCode"));
                 map.put("paymentMethod", rs.getString("paymentMethod"));
                 map.put("note", rs.getString("note"));
+                double fee = rs.getDouble("shippingFee");
+                map.put("shippingFee", rs.wasNull() ? null : fee);
                 map.put("status", rs.getString("status"));
                 map.put("address", rs.getString("addressLine"));
                 map.put("user_id", rs.getInt("user_id"));
@@ -113,6 +116,7 @@ public class OrderDaoAdmin {
         }
         return map;
     }
+
     public List<Map<String, Object>> getOrderItems(int orderId) {
         List<Map<String, Object>> list = new ArrayList<>();
 
@@ -127,7 +131,7 @@ public class OrderDaoAdmin {
                 """;
 
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -144,10 +148,11 @@ public class OrderDaoAdmin {
         }
         return list;
     }
+
     public boolean updateOrderStatusAndShippingCode(int orderId, String status, String shippingCode) {
         String sql = "UPDATE orders SET `status` = ?, `shippingCode` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setString(2, shippingCode);
             ps.setInt(3, orderId);
@@ -158,10 +163,11 @@ public class OrderDaoAdmin {
             return false;
         }
     }
+
     public boolean updateOrderStatus(int orderId, String status) {
         String sql = "UPDATE orders SET `status` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, orderId);
             int rows = ps.executeUpdate();
@@ -171,6 +177,7 @@ public class OrderDaoAdmin {
             return false;
         }
     }
+
     public List<Orders> getOrdersForAdmin() {
         List<Orders> list = new ArrayList<>();
         String sql = """
@@ -192,8 +199,8 @@ public class OrderDaoAdmin {
                     ORDER BY o.createdAt DESC
                 """;
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Orders o = new Orders();
@@ -248,6 +255,7 @@ public class OrderDaoAdmin {
             }
         }
     }
+
     public boolean updateOrderFull(
             int orderId,
             int userId,

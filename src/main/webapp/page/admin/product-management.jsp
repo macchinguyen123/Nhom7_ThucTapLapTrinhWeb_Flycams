@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Trang Quản Trị - SkyDrone</title>
@@ -192,10 +193,10 @@
                              style="width:60px;height:60px;object-fit:cover;" alt="${p.productName}">
                     </td>
                     <td>
-                        <fmt:formatNumber value="${p.price}" type="number"/>đ
+                        <fmt:formatNumber value="${p.price}" pattern="#,##0 VNĐ"/>
                     </td>
                     <td>
-                        <fmt:formatNumber value="${p.finalPrice}" type="number"/>đ
+                        <fmt:formatNumber value="${p.finalPrice}" pattern="#,##0 VNĐ"/>
                     </td>
                     <td>
                         <c:choose>
@@ -321,9 +322,9 @@
                             <small class="text-muted">(URL)</small>
                         </label>
                         <div class="input-group">
-                                             <span class="input-group-text">
-                                                 <i class="bi bi-image"></i>
-                                             </span>
+                                            <span class="input-group-text">
+                                                <i class="bi bi-image"></i>
+                                            </span>
                             <input type="url" class="form-control" id="anhChinh"
                                    placeholder="https://example.com/image-main.jpg">
                         </div>
@@ -791,4 +792,5 @@
     });
 </script>
 </body>
+
 </html>

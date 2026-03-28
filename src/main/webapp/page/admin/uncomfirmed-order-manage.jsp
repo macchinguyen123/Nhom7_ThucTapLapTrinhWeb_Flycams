@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Trang Quản Trị - SkyDrone</title>
@@ -13,6 +14,7 @@
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/stylesheets/admin/uncomfirmed-order-manage.css">
 </head>
+
 <body>
 <header class="main-header">
     <div class="logo">
@@ -151,7 +153,7 @@
                     </td>
                     <fmt:setLocale value="vi_VN"/>
                     <td>
-                        <fmt:formatNumber value="${o.totalPrice}" type="currency"/>
+                        <fmt:formatNumber value="${o.totalPrice}" pattern="#,##0 VNĐ"/>
                     </td>
                     <td>
                                             <span class="badge ${o.statusClass}">
@@ -218,8 +220,8 @@
                                     <tr>
                                         <th>Tổng tiền:</th>
                                         <td>
-                                                                 <span id="md_totalPrice"
-                                                                       class="fw-bold text-danger">---</span>
+                                                                <span id="md_totalPrice"
+                                                                      class="fw-bold text-danger">---</span>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -241,7 +243,7 @@
                                     </tr>
                                     <tr>
                                         <th>Phí vận chuyển:</th>
-                                        <td>Miễn phí</td>
+                                        <td><span id="md_shippingFee">---</span></td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -336,6 +338,8 @@
                     o.shippingCode || "Chưa có";
                 document.getElementById("md_completedAt").innerText =
                     o.completedAt ? formatDate(o.completedAt) : "Chưa giao";
+                document.getElementById("md_shippingFee").innerText =
+                    o.shippingFee ? Number(o.shippingFee).toLocaleString("vi-VN") + " VNĐ" : "0 VNĐ";
                 const items = data.items;
                 const tbody = document.getElementById("md_productList");
                 tbody.innerHTML = "";
@@ -535,4 +539,5 @@
     });
 </script>
 </body>
+
 </html>

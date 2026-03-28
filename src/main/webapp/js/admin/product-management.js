@@ -8,6 +8,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     document.getElementById("btnSaveProduct").addEventListener("click", function () {
+        const productName = document.getElementById("tenSP").value.trim();
+        const priceStr = document.getElementById("giaGoc").value.trim();
+        if (!productName || !priceStr) {
+            Swal.fire({
+                title: "Lỗi!",
+                text: "Vui lòng nhập đầy đủ thông tin sản phẩm (Tên sản phẩm, Giá gốc...).",
+                icon: "error",
+                confirmButtonText: "Đóng"
+            });
+            return;
+        }
         const data = {
             id: parseInt(document.getElementById("productId").value) || 0,
             productName: document.getElementById("tenSP").value,
@@ -27,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         fetch(contextPath + "/admin/product-save", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         })
             .then(res => res.json())

@@ -4,6 +4,7 @@
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Hồ Sơ Của Tôi</title>
@@ -17,6 +18,7 @@
           href="${pageContext.request.contextPath}/stylesheets/personal-page.css?v=${System.currentTimeMillis()}">
 </head>
 <jsp:include page="/page/header-common.jsp"/>
+
 <body>
 <div class="container">
     <aside class="sidebar">
@@ -82,7 +84,8 @@
                     <div class="form-group">
                         <label for="phoneNumber">Số điện thoại</label>
                         <input type="text" name="phoneNumber" id="phoneNumber"
-                               value="${user.phoneNumber}" required pattern="[0-9]{10}" title="Số điện thoại phải bao gồm đúng 10 chữ số">
+                               value="${user.phoneNumber}" required pattern="[0-9]{10}"
+                               title="Số điện thoại phải bao gồm đúng 10 chữ số">
                     </div>
                 </div>
                 <div class="form-row">
@@ -122,7 +125,8 @@
                 <div class="form-group">
                     <label for="newPassword">Mật khẩu mới</label>
                     <input type="password" name="password" id="newPassword" required>
-                    <div id="newPasswordFeedback" style="font-size: 0.85rem; margin-top: 5px; display: none;"></div>
+                    <div id="newPasswordFeedback"
+                         style="font-size: 0.85rem; margin-top: 5px; display: none;"></div>
                     <c:if test="${not empty passwordError}">
                         <span class="error">${passwordError}</span>
                     </c:if>
@@ -161,13 +165,27 @@
             <div id="order-list" class="order-table"
                  style="display: ${not empty selectedOrder ? 'none' : 'block'}">
                 <div class="order-tabs">
-                    <button class="order-tab active" data-status="PENDING"><i class="bi bi-hourglass-split me-1"></i> Chờ xác nhận</button>
-                    <button class="order-tab" data-status="PROCESSING"><i class="bi bi-box-seam me-1"></i> Đang xử lý</button>
-                    <button class="order-tab" data-status="OUT_FOR_DELIVERY"><i class="bi bi-truck me-1"></i> Đang giao</button>
-                    <button class="order-tab" data-status="DELIVERED"><i class="bi bi-check-circle me-1"></i> Hoàn thành</button>
-                    <button class="order-tab" data-status="CANCELLED"><i class="bi bi-x-circle me-1"></i> Hủy</button>
-                    <button class="order-tab" data-status="RETURN_REQUESTED"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</button>
-                    <button class="order-tab" data-status="RETURNED"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</button>
+                    <button class="order-tab active" data-status="PENDING"><i
+                            class="bi bi-hourglass-split me-1"></i> Chờ xác nhận
+                    </button>
+                    <button class="order-tab" data-status="PROCESSING"><i
+                            class="bi bi-box-seam me-1"></i> Đang xử lý
+                    </button>
+                    <button class="order-tab" data-status="OUT_FOR_DELIVERY"><i
+                            class="bi bi-truck me-1"></i> Đang giao
+                    </button>
+                    <button class="order-tab" data-status="DELIVERED"><i
+                            class="bi bi-check-circle me-1"></i> Hoàn thành
+                    </button>
+                    <button class="order-tab" data-status="CANCELLED"><i
+                            class="bi bi-x-circle me-1"></i> Hủy
+                    </button>
+                    <button class="order-tab" data-status="RETURN_REQUESTED"><i
+                            class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng
+                    </button>
+                    <button class="order-tab" data-status="RETURNED"><i
+                            class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng
+                    </button>
                 </div>
                 <h3>Hóa đơn gần đây</h3>
                 <table>
@@ -201,19 +219,19 @@
                                         <span class="badge bg-primary"><i class="bi bi-box-seam me-1"></i> Đang xử lý</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'OUT_FOR_DELIVERY'}">
-                                        <span class="badge bg-info text-dark"><i class="bi bi-truck me-1"></i> Đang giao</span>
+                                                                <span class="badge bg-info text-dark"><i class="bi bi-truck me-1"></i> Đang giao</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'DELIVERED'}">
-                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Hoàn thành</span>
+                                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Hoàn thành</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'CANCELLED'}">
-                                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Đã huỷ</span>
+                                                                <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Đã huỷ</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURN_REQUESTED'}">
-                                        <span class="badge bg-info text-dark"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</span>
+                                                                <span class="badge bg-info text-dark"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURNED'}">
-                                        <span class="badge bg-secondary"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</span>
+                                                                <span class="badge bg-secondary"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</span>
                                     </c:when>
                                 </c:choose>
                             </td>
@@ -317,8 +335,7 @@
                                     <i class="bi bi-arrow-return-left me-2"></i>
                                     Yêu cầu trả hàng
                                 </h5>
-                                <button type="button" class="btn-close"
-                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <input type="hidden" name="action" value="returnOrder">
@@ -365,8 +382,7 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-light"
-                                        data-bs-dismiss="modal">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
                                     <i class="bi bi-x-circle me-1"></i>
                                     Đóng
                                 </button>
@@ -447,7 +463,8 @@
                     </div>
                     <hr>
                     <c:forEach var="item" items="${orderItems}">
-                        <div style="display:flex;gap:12px;margin-bottom:16px">
+                        <a href="${pageContext.request.contextPath}/product-detail?id=${item.product.id}"
+                           style="text-decoration: none; color: inherit; display:flex; gap:12px; margin-bottom:16px">
                             <c:choose>
                                 <c:when
                                         test="${fn:startsWith(item.product.mainImage, 'http://') || fn:startsWith(item.product.mainImage, 'https://')}">
@@ -466,14 +483,15 @@
                                 </c:otherwise>
                             </c:choose>
                             <div>
-                                <div><strong>${item.product.productName}</strong></div>
+                                <div style="color: #0051c6;">
+                                    <strong>${item.product.productName}</strong></div>
                                 <div>Số lượng: ${item.quantity}</div>
                                 <div>
                                     Giá:
                                     <fmt:formatNumber value="${item.price}" type="number"/> đ
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </c:forEach>
                     <hr>
                     <div class="row">
@@ -688,6 +706,7 @@
         );
         modal.show();
     }
+
     function openReceiveModal(orderId) {
         document.getElementById("receiveOrderId").value = orderId;
         const modal = new bootstrap.Modal(
@@ -778,7 +797,7 @@
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const hasOrderDetail = ${ selectedOrder != null};
+        const hasOrderDetail = ${ selectedOrder != null };
         const activeTab = "${activeTab}";
         const urlParams = new URLSearchParams(window.location.search);
         const tabParam = urlParams.get('tab');
@@ -836,7 +855,7 @@
     });
 </script>
 <script>
-    document.getElementById("newPassword").addEventListener("input", function() {
+    document.getElementById("newPassword").addEventListener("input", function () {
         const val = this.value;
         const feedback = document.getElementById("newPasswordFeedback");
         if (!val) {
@@ -961,6 +980,7 @@
             window.history.replaceState({}, document.title, cleanUrl);
         }
     });
+
     function showNotification(message, type = 'success') {
         const oldNotification = document.querySelector('.custom-notification');
         if (oldNotification) {
@@ -1150,6 +1170,7 @@
         }
         document.getElementById("editPopup").classList.remove("hidden");
     }
+
     editProvinceSelect.addEventListener("change", function () {
         const selectedOption = this.options[this.selectedIndex];
         const code = selectedOption.dataset.code;
@@ -1406,4 +1427,5 @@
     }
 </script>
 </body>
+
 </html>

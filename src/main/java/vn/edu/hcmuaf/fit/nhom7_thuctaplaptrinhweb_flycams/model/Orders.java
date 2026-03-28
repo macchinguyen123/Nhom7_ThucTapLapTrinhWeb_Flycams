@@ -16,6 +16,15 @@ public class Orders implements Serializable {
     private String paymentMethod;
     private Timestamp completedAt;
     private String note;
+    private Double shippingFee;
+
+    public Double getShippingFee() {
+        return shippingFee;
+    }
+
+    public void setShippingFee(Double shippingFee) {
+        this.shippingFee = shippingFee;
+    }
 
     public enum Status {
         PENDING("Xác nhận"),
@@ -37,7 +46,8 @@ public class Orders implements Serializable {
         }
 
         public static Status fromDB(String dbValue) {
-            if (dbValue == null) return null;
+            if (dbValue == null)
+                return null;
 
             return switch (dbValue) {
                 case "Xác nhận" -> PENDING;
@@ -51,7 +61,6 @@ public class Orders implements Serializable {
             };
         }
     }
-
 
     // getter/setter
     public int getId() {
@@ -172,7 +181,7 @@ public class Orders implements Serializable {
         this.note = note;
     }
 
-    //thêm danh sách sản phẩm
+    // thêm danh sách sản phẩm
     private List<OrderItems> items;
 
     public List<OrderItems> getItems() {
@@ -183,7 +192,7 @@ public class Orders implements Serializable {
         this.items = items;
     }
 
-    //thêm để hiển thị (không map DB)
+    // thêm để hiển thị (không map DB)
     private String fullAddress;
 
     public String getFullAddress() {

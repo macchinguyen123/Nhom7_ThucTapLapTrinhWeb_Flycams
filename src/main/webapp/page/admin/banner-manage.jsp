@@ -4,6 +4,7 @@
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,6 +35,7 @@
         }
     </style>
 </head>
+
 <body>
 <header class="main-header">
     <div class="logo">
@@ -131,14 +133,13 @@
         </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="input-group" style="max-width: 350px;">
-                                        <span class="input-group-text bg-primary text-white">
-                                            <i class="bi bi-search"></i>
-                                        </span>
+                                    <span class="input-group-text bg-primary text-white">
+                                        <i class="bi bi-search"></i>
+                                    </span>
                 <input type="search" class="form-control" id="searchBannerInput"
                        placeholder="Tìm kiếm banner...">
             </div>
-            <button class="btn btn-success" data-bs-toggle="modal"
-                    data-bs-target="#addBannerModal">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBannerModal">
                 <i class="bi bi-plus-lg"></i> Thêm Banner
             </button>
         </div>
@@ -235,7 +236,8 @@
 <div class="modal fade" id="addBannerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form action="${pageContext.request.contextPath}/admin/banner-manage" method="post">
+            <form id="add-banner-form"
+                  action="${pageContext.request.contextPath}/admin/banner-manage" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-lg"></i> Thêm Banner</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -279,8 +281,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">Hủy
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy
                     </button>
                     <button type="submit" class="btn btn-success">Lưu</button>
                 </div>
@@ -332,8 +333,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">Hủy
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy
                     </button>
                     <button type="submit" class="btn btn-success">Lưu</button>
                 </div>
@@ -377,8 +377,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">Đóng
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng
                 </button>
             </div>
         </div>
@@ -546,6 +545,30 @@
             logoutBtn.addEventListener("click", () => logoutModal.style.display = "flex");
             cancelLogout.addEventListener("click", () => logoutModal.style.display = "none");
         }
+        const addBannerForm = document.getElementById("add-banner-form");
+        if (addBannerForm) {
+            addBannerForm.addEventListener("submit", function (e) {
+                const type = document.getElementById("add-type").value;
+                const image = document.getElementById("add-image-input").value.trim();
+                const video = document.getElementById("add-video-input").value.trim();
+                const link = addBannerForm.querySelector("input[name='link']").value.trim();
+                if (type === "image" && !image) {
+                    e.preventDefault();
+                    Swal.fire("Lỗi", "Vui lòng nhập link ảnh banner", "error");
+                    return;
+                }
+                if (type === "video" && !video) {
+                    e.preventDefault();
+                    Swal.fire("Lỗi", "Vui lòng nhập link video banner", "error");
+                    return;
+                }
+                if (!link) {
+                    e.preventDefault();
+                    Swal.fire("Lỗi", "Vui lòng nhập link điều hướng", "error");
+                    return;
+                }
+            });
+        }
     });
     document.addEventListener("DOMContentLoaded", function () {
         const menuItems = document.querySelectorAll(".has-submenu .menu-item");
@@ -566,4 +589,5 @@
     }, 3000);
 </script>
 </body>
+
 </html>

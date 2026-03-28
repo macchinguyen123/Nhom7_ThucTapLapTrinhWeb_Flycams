@@ -5,6 +5,7 @@
 <jsp:useBean id="now" class="java.util.Date"/>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Trang Quản Lý Khuyến Mãi - SkyDrone</title>
@@ -21,6 +22,7 @@
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/stylesheets/admin/promotion-manage.css">
 </head>
+
 <body>
 <header class="main-header">
     <div class="logo">
@@ -28,7 +30,8 @@
         <h2>SkyDrone Admin</h2>
     </div>
     <div class="header-right">
-        <a href="${pageContext.request.contextPath}/admin/profile" class="text-decoration-none text-white">
+        <a href="${pageContext.request.contextPath}/admin/profile"
+           class="text-decoration-none text-white">
             <div class="thong-tin-admin d-flex align-items-center gap-2">
                 <i class="bi bi-person-circle fs-4"></i>
                 <span class="fw-semibold">${sessionScope.user.fullName}</span>
@@ -164,7 +167,8 @@
                                 ${p.discountValue}%
                             </c:when>
                             <c:when test="${p.discountType eq 'fixed'}">
-                                <fmt:formatNumber value="${p.discountValue}" type="number"/>₫
+                                <fmt:formatNumber value="${p.discountValue}"
+                                                  pattern="#,##0 VNĐ"/>
                             </c:when>
                             <c:otherwise>
                                 Không xác định
@@ -254,8 +258,8 @@
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                                         <span class="input-group-text"><i
-                                                                 class="bi bi-search"></i></span>
+                                                        <span class="input-group-text"><i
+                                                                class="bi bi-search"></i></span>
                                     <input type="text" id="add-category-search" class="form-control"
                                            placeholder="Tìm kiếm danh mục...">
                                 </div>
@@ -327,8 +331,8 @@
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                                         <span class="input-group-text"><i
-                                                                 class="bi bi-search"></i></span>
+                                                        <span class="input-group-text"><i
+                                                                class="bi bi-search"></i></span>
                                     <input type="text" id="add-product-search" class="form-control"
                                            placeholder="Tìm kiếm sản phẩm...">
                                 </div>
@@ -374,7 +378,7 @@
                                                 <div class="product-id">ID: ${product.id}</div>
                                                 <div class="product-price">
                                                     <fmt:formatNumber value="${product.price}"
-                                                                      type="number"/>₫
+                                                                      pattern="#,##0 VNĐ"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -459,8 +463,8 @@
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                                         <span class="input-group-text"><i
-                                                                 class="bi bi-search"></i></span>
+                                                        <span class="input-group-text"><i
+                                                                class="bi bi-search"></i></span>
                                     <input type="text" id="edit-category-search"
                                            class="form-control" placeholder="Tìm kiếm danh mục...">
                                 </div>
@@ -532,8 +536,8 @@
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="input-group">
-                                                         <span class="input-group-text"><i
-                                                                 class="bi bi-search"></i></span>
+                                                        <span class="input-group-text"><i
+                                                                class="bi bi-search"></i></span>
                                     <input type="text" id="edit-product-search" class="form-control"
                                            placeholder="Tìm kiếm sản phẩm...">
                                 </div>
@@ -580,7 +584,7 @@
                                                 <div class="product-id">ID: ${product.id}</div>
                                                 <div class="product-price">
                                                     <fmt:formatNumber value="${product.price}"
-                                                                      type="number"/>₫
+                                                                      pattern="#,##0 VNĐ"/>
                                                 </div>
                                             </div>
                                         </div>
@@ -1058,4 +1062,5 @@
     });
 </script>
 </body>
+
 </html>
