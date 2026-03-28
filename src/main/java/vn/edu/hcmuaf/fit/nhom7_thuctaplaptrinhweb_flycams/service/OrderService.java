@@ -127,6 +127,10 @@ public class OrderService {
         return ordersDAO.returnOrder(orderId, userId);
     }
 
+    // Hoàn tác trả đơn hàng
+    public boolean undoReturnOrder(int orderId, int userId) {
+        return ordersDAO.undoReturnOrder(orderId, userId);
+    }
     // Xác nhận đã nhận hàng
     public boolean receiveOrder(int orderId, int userId) {
         return ordersDAO.receiveOrder(orderId, userId);

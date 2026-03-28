@@ -1,6 +1,6 @@
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,13 +29,17 @@
                     <label><input type="radio" name="chon-gia" value="tat-ca" <c:if
                             test="${param['chon-gia']=='tat-ca'}">checked</c:if>> Tất cả</label>
                     <label><input type="radio" name="chon-gia" value="duoi-5000000" <c:if
-                            test="${param['chon-gia']=='duoi-5000000'}">checked</c:if>> Dưới 5.000.000 ₫</label>
+                            test="${param['chon-gia']=='duoi-5000000'}">checked</c:if>> Dưới 5.000.000
+                        ₫</label>
                     <label><input type="radio" name="chon-gia" value="5-10" <c:if
-                            test="${param['chon-gia']=='5-10'}">checked</c:if>> 5.000.000 ₫ - 10.000.000 ₫</label>
+                            test="${param['chon-gia']=='5-10'}">checked</c:if>> 5.000.000 ₫ - 10.000.000
+                        ₫</label>
                     <label><input type="radio" name="chon-gia" value="10-20" <c:if
-                            test="${param['chon-gia']=='10-20'}">checked</c:if>> 10.000.000 ₫ - 20.000.000 ₫</label>
+                            test="${param['chon-gia']=='10-20'}">checked</c:if>> 10.000.000 ₫ -
+                        20.000.000 ₫</label>
                     <label><input type="radio" name="chon-gia" value="tren-20" <c:if
-                            test="${param['chon-gia']=='tren-20'}">checked</c:if>> Trên 20.000.000 ₫</label>
+                            test="${param['chon-gia']=='tren-20'}">checked</c:if>> Trên 20.000.000
+                        ₫</label>
                     <p><b>Nhập vào khoảng giá bạn muốn</b></p>
                     <div class="d-flex align-items-center gap-1">
                         <input type="number" name="gia-tu" id="gia-tu"
@@ -55,7 +59,8 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="chon-thuong-hieu"
                                        value="DJI"
-                                       <c:if test="${fn:contains(brands,'DJI')}">checked</c:if>>
+                                       <c:if test="${fn:contains(brands,'DJI')}">checked</c:if>
+                                >
                                 <label class="form-check-label">DJI</label>
                             </div>
                             <div class="form-check">
@@ -98,10 +103,12 @@
             <div class="sap-xep-theo">
                 <span>Sắp xếp theo:</span>
                 <button type="button" class="btn-sap-xep ${empty param.sort?'active':''}"
-                        onclick="submitSort('')">Nổi bật
+                        onclick="submitSort('')">Nổi
+                    bật
                 </button>
                 <button type="button" class="btn-sap-xep ${param.sort=='asc'?'active':''}"
-                        onclick="submitSort('asc')">Giá Thấp → Cao
+                        onclick="submitSort('asc')">
+                    Giá Thấp → Cao
                 </button>
                 <button type="button" class="btn-sap-xep ${param.sort=='desc'?'active':''}"
                         onclick="submitSort('desc')">Giá Cao → Thấp
@@ -128,7 +135,6 @@
                     <h3 class="ten-san-pham">${p.productName}</h3>
                     <div class="gia">
                         <b>${formatter.format(p.finalPrice)} ₫</b>
-
                         <c:if test="${p.price > p.finalPrice}">
                                             <span class="gia-goc">
                                                 ${formatter.format(p.price)} ₫
@@ -168,7 +174,8 @@
                     <input type="hidden" name="productId" value="${p.id}">
                     <input type="hidden" name="quantity" value="1">
                     <button type="submit" class="nut-mua-ngay">
-                        <i class="bi bi-cart-plus"></i>Thêm vào giỏ
+                        <i class="bi bi-cart-plus"></i>
+                        Thêm vào giỏ
                     </button>
                 </form>
             </div>
@@ -236,7 +243,7 @@
         });
     });
     const sanPhams = document.querySelectorAll('.san-pham');
-    const spMoiTrang = 20; // số sản phẩm mỗi trang
+    const spMoiTrang = 20;
     let trangHienTai = 1;
     const tongTrang = Math.ceil(sanPhams.length / spMoiTrang);
     const spanTrang = document.getElementById('trang-hien-tai');
@@ -246,11 +253,12 @@
     function hienThiTrang(trang) {
         sanPhams.forEach((sp, index) => {
             if (index >= (trang - 1) * spMoiTrang && index < trang * spMoiTrang) {
-                sp.style.display = ''; // giữ nguyên layout gốc (grid/flex)
+                sp.style.display = '';
                 sp.style.visibility = 'visible';
             } else {
-                sp.style.display = 'none'; // ẩn hẳn phần tử ngoài trang hiện tại
+                sp.style.display = 'none';
             }
+
         });
         spanTrang.textContent = trang;
     }
@@ -261,6 +269,7 @@
             hienThiTrang(trangHienTai);
         }
     });
+
     document.querySelector('.nut-sau').addEventListener('click', () => {
         if (trangHienTai < tongTrang) {
             trangHienTai++;
@@ -274,10 +283,12 @@
     const btnApDung = document.getElementById('btn-ap-dung-gia');
     const inputTu = document.getElementById('gia-tu');
     const inputDen = document.getElementById('gia-den');
+
     // Toggle cửa sổ khi nhấn nút "Bộ lọc"
     nutBoLoc.addEventListener('click', () => {
         hopLoc.classList.toggle('hien');
     });
+
     // Ẩn khi click ra ngoài
     document.addEventListener('click', (e) => {
         if (!hopLoc.contains(e.target) && !nutBoLoc.contains(e.target)) {
@@ -297,6 +308,38 @@
     document.querySelector('.nut-bo-loc').addEventListener('click', function () {
         document.getElementById('hop-loc').classList.toggle('show');
     });
+</script>
+<script>
+    const btnDanhMuc = document.getElementById('btnDanhMuc');
+    const menuLeft = document.getElementById('menuLeft');
+    btnDanhMuc.addEventListener('click', () => {
+        menuLeft.classList.toggle('show');
+    });
+    document.addEventListener('click', (e) => {
+        if (!menuLeft.contains(e.target) && !btnDanhMuc.contains(e.target)) {
+            menuLeft.classList.remove('show');
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.nut-mua-ngay').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const form = btn.closest('form');
+                const productId = form.querySelector('input[name="productId"]').value;
+                const quantity = form.querySelector('input[name="quantity"]').value;
+                const productCard = btn.closest('.san-pham');
+                const productImg = productCard.querySelector('.khung-anh img');
+                if (typeof globallyHandleAddToCart === 'function') {
+                    globallyHandleAddToCart(productId, quantity, productImg, btn);
+                } else {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
 </script>
 </body>
 </html>

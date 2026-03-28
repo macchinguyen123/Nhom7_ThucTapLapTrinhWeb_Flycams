@@ -306,6 +306,20 @@ public class OrdersDAO {
         }
         return false;
     }
+    public boolean undoReturnOrder(int orderId, int userId) {
+        String sql = """
+UPDATE orders SET status = 'Hoàn thành' WHERE id = ? AND user_id = ? AND status = 'Yêu cầu trả hàng'
+    """;
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     public boolean receiveOrder(int orderId, int userId) {
         String sql = """
