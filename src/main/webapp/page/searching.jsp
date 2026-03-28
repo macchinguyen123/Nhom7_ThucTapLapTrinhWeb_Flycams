@@ -206,6 +206,11 @@
             </div>
         </c:forEach>
     </div>
+    <div class="phan-trang text-center mt-4">
+        <button class="btn btn-outline-primary nut-truoc">« Trang trước</button>
+        <span class="so-trang-hien-tai mx-3">Trang <span id="trang-hien-tai">1</span> / <span id="tong-trang"></span></span>
+        <button class="btn btn-outline-primary nut-sau">Trang sau »</button>
+    </div>
 </section>
 <jsp:include page="/page/footer.jsp"/>
 <script>
@@ -491,6 +496,42 @@
             });
         });
     });
+</script>
+<script>
+    const sanPhams = document.querySelectorAll('.san-pham');
+    const spMoiTrang = 20;
+    let trangHienTai = 1;
+    const tongTrang = Math.ceil(sanPhams.length / spMoiTrang);
+    const spanTrang = document.getElementById('trang-hien-tai');
+    const spanTongTrang = document.getElementById('tong-trang');
+    spanTongTrang.textContent = tongTrang;
+
+    function hienThiTrang(trang) {
+        sanPhams.forEach((sp, index) => {
+            if (index >= (trang - 1) * spMoiTrang && index < trang * spMoiTrang) {
+                sp.style.display = '';
+                sp.style.visibility = 'visible';
+            } else {
+                sp.style.display = 'none';
+            }
+        });
+        spanTrang.textContent = trang;
+    }
+
+    document.querySelector('.nut-truoc').addEventListener('click', () => {
+        if (trangHienTai > 1) {
+            trangHienTai--;
+            hienThiTrang(trangHienTai);
+        }
+    });
+    document.querySelector('.nut-sau').addEventListener('click', () => {
+        if (trangHienTai < tongTrang) {
+            trangHienTai++;
+            hienThiTrang(trangHienTai);
+        }
+    });
+
+    hienThiTrang(trangHienTai);
 </script>
 </body>
 </html>

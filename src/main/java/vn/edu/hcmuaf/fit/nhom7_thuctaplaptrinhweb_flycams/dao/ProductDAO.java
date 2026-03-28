@@ -270,9 +270,11 @@ public class ProductDAO {
     public List<Map<String, Object>> getProductSuggestions(String keyword) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = """
-                    SELECT id, productName
-                    FROM products
-                    WHERE LOWER(productName) LIKE LOWER(?)
+                    SELECT p.id, p.productName, i.imageUrl
+                    FROM products p
+                    LEFT JOIN images i
+                        ON p.id = i.product_id AND i.imageType = 'Chính'
+                    WHERE LOWER(p.productName) LIKE LOWER(?)
                     LIMIT 8
                 """;
         try (Connection conn = DBConnection.getConnection();
@@ -283,6 +285,7 @@ public class ProductDAO {
                 Map<String, Object> m = new HashMap<>();
                 m.put("id", rs.getInt("id"));
                 m.put("name", rs.getString("productName"));
+                m.put("image", rs.getString("imageUrl"));
                 list.add(m);
             }
         } catch (Exception e) {
