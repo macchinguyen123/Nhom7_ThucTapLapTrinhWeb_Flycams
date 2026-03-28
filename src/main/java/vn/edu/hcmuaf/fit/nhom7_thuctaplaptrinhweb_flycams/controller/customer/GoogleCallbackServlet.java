@@ -59,10 +59,13 @@ public class GoogleCallbackServlet extends HttpServlet {
             UserDAO userDAO = new UserDAO();
             User user = userDAO.findByEmail(email);
             if (user == null) {
-                request.getSession().setAttribute("error",
-                        "Email Google này chưa được đăng ký trong hệ thống");
-                response.sendRedirect(request.getContextPath() + "/Login");
-                return;
+                String name = (String) userInfo.get("name");
+                user = new User();
+                user.setEmail(email);
+                user.setFullName(name != null ? name : "Người dùng Google");
+                user.setRoleId(2);
+                userDAO.insertGoogleUser(user);
+                user = userDAO.findByEmail(email);
             }
             if (!user.isStatus()) {
                 String reason = user.getLockReason() != null ? user.getLockReason() : "Vi phạm chính sách.";

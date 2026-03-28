@@ -24,11 +24,31 @@ public class Login extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String input = request.getParameter("loginInput");
         String password = request.getParameter("password");
+        boolean isPossibleEmail = input.contains("@");
+        boolean isPossiblePhone = input.matches("\\d+");
+
+        if (isPossibleEmail) {
+            if (!vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.validate.Validator.isValidEmail(input)) {
+                request.setAttribute("error", "Email không đúng định dạng. Vui lòng kiểm tra lại.");
+                request.getRequestDispatcher("/page/login.jsp").forward(request, response);
+                return;
+            }
+        } else if (isPossiblePhone) {
+            if (!vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.validate.Validator.isValidPhoneNumber(input)) {
+                request.setAttribute("error", "Số điện thoại không đúng định dạng. Vui lòng kiểm tra lại.");
+                request.getRequestDispatcher("/page/login.jsp").forward(request, response);
+                return;
+            }
+        } else {
+            request.setAttribute("error", "Vui lòng nhập đúng định dạng Email hoặc Số điện thoại.");
+            request.getRequestDispatcher("/page/login.jsp").forward(request, response);
+            return;
+        }
+
         AuthService authService = new AuthService();
         User user = authService.login(input, password);
         if (user == null) {
-            String msg = "<b>Số điện thoại hoặc mật khẩu không hợp lệ</b>" +
-                    "<div class='sub-msg'>Vui lòng nhập lại</div>";
+            String msg = "Thông tin đăng nhập chưa hợp lệ";
             request.setAttribute("error", msg);
             request.getRequestDispatcher("/page/login.jsp").forward(request, response);
             return;
