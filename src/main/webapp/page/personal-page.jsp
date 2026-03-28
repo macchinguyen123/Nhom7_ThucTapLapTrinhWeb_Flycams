@@ -82,7 +82,7 @@
                     <div class="form-group">
                         <label for="phoneNumber">Số điện thoại</label>
                         <input type="text" name="phoneNumber" id="phoneNumber"
-                               value="${user.phoneNumber}" required>
+                               value="${user.phoneNumber}" required pattern="[0-9]{10}" title="Số điện thoại phải bao gồm đúng 10 chữ số">
                     </div>
                 </div>
                 <div class="form-row">
@@ -122,6 +122,7 @@
                 <div class="form-group">
                     <label for="newPassword">Mật khẩu mới</label>
                     <input type="password" name="password" id="newPassword" required>
+                    <div id="newPasswordFeedback" style="font-size: 0.85rem; margin-top: 5px; display: none;"></div>
                     <c:if test="${not empty passwordError}">
                         <span class="error">${passwordError}</span>
                     </c:if>
@@ -160,13 +161,13 @@
             <div id="order-list" class="order-table"
                  style="display: ${not empty selectedOrder ? 'none' : 'block'}">
                 <div class="order-tabs">
-                    <button class="order-tab active" data-status="PENDING">Chờ xác nhận</button>
-                    <button class="order-tab" data-status="PROCESSING">Đang xử lý</button>
-                    <button class="order-tab" data-status="OUT_FOR_DELIVERY">Đang giao</button>
-                    <button class="order-tab" data-status="DELIVERED">Hoàn thành</button>
-                    <button class="order-tab" data-status="CANCELLED">Hủy</button>
-                    <button class="order-tab" data-status="RETURN_REQUESTED">Yêu cầu trả hàng</button>
-                    <button class="order-tab" data-status="RETURNED">Đã trả hàng</button>
+                    <button class="order-tab active" data-status="PENDING"><i class="bi bi-hourglass-split me-1"></i> Chờ xác nhận</button>
+                    <button class="order-tab" data-status="PROCESSING"><i class="bi bi-box-seam me-1"></i> Đang xử lý</button>
+                    <button class="order-tab" data-status="OUT_FOR_DELIVERY"><i class="bi bi-truck me-1"></i> Đang giao</button>
+                    <button class="order-tab" data-status="DELIVERED"><i class="bi bi-check-circle me-1"></i> Hoàn thành</button>
+                    <button class="order-tab" data-status="CANCELLED"><i class="bi bi-x-circle me-1"></i> Hủy</button>
+                    <button class="order-tab" data-status="RETURN_REQUESTED"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</button>
+                    <button class="order-tab" data-status="RETURNED"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</button>
                 </div>
                 <h3>Hóa đơn gần đây</h3>
                 <table>
@@ -194,25 +195,25 @@
                             <td class="status-col" data-status="${o.status.name()}">
                                 <c:choose>
                                     <c:when test="${o.status.name() eq 'PENDING'}">
-                                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Chờ xác nhận</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'PROCESSING'}">
-                                        <span class="badge bg-primary">Đang xử lý</span>
+                                        <span class="badge bg-primary"><i class="bi bi-box-seam me-1"></i> Đang xử lý</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'OUT_FOR_DELIVERY'}">
-                                        <span class="badge bg-info text-dark">Đang giao</span>
+                                        <span class="badge bg-info text-dark"><i class="bi bi-truck me-1"></i> Đang giao</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'DELIVERED'}">
-                                        <span class="badge bg-success">Hoàn thành</span>
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Hoàn thành</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'CANCELLED'}">
-                                        <span class="badge bg-danger">Đã huỷ</span>
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Đã huỷ</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURN_REQUESTED'}">
-                                        <span class="badge bg-info text-dark">Yêu cầu trả hàng</span>
+                                        <span class="badge bg-info text-dark"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURNED'}">
-                                        <span class="badge bg-secondary">Đã trả hàng</span>
+                                        <span class="badge bg-secondary"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</span>
                                     </c:when>
                                 </c:choose>
                             </td>
@@ -241,6 +242,12 @@
                                     <button type="button" class="btn btn-warning btn-sm"
                                             onclick="openReturnModal(${o.id})">
                                         <i class="bi bi-arrow-return-left"></i> Trả hàng
+                                    </button>
+                                </c:if>
+                                <c:if test="${o.status.name() eq 'RETURN_REQUESTED'}">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                            onclick="openUndoReturnModal(${o.id})">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Hoàn tác
                                     </button>
                                 </c:if>
                                 <c:if test="${o.status.name() eq 'OUT_FOR_DELIVERY'}">
@@ -330,6 +337,42 @@
                                 <button type="submit" class="btn btn-warning">
                                     <i class="bi bi-check-circle-fill me-1"></i>
                                     Yêu cầu trả hàng
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal fade" id="undoReturnModal" tabindex="-1"
+                 aria-labelledby="undoReturnModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form method="post" action="${pageContext.request.contextPath}/personal">
+                        <div class="modal-content">
+                            <div class="modal-header bg-secondary text-white">
+                                <h5 class="modal-title" id="undoReturnModalLabel">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>
+                                    Hoàn tác yêu cầu trả hàng
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="action" value="undoReturnOrder">
+                                <input type="hidden" name="orderId" id="undoReturnOrderId">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    Bạn có chắc chắn muốn hoàn tác yêu cầu trả hàng? Đơn hàng sẽ trở lại trạng thái "Hoàn thành".
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light"
+                                        data-bs-dismiss="modal">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Đóng
+                                </button>
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                    Xác nhận hoàn tác
                                 </button>
                             </div>
                         </div>
@@ -474,7 +517,7 @@
                                     </div>
                                     <div class="address-item__actions">
                                         <button
-                                                onclick="openEditPopup(${addr.id}, '${addr.fullName}', '${addr.phoneNumber}', '${addr.addressLine}', '${addr.province}', '${addr.district}', ${addr.defaultAddress})"
+                                                onclick="openEditPopup(${addr.id}, '${addr.fullName}', '${addr.phoneNumber}', '${addr.addressLine}', '${addr.province}', '${addr.district}', '${addr.ward}', ${addr.defaultAddress})"
                                                 class="btn btn-sm btn-primary">Sửa
                                         </button>
                                         <a href="${pageContext.request.contextPath}/DeleteAddressServlet?id=${addr.id}"
@@ -507,7 +550,7 @@
                         </div>
                         <div class="form-group">
                             <label for="phoneNumber">Số điện thoại</label>
-                            <input type="text" name="phoneNumber" id="phoneNumber" required>
+                            <input type="text" name="phoneNumber" id="phoneNumber" required pattern="[0-9]{10}" title="Số điện thoại phải bao gồm đúng 10 chữ số">
                         </div>
                         <div class="form-group">
                             <label for="addressLine">Địa chỉ</label>
@@ -521,8 +564,15 @@
                             <input type="hidden" name="provinceCode" id="provinceCodeInput">
                         </div>
                         <div class="form-group">
+                            <label for="district">Quận/Huyện</label>
+                            <select name="district" id="district" required disabled>
+                                <option value="">-- Chọn Quận/Huyện --</option>
+                            </select>
+                            <input type="hidden" name="districtCode" id="districtCodeInput">
+                        </div>
+                        <div class="form-group">
                             <label for="ward">Phường/Xã</label>
-                            <select name="district" id="ward" required disabled>
+                            <select name="ward" id="ward" required disabled>
                                 <option value="">-- Chọn Phường/Xã --</option>
                             </select>
                             <input type="hidden" name="wardCode" id="wardCodeInput">
@@ -548,7 +598,7 @@
                         </div>
                         <div class="form-group">
                             <label for="editPhoneNumber">Số điện thoại</label>
-                            <input type="text" name="phoneNumber" id="editPhoneNumber" required>
+                            <input type="text" name="phoneNumber" id="editPhoneNumber" required pattern="[0-9]{10}" title="Số điện thoại phải bao gồm đúng 10 chữ số">
                         </div>
                         <div class="form-group">
                             <label for="editAddressLine">Địa chỉ</label>
@@ -562,8 +612,15 @@
                             <input type="hidden" name="provinceCode" id="editProvinceCodeInput">
                         </div>
                         <div class="form-group">
+                            <label for="editDistrict">Quận/Huyện</label>
+                            <select name="district" id="editDistrict" required disabled>
+                                <option value="">-- Chọn Quận/Huyện --</option>
+                            </select>
+                            <input type="hidden" name="districtCode" id="editDistrictCodeInput">
+                        </div>
+                        <div class="form-group">
                             <label for="editWard">Phường/Xã</label>
-                            <select name="district" id="editWard" required disabled>
+                            <select name="ward" id="editWard" required disabled>
                                 <option value="">-- Chọn Phường/Xã --</option>
                             </select>
                             <input type="hidden" name="wardCode" id="editWardCodeInput">
@@ -624,6 +681,13 @@
         modal.show();
     }
 
+    function openUndoReturnModal(orderId) {
+        document.getElementById("undoReturnOrderId").value = orderId;
+        const modal = new bootstrap.Modal(
+            document.getElementById("undoReturnModal")
+        );
+        modal.show();
+    }
     function openReceiveModal(orderId) {
         document.getElementById("receiveOrderId").value = orderId;
         const modal = new bootstrap.Modal(
@@ -772,6 +836,28 @@
     });
 </script>
 <script>
+    document.getElementById("newPassword").addEventListener("input", function() {
+        const val = this.value;
+        const feedback = document.getElementById("newPasswordFeedback");
+        if (!val) {
+            feedback.style.display = 'none';
+            return;
+        }
+        feedback.style.display = 'block';
+        let errors = [];
+        if (val.length < 8) errors.push("ít nhất 8 ký tự");
+        if (!/[A-Z]/.test(val)) errors.push("1 chữ hoa");
+        if (!/[a-z]/.test(val)) errors.push("1 chữ thường");
+        if (!/\d/.test(val)) errors.push("1 số");
+        if (!/[\W_]/.test(val)) errors.push("1 ký tự đặc biệt");
+        if (errors.length > 0) {
+            feedback.style.color = '#dc3545';
+            feedback.innerHTML = "Mật khẩu yếu: " + errors.join(", ");
+        } else {
+            feedback.style.color = '#28a745';
+            feedback.innerHTML = "Mật khẩu hợp lệ!";
+        }
+    });
     document.getElementById("sendOtpBtn").addEventListener("click", function () {
         const currentPass = document.getElementById("currentPassword").value;
         const newPass = document.getElementById("newPassword").value;
@@ -809,16 +895,23 @@
             return;
         }
         const formData = new FormData();
-        document.querySelector(".otp-group").style.display = "block";
-        document.getElementById("sendOtpBtn").style.display = "none";
-        document.getElementById("confirmChangeBtn").style.display = "inline-block";
+        formData.append("currentPassword", currentPass);
+        const sendOtpBtn = document.getElementById("sendOtpBtn");
+        const originalText = sendOtpBtn.innerText;
+        sendOtpBtn.innerText = "Đang kiểm tra...";
+        sendOtpBtn.disabled = true;
         fetch("${pageContext.request.contextPath}/SendOtpChangePassword", {
             method: "POST",
             body: new URLSearchParams(formData)
         })
             .then(res => res.json())
             .then(data => {
+                sendOtpBtn.innerText = originalText;
+                sendOtpBtn.disabled = false;
                 if (data.status === "ok") {
+                    document.querySelector(".otp-group").style.display = "block";
+                    document.getElementById("sendOtpBtn").style.display = "none";
+                    document.getElementById("confirmChangeBtn").style.display = "inline-block";
                     const Toast = Swal.mixin({
                         toast: true,
                         position: 'top-end',
@@ -842,6 +935,8 @@
                 }
             })
             .catch(error => {
+                sendOtpBtn.innerText = originalText;
+                sendOtpBtn.disabled = false;
                 document.querySelector(".otp-group").style.display = "none";
                 document.getElementById("sendOtpBtn").style.display = "inline-block";
                 document.getElementById("confirmChangeBtn").style.display = "none";
@@ -965,15 +1060,17 @@
             }
         });
     });
-    function openEditPopup(id, fullName, phoneNumber, addressLine, province, district, isDefault) {
+    const editProvinceSelect = document.getElementById("editProvince");
+    const editDistrictSelect = document.getElementById("editDistrict");
+    const editWardSelect = document.getElementById("editWard");
+    function openEditPopup(id, fullName, phoneNumber, addressLine, province, district, ward, isDefault) {
         document.getElementById("editId").value = id;
         document.getElementById("editFullName").value = fullName;
         document.getElementById("editPhoneNumber").value = phoneNumber;
         document.getElementById("editAddressLine").value = addressLine;
         document.getElementById("editIsDefault").checked = isDefault;
         if (editProvinceSelect.options.length <= 1) {
-            console.log("Loading provinces for edit...");
-            fetch(API_BASE)
+            fetch(API_BASE + "/")
                 .then(res => res.json())
                 .then(provinces => {
                     editProvinceSelect.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố --</option>';
@@ -982,12 +1079,10 @@
                         opt.value = p.name;
                         opt.textContent = p.name;
                         opt.dataset.code = p.code;
-                        if (p.name === province) {
-                            opt.selected = true;
-                        }
+                        if (p.name === province) opt.selected = true;
                         editProvinceSelect.appendChild(opt);
                     });
-                    console.log("Loaded provinces, now loading wards...");
+
                     const selectedProvince = editProvinceSelect.options[editProvinceSelect.selectedIndex];
                     if (selectedProvince && selectedProvince.dataset.code) {
                         const code = selectedProvince.dataset.code;
@@ -995,41 +1090,123 @@
                         fetch(API_BASE + "/p/" + code + "?depth=2")
                             .then(res => res.json())
                             .then(data => {
-                                if (data.wards && data.wards.length > 0) {
-                                    editWardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
-                                    data.wards.forEach(w => {
-                                        const wardOpt = document.createElement("option");
-                                        wardOpt.value = w.name;
-                                        wardOpt.textContent = w.name;
-                                        wardOpt.dataset.code = w.code;
-                                        if (w.name === district) {
-                                            wardOpt.selected = true;
-                                            document.getElementById("editWardCodeInput").value = w.code;
+                                if (data.districts && data.districts.length > 0) {
+                                    editDistrictSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+                                    data.districts.forEach(d => {
+                                        const distOpt = document.createElement("option");
+                                        distOpt.value = d.name;
+                                        distOpt.textContent = d.name;
+                                        distOpt.dataset.code = d.code;
+                                        if (d.name === district) {
+                                            distOpt.selected = true;
+                                            document.getElementById("editDistrictCodeInput").value = d.code;
                                         }
-                                        editWardSelect.appendChild(wardOpt);
+                                        editDistrictSelect.appendChild(distOpt);
                                     });
-                                    editWardSelect.disabled = false;
-                                    console.log("Loaded wards for edit");
+                                    editDistrictSelect.disabled = false;
+                                    const selectedDist = editDistrictSelect.options[editDistrictSelect.selectedIndex];
+                                    if (selectedDist && selectedDist.dataset.code) {
+                                        fetch(API_BASE + "/d/" + selectedDist.dataset.code + "?depth=2")
+                                            .then(res => res.json())
+                                            .then(dData => {
+                                                if (dData.wards && dData.wards.length > 0) {
+                                                    editWardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                                                    dData.wards.forEach(w => {
+                                                        const wardOpt = document.createElement("option");
+                                                        wardOpt.value = w.name;
+                                                        wardOpt.textContent = w.name;
+                                                        wardOpt.dataset.code = w.code;
+                                                        if (w.name === ward) {
+                                                            wardOpt.selected = true;
+                                                            document.getElementById("editWardCodeInput").value = w.code;
+                                                        }
+                                                        editWardSelect.appendChild(wardOpt);
+                                                    });
+                                                    editWardSelect.disabled = false;
+                                                }
+                                            })
+                                            .catch(err => console.error(err));
+                                    }
                                 }
-                            });
+                            })
+                            .catch(err => console.error(err));
                     }
                 })
-                .catch(err => {
-                    console.error("Error loading provinces:", err);
-                });
+                .catch(err => console.error(err));
         } else {
             editProvinceSelect.value = province;
             editProvinceSelect.dispatchEvent(new Event('change'));
             setTimeout(() => {
-                editWardSelect.value = district;
-                const selectedWard = editWardSelect.options[editWardSelect.selectedIndex];
-                if (selectedWard && selectedWard.dataset.code) {
-                    document.getElementById("editWardCodeInput").value = selectedWard.dataset.code;
-                }
+                editDistrictSelect.value = district;
+                editDistrictSelect.dispatchEvent(new Event('change'));
+                setTimeout(() => {
+                    editWardSelect.value = ward;
+                    const selectedWard = editWardSelect.options[editWardSelect.selectedIndex];
+                    if (selectedWard && selectedWard.dataset.code) {
+                        document.getElementById("editWardCodeInput").value = selectedWard.dataset.code;
+                    }
+                }, 500);
             }, 500);
         }
         document.getElementById("editPopup").classList.remove("hidden");
     }
+    editProvinceSelect.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const code = selectedOption.dataset.code;
+        document.getElementById("editProvinceCodeInput").value = code || '';
+        editDistrictSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+        editDistrictSelect.disabled = true;
+        editWardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+        editWardSelect.disabled = true;
+        document.getElementById("editDistrictCodeInput").value = '';
+        document.getElementById("editWardCodeInput").value = '';
+        if (!code) return;
+        fetch(API_BASE + "/p/" + code + "?depth=2")
+            .then(res => res.json())
+            .then(data => {
+                if (data.districts && data.districts.length > 0) {
+                    data.districts.forEach(d => {
+                        const opt = document.createElement("option");
+                        opt.value = d.name;
+                        opt.textContent = d.name;
+                        opt.dataset.code = d.code;
+                        editDistrictSelect.appendChild(opt);
+                    });
+                    editDistrictSelect.disabled = false;
+                }
+            })
+            .catch(err => console.error(err));
+    });
+
+    editDistrictSelect.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const code = selectedOption.dataset.code;
+        document.getElementById("editDistrictCodeInput").value = code || '';
+        editWardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+        editWardSelect.disabled = true;
+        document.getElementById("editWardCodeInput").value = '';
+        if (!code) return;
+        fetch(API_BASE + "/d/" + code + "?depth=2")
+            .then(res => res.json())
+            .then(data => {
+                if (data.wards && data.wards.length > 0) {
+                    data.wards.forEach(w => {
+                        const opt = document.createElement("option");
+                        opt.value = w.name;
+                        opt.textContent = w.name;
+                        opt.dataset.code = w.code;
+                        editWardSelect.appendChild(opt);
+                    });
+                    editWardSelect.disabled = false;
+                }
+            })
+            .catch(err => console.error(err));
+    });
+
+    editWardSelect.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        document.getElementById("editWardCodeInput").value = selectedOption.dataset.code || '';
+    });
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -1071,12 +1248,12 @@
 <script>
     const API_BASE = "${pageContext.request.contextPath}/api/provinces";
     const provinceSelect = document.getElementById("province");
+    const districtSelect = document.getElementById("district");
     const wardSelect = document.getElementById("ward");
-    let provincesData = []; // Lưu danh sách provinces
+    let provincesData = [];
     document.getElementById("openPopup").addEventListener("click", function () {
         if (provincesData.length === 0) {
-            console.log("Loading provinces...");
-            fetch(API_BASE)
+            fetch(API_BASE + "/")
                 .then(res => res.json())
                 .then(provinces => {
                     provincesData = provinces;
@@ -1088,24 +1265,48 @@
                         opt.dataset.code = p.code;
                         provinceSelect.appendChild(opt);
                     });
-                    console.log("Loaded " + provinces.length + " provinces");
                 })
-                .catch(err => {
-                    console.error("Error loading provinces:", err);
-                    alert("Không thể tải danh sách tỉnh/thành phố");
-                });
+                .catch(err => console.error(err));
         }
     });
     provinceSelect.addEventListener("change", function () {
         const selectedOption = this.options[this.selectedIndex];
         const code = selectedOption.dataset.code;
         document.getElementById("provinceCodeInput").value = code || '';
+        districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+        districtSelect.disabled = true;
+        wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+        wardSelect.disabled = true;
+        document.getElementById("districtCodeInput").value = '';
+        document.getElementById("wardCodeInput").value = '';
+        if (!code) return;
+        fetch(API_BASE + "/p/" + code + "?depth=2")
+            .then(res => res.json())
+            .then(data => {
+                if (data.districts && data.districts.length > 0) {
+                    data.districts.forEach(d => {
+                        const opt = document.createElement("option");
+                        opt.value = d.name;
+                        opt.textContent = d.name;
+                        opt.dataset.code = d.code;
+                        districtSelect.appendChild(opt);
+                    });
+                    districtSelect.disabled = false;
+                }
+            })
+            .catch(err => console.error(err));
+    });
+
+    districtSelect.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const code = selectedOption.dataset.code;
+        document.getElementById("districtCodeInput").value = code || '';
         wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
         wardSelect.disabled = true;
         document.getElementById("wardCodeInput").value = '';
         if (!code) return;
-        console.log("Loading wards for:", code);
-        fetch(API_BASE + "/p/" + code + "?depth=2")
+
+        fetch(API_BASE + "/d/" + code + "?depth=2")
             .then(res => res.json())
             .then(data => {
                 if (data.wards && data.wards.length > 0) {
@@ -1117,51 +1318,14 @@
                         wardSelect.appendChild(opt);
                     });
                     wardSelect.disabled = false;
-                    console.log("Loaded " + data.wards.length + " wards");
                 }
             })
-            .catch(err => {
-                console.error("Error loading wards:", err);
-                alert("Không thể tải danh sách phường/xã");
-            });
+            .catch(err => console.error(err));
     });
+
     wardSelect.addEventListener("change", function () {
         const selectedOption = this.options[this.selectedIndex];
         document.getElementById("wardCodeInput").value = selectedOption.dataset.code || '';
-    });
-    const editProvinceSelect = document.getElementById("editProvince");
-    const editWardSelect = document.getElementById("editWard");
-    editProvinceSelect.addEventListener("change", function () {
-        const selectedOption = this.options[this.selectedIndex];
-        const code = selectedOption.dataset.code;
-        document.getElementById("editProvinceCodeInput").value = code || '';
-        editWardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
-        editWardSelect.disabled = true;
-        document.getElementById("editWardCodeInput").value = '';
-        if (!code) return;
-        console.log("Loading wards for edit:", code);
-        fetch(API_BASE + "/p/" + code + "?depth=2")
-            .then(res => res.json())
-            .then(data => {
-                if (data.wards && data.wards.length > 0) {
-                    data.wards.forEach(w => {
-                        const opt = document.createElement("option");
-                        opt.value = w.name;
-                        opt.textContent = w.name;
-                        opt.dataset.code = w.code;
-                        editWardSelect.appendChild(opt);
-                    });
-                    editWardSelect.disabled = false;
-                    console.log("Loaded " + data.wards.length + " wards for edit");
-                }
-            })
-            .catch(err => {
-                console.error("Error loading wards:", err);
-            });
-    });
-    editWardSelect.addEventListener("change", function () {
-        const selectedOption = this.options[this.selectedIndex];
-        document.getElementById("editWardCodeInput").value = selectedOption.dataset.code || '';
     });
 </script>
 <script>

@@ -37,6 +37,18 @@ public class SendOtpChangePassword extends HttpServlet {
             response.getWriter().write("{\"status\":\"error\", \"message\":\"Không tìm thấy thông tin người dùng!\"}");
             return;
         }
+        String currentPassword = request.getParameter("currentPassword");
+        if (currentPassword == null || currentPassword.isEmpty()) {
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\":\"error\", \"message\":\"Vui lòng nhập mật khẩu hiện tại!\"}");
+            return;
+        }
+        User checkLogin = userDAO.login(currentUser.getEmail(), currentPassword);
+        if (checkLogin == null) {
+            response.setContentType("application/json");
+            response.getWriter().write("{\"status\":\"error\", \"message\":\"Mật khẩu hiện tại không đúng!\"}");
+            return;
+        }
         try {
             String otp = String.valueOf((int) (Math.random() * 9000) + 1000);
             session.setAttribute("otp", otp);
