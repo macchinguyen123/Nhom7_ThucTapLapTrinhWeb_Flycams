@@ -18,6 +18,11 @@ public class CustomerService {
         return userDAO.getAllCustomers();
     }
 
+    //Tìm kiếm tài khoản người dùng
+    public List<User> searchUsers(String keyword) {
+        return userDAO.searchUsers(keyword);
+    }
+
     //Lấy thông tin người dùng theo ID
     public User getUserById(int id) {
         return userDAO.findById(id);

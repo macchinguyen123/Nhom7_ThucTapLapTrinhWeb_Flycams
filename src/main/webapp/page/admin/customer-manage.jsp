@@ -167,12 +167,13 @@
                    class="btn btn-warning shadow-sm fw-semibold">
                     <i class="bi bi-card-text"></i> Danh sách khiếu nại
                 </a>
-                <form class="d-flex" role="search" style="max-width: 300px;">
+                <form action="${pageContext.request.contextPath}/admin/customer-manage" method="GET" class="d-flex"
+                      role="search" style="max-width: 300px;">
                     <div class="input-group">
-                                            <span class="input-group-text bg-primary text-white">
-                                                <i class="bi bi-search"></i>
-                                            </span>
-                        <input id="search" type="search" class="form-control"
+                        <button type="submit" class="btn input-group-text bg-primary text-white">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <input id="search" name="keyword" value="${param.keyword}" type="search" class="form-control"
                                placeholder="Tìm kiếm tài khoản..." aria-label="Tìm kiếm">
                     </div>
                 </form>
@@ -315,9 +316,10 @@
                                     <label class="form-label fw-semibold">
                                         Đổi mật khẩu mới
                                     </label>
-                                    <input type="password" class="form-control" name="newPassword"
+                                    <input type="password" id="newPassword" class="form-control" name="newPassword"
                                            placeholder="Để trống nếu không đổi mật khẩu">
-                                    <small class="text-warning">
+                                    <div id="passwordError" class="text-danger small mt-1" style="display:none;"></div>
+                                    <small class="text-warning d-block mt-1">
                                         <i class="bi bi-info-circle"></i> Khi lưu, mật khẩu mới sẽ được mã hóa tự động
                                     </small>
                                 </div>
@@ -338,14 +340,17 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Email <span
                                             class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" name="email" value="${detailUser.email}"
+                                    <input type="email" id="editEmail" class="form-control" name="email"
+                                           value="${detailUser.email}"
                                            required>
+                                    <div id="emailError" class="text-danger small mt-1" style="display:none;"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Số Điện Thoại <span
                                             class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" name="phoneNumber"
+                                    <input type="tel" id="editPhone" class="form-control" name="phoneNumber"
                                            value="${detailUser.phoneNumber}" required pattern="[0-9]{10,11}">
+                                    <div id="phoneError" class="text-danger small mt-1" style="display:none;"></div>
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label class="form-label fw-semibold">Địa chỉ</label>
@@ -699,9 +704,127 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const form = document.getElementById('editCustomerForm');
+        const newPasswordInput = document.getElementById('newPassword');
+        const passwordError = document.getElementById('passwordError');
+
+        function validatePassword() {
+            if (!newPasswordInput) return true;
+            const pwd = newPasswordInput.value;
+            if (pwd === "") {
+                if (passwordError) passwordError.style.display = "none";
+                return true;
+            }
+            if (pwd.length < 8) {
+                if (passwordError) {
+                    passwordError.textContent = "Mật khẩu ít nhất 8 ký tự";
+                    passwordError.style.display = "block";
+                }
+                return false;
+            }
+            if (!/[A-Z]/.test(pwd)) {
+                if (passwordError) {
+                    passwordError.textContent = "Mật khẩu thiếu chữ hoa";
+                    passwordError.style.display = "block";
+                }
+                return false;
+            }
+            if (!/[a-z]/.test(pwd)) {
+                if (passwordError) {
+                    passwordError.textContent = "Mật khẩu thiếu chữ thường";
+                    passwordError.style.display = "block";
+                }
+                return false;
+            }
+            if (!/[0-9]/.test(pwd)) {
+                if (passwordError) {
+                    passwordError.textContent = "Mật khẩu thiếu số";
+                    passwordError.style.display = "block";
+                }
+                return false;
+            }
+            if (!/[\W_]/.test(pwd)) {
+                if (passwordError) {
+                    passwordError.textContent = "Mật khẩu thiếu ký tự đặc biệt";
+                    passwordError.style.display = "block";
+                }
+                return false;
+            }
+            if (passwordError) passwordError.style.display = "none";
+            return true;
+        }
+
+        if (newPasswordInput) {
+            newPasswordInput.addEventListener('input', validatePassword);
+        }
+        const editEmailInput = document.getElementById('editEmail');
+        const emailError = document.getElementById('emailError');
+        const editPhoneInput = document.getElementById('editPhone');
+        const phoneError = document.getElementById('phoneError');
+
+        function validateEmail() {
+            if (!editEmailInput) return true;
+            const email = editEmailInput.value.trim();
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email === "") {
+                if (emailError) emailError.style.display = "none";
+                return true;
+            }
+            if (!emailPattern.test(email)) {
+                if (emailError) {
+                    emailError.textContent = "Email chưa đúng định dạng.Vui lòng chỉnh sửa thêm!";
+                    emailError.style.display = "block";
+                }
+                return false;
+            }
+            if (emailError) emailError.style.display = "none";
+            return true;
+        }
+
+        function validatePhone() {
+            if (!editPhoneInput) return true;
+            const phone = editPhoneInput.value.trim();
+            if (phone === "") {
+                if (phoneError) phoneError.style.display = "none";
+                return true;
+            }
+            if (!phone.startsWith("0")) {
+                if (phoneError) {
+                    phoneError.textContent = "Số điện thoại phải bắt đầu bằng số 0";
+                    phoneError.style.display = "block";
+                }
+                return false;
+            }
+            const phonePattern = /^0[0-9]{9,10}$/;
+            if (!phonePattern.test(phone)) {
+                if (phoneError) {
+                    phoneError.textContent = "Số điện thoại chưa đúng định dạng.Vui lòng chỉnh sửa thêm!";
+                    phoneError.style.display = "block";
+                }
+                return false;
+            }
+            if (phoneError) phoneError.style.display = "none";
+            return true;
+        }
+
+        if (editEmailInput) editEmailInput.addEventListener('input', validateEmail);
+        if (editPhoneInput) editPhoneInput.addEventListener('input', validatePhone);
         if (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
+                let isValid = true;
+                if (!validatePassword()) {
+                    showToast("Vui lòng kiểm tra lại mật khẩu mới", "error");
+                    isValid = false;
+                }
+                if (!validateEmail()) {
+                    showToast("Vui lòng kiểm tra lại email", "error");
+                    isValid = false;
+                }
+                if (!validatePhone()) {
+                    showToast("Vui lòng kiểm tra lại số điện thoại", "error");
+                    isValid = false;
+                }
+                if (!isValid) return;
                 const formData = new FormData(this);
                 fetch(this.action, {
                     method: 'POST',
