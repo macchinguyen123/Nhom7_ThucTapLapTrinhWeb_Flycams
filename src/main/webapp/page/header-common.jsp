@@ -4,7 +4,7 @@
 <title>SkyDrone Header</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-<link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/header.css?v=2">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/header.css?v=3">
 <c:set var="currentPage" value="${pageContext.request.requestURI}"/>
 <div class="header-bg">
     <div class="header-wrapper">
@@ -295,7 +295,17 @@
             data.forEach(function (item) {
                 const li = document.createElement("li");
                 li.className = "list-group-item list-group-item-action search-item";
-                li.innerHTML = highlightKeyword(item.name, keyword);
+                let imgSrc;
+                if (!item.image) {
+                    imgSrc = contextPath + '/image/logoo2.png';
+                } else if (item.image.startsWith('http://') || item.image.startsWith('https://')) {
+                    imgSrc = item.image;
+                } else {
+                    imgSrc = contextPath + '/' + item.image;
+                }
+                li.innerHTML =
+                    '<img src="' + imgSrc + '" alt="" class="suggest-product-img" style="width:24px;height:24px;min-width:24px;max-width:24px;object-fit:cover;border-radius:4px;border:1px solid #ddd;margin-right:8px;flex-shrink:0;" onerror="this.src=\'' + contextPath + '/image/logoo2.png\'">' +
+                    '<span class="suggest-product-name">' + highlightKeyword(item.name, keyword) + '</span>';
                 li.onclick = function () {
                     SearchHistory.add(item.name);
                     window.location.href = contextPath + "/product-detail?id=" + item.id;
