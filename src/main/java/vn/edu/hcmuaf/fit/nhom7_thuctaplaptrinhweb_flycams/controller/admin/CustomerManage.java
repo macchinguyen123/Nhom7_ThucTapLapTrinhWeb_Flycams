@@ -17,7 +17,13 @@ public class CustomerManage extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp)
                         throws ServletException, IOException {
-                List<User> users = customerService.getAllUsers();
+                String keyword = req.getParameter("keyword");
+                List<User> users;
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                        users = customerService.searchUsers(keyword.trim());
+                } else {
+                        users = customerService.getAllUsers();
+                }
                 req.setAttribute("users", users);
                 req.setAttribute("showDetail", Boolean.FALSE); // ← Dùng Boolean.FALSE
                 req.getRequestDispatcher("/page/admin/customer-manage.jsp")

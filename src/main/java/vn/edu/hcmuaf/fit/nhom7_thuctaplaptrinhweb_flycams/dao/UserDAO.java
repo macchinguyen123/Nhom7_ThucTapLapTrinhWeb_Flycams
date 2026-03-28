@@ -385,6 +385,60 @@ public class UserDAO {
         }
         return list;
     }
+    public List<User> searchUsers(String keyword) {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE id LIKE ? OR fullName LIKE ? OR username LIKE ? OR email LIKE ? OR phoneNumber LIKE ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String queryPattern = "%" + keyword + "%";
+            for (int i = 1; i <= 5; i++) {
+                ps.setString(i, queryPattern);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setId(rs.getInt("id"));
+                    u.setRoleId(rs.getInt("roleId"));
+                    u.setFullName(rs.getString("fullName"));
+                    u.setUsername(rs.getString("username"));
+                    u.setEmail(rs.getString("email"));
+                    u.setPhoneNumber(rs.getString("phoneNumber"));
+                    u.setAvatar(rs.getString("avatar"));
+                    u.setGender(rs.getString("gender"));
+                    u.setBirthDate(rs.getDate("birthDate"));
+                    u.setStatus(rs.getBoolean("status"));
+                    u.setLockReason(rs.getString("lockReason"));
+                    u.setPassword(rs.getString("password"));
+                    u.setAddress("Chưa cập nhật");
+                    list.add(u);
+                }
+            }
+            String sqlAddr = "SELECT addressLine, district, province FROM addresses WHERE user_id = ? ORDER BY isDefault DESC LIMIT 1";
+            try (PreparedStatement psAddr = conn.prepareStatement(sqlAddr)) {
+                for (User u : list) {
+                    psAddr.setInt(1, u.getId());
+                    try (ResultSet rsAddr = psAddr.executeQuery()) {
+                        if (rsAddr.next()) {
+                            String addr = rsAddr.getString("addressLine");
+                            if (addr != null) {
+                                String dist = rsAddr.getString("district");
+                                String prov = rsAddr.getString("province");
+                                if (dist != null)
+                                    addr += ", " + dist;
+                                if (prov != null)
+                                    addr += ", " + prov;
+                                u.setAddress(addr);
+                            }
+                        }
+                    } catch (Exception ex) {
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
     public boolean updateUser(User user) {
         String sql = "UPDATE users SET roleId=?, fullName=?, birthDate=?, gender=?, email=?, username=?, password=?, phoneNumber=?, avatar=?, status=?, updatedAt=NOW() WHERE id=?";
         try (Connection conn = DBConnection.getConnection();

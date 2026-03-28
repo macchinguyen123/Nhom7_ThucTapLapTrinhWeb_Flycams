@@ -49,9 +49,6 @@
     <main class="main-content container-fluid p-4" style="margin-left: 0; width: 100%;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="text-primary fw-bold"><i class="bi bi-card-text"></i> Danh Sách Khiếu Nại</h4>
-            <a href="${pageContext.request.contextPath}/admin/customer-manage" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Quay lại
-            </a>
         </div>
         <c:if test="${not empty sessionScope.message}">
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -68,6 +65,31 @@
             <% request.getSession().removeAttribute("error"); %>
         </c:if>
         <div class="complaint-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <label class="me-2 text-nowrap">Hiển thị</label>
+                    <select id="rowsPerPageCustom" class="form-select d-inline-block" style="width:80px;">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                    </select>
+                    <label class="ms-2 text-nowrap">khiếu nại</label>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group" style="max-width: 300px;">
+                            <span class="input-group-text bg-primary text-white">
+                                <i class="bi bi-search"></i>
+                            </span>
+                        <input id="searchCustom" type="search" class="form-control"
+                               placeholder="Tìm kiếm khiếu nại..." aria-label="Tìm kiếm"
+                               onkeypress="return event.keyCode != 13;">
+                    </div>
+                    <a href="${pageContext.request.contextPath}/admin/customer-manage"
+                       class="btn btn-secondary shadow-sm fw-semibold text-nowrap">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
             <table id="complaintsTable" class="table table-striped table-bordered">
                 <thead>
                 <tr>
@@ -112,6 +134,11 @@
                 </c:forEach>
                 </tbody>
             </table>
+            <div class="d-flex justify-content-end align-items-center mt-3">
+                <button id="prevPageCustom" class="btn btn-outline-primary btn-sm">Trước</button>
+                <span id="pageInfoCustom" class="mx-2">1 / 1</span>
+                <button id="nextPageCustom" class="btn btn-outline-primary btn-sm">Sau</button>
+            </div>
         </div>
     </main>
 </div>
@@ -150,22 +177,44 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('#complaintsTable').DataTable({
+        var table = $('#complaintsTable').DataTable({
             "order": [[3, "desc"]],
+            "paging": true,
+            "lengthChange": false,
+            "pageLength": 5,
+            "searching": true,
+            "info": false,
+            "dom": 't',
             "language": {
                 "emptyTable": "Không có dữ liệu khiếu nại",
-                "search": "Tìm kiếm:",
-                "lengthMenu": "Hiển thị _MENU_ dòng",
-                "info": "Hiển thị từ _START_ đến _END_ của _TOTAL_ dòng",
-                "infoEmpty": "Hiển thị 0 dòng",
-                "paginate": {
-                    "first": "Đầu",
-                    "last": "Cuối",
-                    "next": "Sau",
-                    "previous": "Trước"
-                }
+                "zeroRecords": "Không tìm thấy dữ liệu phù hợp"
             }
         });
+
+        $("#searchCustom").on("keyup search", function () {
+            table.search(this.value).draw();
+            updatePageInfo();
+        });
+        $("#rowsPerPageCustom").on("change", function () {
+            table.page.len($(this).val()).draw();
+            updatePageInfo();
+        });
+        $("#prevPageCustom").click(function () {
+            table.page('previous').draw('page');
+            updatePageInfo();
+        });
+        $("#nextPageCustom").click(function () {
+            table.page('next').draw('page');
+            updatePageInfo();
+        });
+
+        function updatePageInfo() {
+            var info = table.page.info();
+            $('#pageInfoCustom').text((info.page + 1) + " / " + (info.pages === 0 ? 1 : info.pages));
+        }
+
+        table.on('draw', updatePageInfo);
+        updatePageInfo();
     });
 
     function openResolveModal(id, currentStatus, adminNote) {
