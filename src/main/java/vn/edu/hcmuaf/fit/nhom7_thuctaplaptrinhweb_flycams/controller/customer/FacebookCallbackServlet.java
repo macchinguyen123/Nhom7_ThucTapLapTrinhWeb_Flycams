@@ -23,7 +23,7 @@ import java.util.Map;
 public class FacebookCallbackServlet extends HttpServlet {
     private static final String APP_ID = "1677006510324478";
     private static final String APP_SECRET = "b29048650310a32f2a014a54e618347b";
-    private static final String REDIRECT_URI = "http://localhost:8080/Nhom12LapTrinhWebFlycams/facebook-callback";
+    private static final String REDIRECT_URI = "http://localhost:8080/Nhom7_ThucTapLapTrinhWeb_Flycams/facebook-callback";
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -64,9 +64,13 @@ public class FacebookCallbackServlet extends HttpServlet {
             UserDAO userDAO = new UserDAO();
             User user = userDAO.findByEmail(email);
             if (user == null) {
-                request.getSession().setAttribute("error", "Email Facebook này chưa được đăng ký trong hệ thống");
-                response.sendRedirect(request.getContextPath() + "/Login");
-                return;
+                String name = (String) userInfo.get("name");
+                user = new User();
+                user.setEmail(email);
+                user.setFullName(name != null ? name : "Người dùng Facebook");
+                user.setRoleId(2);
+                userDAO.insertGoogleUser(user);
+                user = userDAO.findByEmail(email);
             }
             if (!user.isStatus()) {
                 String reason = user.getLockReason() != null ? user.getLockReason() : "Vi phạm chính sách.";

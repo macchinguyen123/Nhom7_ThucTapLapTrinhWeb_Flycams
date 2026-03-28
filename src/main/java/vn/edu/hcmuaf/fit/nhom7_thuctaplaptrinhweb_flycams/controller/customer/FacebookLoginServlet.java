@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 @WebServlet(name = "FacebookLoginServlet", value = "/facebook-login")
 public class FacebookLoginServlet extends HttpServlet {
     private static final String APP_ID = "1677006510324478";
-    private static final String REDIRECT_URI = "http://localhost:8080/Nhom12LapTrinhWebFlycams/facebook-callback";
+    private static final String REDIRECT_URI = "http://localhost:8080/Nhom7_ThucTapLapTrinhWeb_Flycams/facebook-callback";
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

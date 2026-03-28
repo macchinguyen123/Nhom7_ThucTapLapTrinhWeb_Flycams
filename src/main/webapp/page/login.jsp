@@ -48,8 +48,9 @@
             <form action="${pageContext.request.contextPath}/Login" method="post">
                 <div class="mb-3 text-start">
                     <label class="form-label">Số điện thoại / Email</label>
-                    <input type="text" class="form-control" name="loginInput"
+                    <input type="text" class="form-control" name="loginInput" id="loginInput"
                            placeholder="Nhập số điện thoại hoặc email" required>
+                    <small id="loginInputError" class="text-danger" style="display: none;"></small>
                 </div>
                 <div class="mb-3 text-start">
                     <label class="form-label">Mật khẩu</label>
@@ -91,12 +92,58 @@
     document.addEventListener('DOMContentLoaded', function () {
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('loginPassword');
+        const loginInput = document.getElementById('loginInput');
+        const loginInputError = document.getElementById('loginInputError');
+        const loginForm = document.querySelector('form[action="${pageContext.request.contextPath}/Login"]');
         if (togglePassword && passwordInput) {
             togglePassword.addEventListener('click', function () {
                 const type = passwordInput.type === 'password' ? 'text' : 'password';
                 passwordInput.type = type;
                 this.classList.toggle('bi-eye');
                 this.classList.toggle('bi-eye-slash');
+            });
+        }
+
+        function validateLoginInput() {
+            const value = loginInput.value.trim();
+            if (value === '') {
+                loginInputError.style.display = 'none';
+                return false;
+            }
+            const isPossibleEmail = value.includes('@');
+            const isPossiblePhone = /^\d+$/.test(value);
+            if (isPossibleEmail) {
+                const emailRegex = /^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
+                if (!emailRegex.test(value)) {
+                    loginInputError.textContent = "Email không đúng định dạng. Vui lòng kiểm tra lại.";
+                    loginInputError.style.display = 'block';
+                    return false;
+                }
+            } else if (isPossiblePhone) {
+                const phoneRegex = /^0\d{9}$/;
+                if (!phoneRegex.test(value)) {
+                    loginInputError.textContent = "Số điện thoại không đúng định dạng. Vui lòng kiểm tra lại.";
+                    loginInputError.style.display = 'block';
+                    return false;
+                }
+            } else {
+                loginInputError.textContent = "Vui lòng nhập đúng định dạng Email hoặc Số điện thoại.";
+                loginInputError.style.display = 'block';
+                return false;
+            }
+            loginInputError.style.display = 'none';
+            return true;
+        }
+
+        if (loginInput) {
+            loginInput.addEventListener('input', validateLoginInput);
+            loginInput.addEventListener('blur', validateLoginInput);
+        }
+        if (loginForm) {
+            loginForm.addEventListener('submit', function (e) {
+                if (!validateLoginInput()) {
+                    e.preventDefault();
+                }
             });
         }
     });
@@ -144,9 +191,9 @@
     </script>
 </c:if>
 <c:if test="${not empty lockedError or not empty sessionScope.lockedError}">
-    <c:set var="lErr" value="${not empty lockedError ? lockedError : sessionScope.lockedError}" />
-    <c:set var="lRea" value="${not empty lockReason ? lockReason : sessionScope.lockReason}" />
-    <c:set var="lUId" value="${not empty lockedUserId ? lockedUserId : sessionScope.lockedUserId}" />
+    <c:set var="lErr" value="${not empty lockedError ? lockedError : sessionScope.lockedError}"/>
+    <c:set var="lRea" value="${not empty lockReason ? lockReason : sessionScope.lockReason}"/>
+    <c:set var="lUId" value="${not empty lockedUserId ? lockedUserId : sessionScope.lockedUserId}"/>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             Swal.fire({
@@ -165,9 +212,9 @@
         });
     </script>
     <%
-       request.getSession().removeAttribute("lockedError");
-       request.getSession().removeAttribute("lockReason");
-       request.getSession().removeAttribute("lockedUserId");
+        request.getSession().removeAttribute("lockedError");
+        request.getSession().removeAttribute("lockReason");
+        request.getSession().removeAttribute("lockedUserId");
     %>
 </c:if>
 </body>

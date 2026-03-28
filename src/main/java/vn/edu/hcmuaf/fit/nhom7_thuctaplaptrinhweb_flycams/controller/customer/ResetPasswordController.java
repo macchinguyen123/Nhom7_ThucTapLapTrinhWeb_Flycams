@@ -23,9 +23,20 @@ public class ResetPasswordController extends HttpServlet {
         String password = request.getParameter("password");
         String confirm = request.getParameter("confirm");
         boolean hasError = false;
-        if (!vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.validate.Validator.isValidPassword(password)) {
-            request.setAttribute("passwordError",
-                    "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt");
+        if (password == null || password.length() < 8) {
+            request.setAttribute("passwordError", "Mật khẩu ít nhất 8 ký tự");
+            hasError = true;
+        } else if (!password.matches(".*[A-Z].*")) {
+            request.setAttribute("passwordError", "Mật khẩu thiếu chữ hoa");
+            hasError = true;
+        } else if (!password.matches(".*[a-z].*")) {
+            request.setAttribute("passwordError", "Mật khẩu thiếu chữ thường");
+            hasError = true;
+        } else if (!password.matches(".*\\d.*")) {
+            request.setAttribute("passwordError", "Mật khẩu thiếu số");
+            hasError = true;
+        } else if (!password.matches(".*[\\W_].*")) {
+            request.setAttribute("passwordError", "Mật khẩu thiếu ký đặc biệt");
             hasError = true;
         }
         if (!password.equals(confirm)) {
