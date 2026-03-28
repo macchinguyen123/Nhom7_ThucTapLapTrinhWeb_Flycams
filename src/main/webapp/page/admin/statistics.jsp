@@ -3,6 +3,7 @@
 <%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Trang Thống Kê - SkyDrone</title>
@@ -18,6 +19,7 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 <header class="main-header">
     <div class="logo">
@@ -152,7 +154,7 @@
                                 <fmt:formatDate value="${o.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
                             </td>
                             <td class="fw-semibold text-danger">
-                                <fmt:formatNumber value="${o.totalPrice}" type="number"/>₫
+                                <fmt:formatNumber value="${o.totalPrice}" pattern="#,##0 VNĐ"/>
                             </td>
                             <td><span class="badge ${o.statusClass}">${o.statusLabel}</span></td>
                         </tr>
@@ -168,14 +170,14 @@
                     <i class="fa fa-chart-bar fs-2 mb-2" style="color:#0d6efd;"></i>
                     <h5>Doanh thu hôm nay</h5>
                     <p>
-                        <fmt:formatNumber value="${revenueToday}" type="number"/>₫
+                        <fmt:formatNumber value="${revenueToday}" pattern="#,##0 VNĐ"/>
                     </p>
                 </div>
                 <div class="card flex-fill text-center p-3">
                     <i class="fa fa-line-chart fs-2 mb-2" style="color:#0d6efd;"></i>
                     <h5>Doanh thu tháng</h5>
                     <p>
-                        <fmt:formatNumber value="${revenueMonth}" type="number"/>₫
+                        <fmt:formatNumber value="${revenueMonth}" pattern="#,##0 VNĐ"/>
                     </p>
                 </div>
                 <div class="card flex-fill text-center p-3">
@@ -200,7 +202,8 @@
             </div>
         </section>
         <section class="mt-4">
-            <h4 class="mb-3"><i class="bi bi-graph-up-arrow"></i><b> Biểu đồ doanh thu 8 ngày gần nhất</b></h4>
+            <h4 class="mb-3"><i class="bi bi-graph-up-arrow"></i><b> Biểu đồ doanh thu 8 ngày gần
+                nhất</b></h4>
             <div class="card shadow-sm p-3 mb-4">
                 <canvas id="chartDoanhThuNgay" height="250"></canvas>
             </div>
@@ -278,7 +281,7 @@
                 return ("0" + dt.getDate()).slice(-2) + "/" + ("0" + (dt.getMonth() + 1)).slice(-2);
             }),
             datasets: [{
-                label: 'Doanh thu (₫)',
+                label: 'Doanh thu (VNĐ)',
                 data: revenueValues,
                 backgroundColor: '#0d6efd',
                 borderRadius: 5
@@ -288,7 +291,7 @@
             responsive: true,
             plugins: {legend: {display: false}},
             scales: {
-                y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " ₫"}},
+                y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " VNĐ"}},
                 x: {grid: {display: false}}
             }
         }
@@ -309,7 +312,7 @@
         data: {
             labels: revenueMonths.map(m => "Tháng " + m),
             datasets: [{
-                label: 'Doanh thu (₫)',
+                label: 'Doanh thu (VNĐ)',
                 data: revenueMonthValues,
                 backgroundColor: '#0d6efd',
                 borderRadius: 5
@@ -321,16 +324,17 @@
                 legend: {display: false},
                 tooltip: {
                     callbacks: {
-                        label: ctx => ctx.formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " ₫"
+                        label: ctx => ctx.formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VNĐ"
                     }
                 }
             },
             scales: {
-                y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " ₫"}},
+                y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " VNĐ"}},
                 x: {grid: {display: false}}
             }
         }
     });
 </script>
 </body>
+
 </html>

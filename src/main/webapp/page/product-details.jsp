@@ -4,6 +4,7 @@
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Chi tiết sản phẩm</title>
@@ -15,6 +16,7 @@
           rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/product-details.css">
 </head>
+
 <body>
 <jsp:include page="/page/header-common.jsp"/>
 <div class="main-wrapper">
@@ -264,8 +266,7 @@
                 </p>
             </c:when>
             <c:when test="${isLoggedIn && hasReviewed}">
-                <button class="write-review-btn" disabled
-                        title="Bạn đã đánh giá sản phẩm này rồi">
+                <button class="write-review-btn" disabled title="Bạn đã đánh giá sản phẩm này rồi">
                     <i class="bi bi-check-circle"></i> Đã đánh giá
                 </button>
                 <p class="text-success text-center review-status-message">
@@ -671,7 +672,7 @@
         });
     });
     const reviewPopup = document.getElementById('reviewPopup');
-    const closeBtn = document.querySelector('.close-review-popup');
+    const closeBtn = document.querySelector('.close-btn');
     const allWriteReviewBtns = document.querySelectorAll('.write-review-btn');
     allWriteReviewBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -749,4 +750,5 @@
     }
 </script>
 </body>
+
 </html>

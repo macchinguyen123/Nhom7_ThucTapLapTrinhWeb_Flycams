@@ -19,7 +19,7 @@ public class OrderService {
     private OrderItemsDAO orderItemsDAO = new OrderItemsDAO();
     private ProductManagement productManagement = new ProductManagement();
 
-    //Đặt hàng
+    // Đặt hàng
     public int placeOrder(User user, int addressId, String phone, String note, String paymentMethod,
             List<OrderItems> items, Carts cart, double shippingFee) throws Exception {
         if (items == null || items.isEmpty()) {
@@ -39,6 +39,7 @@ public class OrderService {
         order.setStatus(Orders.Status.PENDING);
         order.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
         order.setTotalPrice(totalPrice);
+        order.setShippingFee(shippingFee);
 
         int orderId = ordersDAO.insert(order);
 
@@ -131,6 +132,7 @@ public class OrderService {
     public boolean undoReturnOrder(int orderId, int userId) {
         return ordersDAO.undoReturnOrder(orderId, userId);
     }
+
     // Xác nhận đã nhận hàng
     public boolean receiveOrder(int orderId, int userId) {
         return ordersDAO.receiveOrder(orderId, userId);

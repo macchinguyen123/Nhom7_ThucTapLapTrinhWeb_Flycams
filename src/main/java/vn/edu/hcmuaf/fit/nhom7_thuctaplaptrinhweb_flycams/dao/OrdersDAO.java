@@ -15,8 +15,8 @@ public class OrdersDAO {
 
     public int insert(Orders order) throws SQLException {
         String sql = "INSERT INTO orders " +
-                "(user_id, shippingCode, totalPrice, status, address_id, phoneNumber, createdAt, paymentMethod, note) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(user_id, shippingCode, totalPrice, status, address_id, phoneNumber, createdAt, paymentMethod, note, shippingFee) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -37,6 +37,11 @@ public class OrdersDAO {
             ps.setString(8, order.getPaymentMethod());
             ps.setString(9, order.getNote());
 
+            if (order.getShippingFee() != null) {
+                ps.setDouble(10, order.getShippingFee());
+            } else {
+                ps.setNull(10, Types.DOUBLE);
+            }
             int affected = ps.executeUpdate();
             if (affected == 0) throw new SQLException("Insert order failed");
 
@@ -59,6 +64,7 @@ public class OrdersDAO {
             default -> Orders.Status.PENDING;
         };
     }
+
     public List<Orders> getOrdersByUser1(int userId) {
         List<Orders> list = new ArrayList<>();
 
@@ -82,6 +88,8 @@ public class OrdersDAO {
                 o.setCreatedAt(rs.getTimestamp("createdAt"));
                 o.setCompletedAt(rs.getTimestamp("completedAt"));
                 o.setNote(rs.getString("note"));
+                double fee = rs.getDouble("shippingFee");
+                o.setShippingFee(rs.wasNull() ? null : fee);
                 int addr = rs.getInt("address_id");
                 o.setAddressId(rs.wasNull() ? null : addr);
 
@@ -118,6 +126,8 @@ public class OrdersDAO {
                 o.setCreatedAt(rs.getTimestamp("createdAt"));
                 o.setCompletedAt(rs.getTimestamp("completedAt"));
                 o.setNote(rs.getString("note"));
+                double fee = rs.getDouble("shippingFee");
+                o.setShippingFee(rs.wasNull() ? null : fee);
                 int addr = rs.getInt("address_id");
                 o.setAddressId(rs.wasNull() ? null : addr);
 
@@ -130,7 +140,6 @@ public class OrdersDAO {
 
         return list;
     }
-
 
     public Orders getOrderById(int orderId, int userId) {
         String sql = "SELECT * FROM orders WHERE id = ? AND user_id = ?";
@@ -156,6 +165,8 @@ public class OrdersDAO {
                 o.setPaymentMethod(rs.getString("paymentMethod"));
                 o.setCompletedAt(rs.getTimestamp("completedAt"));
                 o.setNote(rs.getString("note"));
+                double fee = rs.getDouble("shippingFee");
+                o.setShippingFee(rs.wasNull() ? null : fee);
 
                 return o;
             }
@@ -165,22 +176,21 @@ public class OrdersDAO {
         return null;
     }
 
-
     public Map<String, String> getShippingInfoByOrder(int orderId) {
         Map<String, String> map = new HashMap<>();
 
         String sql = """
-        SELECT 
-            o.phoneNumber,
-            COALESCE(a.fullName, 'Không xác định') AS recipientName,
-            COALESCE(
-                CONCAT(a.addressLine, ', ', a.district, ', ', a.province),
-                'Không có địa chỉ'
-            ) AS shippingAddress
-        FROM orders o
-        LEFT JOIN addresses a ON o.address_id = a.id
-        WHERE o.id = ?
-    """;
+                    SELECT
+                        o.phoneNumber,
+                        COALESCE(a.fullName, 'Không xác định') AS recipientName,
+                        COALESCE(
+                            CONCAT(a.addressLine, ', ', a.district, ', ', a.province),
+                            'Không có địa chỉ'
+                        ) AS shippingAddress
+                    FROM orders o
+                    LEFT JOIN addresses a ON o.address_id = a.id
+                    WHERE o.id = ?
+                """;
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -205,25 +215,25 @@ public class OrdersDAO {
         List<OrderItems> list = new ArrayList<>();
 
         String sql = """
-        SELECT
-            oi.id AS oi_id,
-            oi.product_id,
-            oi.order_id,
-            oi.quantity,
-            oi.price,
-            p.productName,
-            COALESCE(
-                (SELECT img.imageUrl 
-                 FROM images img 
-                 WHERE img.product_id = p.id 
-                 ORDER BY img.id ASC 
-                 LIMIT 1),
-                'image/products/no-image.png'
-            ) AS imageUrl
-        FROM order_items oi
-        JOIN products p ON oi.product_id = p.id
-        WHERE oi.order_id = ?
-    """;
+                    SELECT
+                        oi.id AS oi_id,
+                        oi.product_id,
+                        oi.order_id,
+                        oi.quantity,
+                        oi.price,
+                        p.productName,
+                        COALESCE(
+                            (SELECT img.imageUrl
+                             FROM images img
+                             WHERE img.product_id = p.id
+                             ORDER BY img.id ASC
+                             LIMIT 1),
+                            'image/products/no-image.png'
+                        ) AS imageUrl
+                    FROM order_items oi
+                    JOIN products p ON oi.product_id = p.id
+                    WHERE oi.order_id = ?
+                """;
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -258,12 +268,12 @@ public class OrdersDAO {
 
     public void cancelOrder(int orderId, int userId) {
         String sql = """
-        UPDATE orders
-        SET status = 'Hủy'
-        WHERE id = ?
-          AND user_id = ?
-          AND status = 'Xác nhận'
-    """;
+                    UPDATE orders
+                    SET status = 'Hủy'
+                    WHERE id = ?
+                      AND user_id = ?
+                      AND status = 'Xác nhận'
+                """;
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -276,6 +286,7 @@ public class OrdersDAO {
             e.printStackTrace();
         }
     }
+
     public boolean returnOrder(int orderId, int userId) {
         String alterSql = "ALTER TABLE orders MODIFY COLUMN status ENUM('Xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Hủy', 'Yêu cầu trả hàng', 'Đã trả hàng')";
         try (Connection con = DBConnection.getConnection();
@@ -286,12 +297,12 @@ public class OrdersDAO {
             System.out.println("Could not alter table (might already be altered or not enum): " + e.getMessage());
         }
         String sql = """
-        UPDATE orders
-        SET status = 'Yêu cầu trả hàng'
-        WHERE id = ?
-          AND user_id = ?
-          AND status = 'Hoàn thành'
-    """;
+                    UPDATE orders
+                    SET status = 'Yêu cầu trả hàng'
+                    WHERE id = ?
+                      AND user_id = ?
+                      AND status = 'Hoàn thành'
+                """;
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -306,10 +317,11 @@ public class OrdersDAO {
         }
         return false;
     }
+
     public boolean undoReturnOrder(int orderId, int userId) {
         String sql = """
-UPDATE orders SET status = 'Hoàn thành' WHERE id = ? AND user_id = ? AND status = 'Yêu cầu trả hàng'
-    """;
+ UPDATE orders SET status = 'Hoàn thành' WHERE id = ? AND user_id = ? AND status = 'Yêu cầu trả hàng'
+                """;
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, orderId);
             ps.setInt(2, userId);
@@ -323,12 +335,12 @@ UPDATE orders SET status = 'Hoàn thành' WHERE id = ? AND user_id = ? AND statu
 
     public boolean receiveOrder(int orderId, int userId) {
         String sql = """
-        UPDATE orders
-        SET status = 'Hoàn thành', completedAt = NOW()
-        WHERE id = ?
-          AND user_id = ?
-          AND status = 'Đang giao'
-    """;
+                    UPDATE orders
+                    SET status = 'Hoàn thành', completedAt = NOW()
+                    WHERE id = ?
+                      AND user_id = ?
+                      AND status = 'Đang giao'
+                """;
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
@@ -344,13 +356,13 @@ UPDATE orders SET status = 'Hoàn thành' WHERE id = ? AND user_id = ? AND statu
 
     public boolean hasUserPurchasedProduct(int userId, int productId) {
         String sql = """
-            SELECT COUNT(*) > 0
-            FROM orders o
-            JOIN order_items oi ON o.id = oi.order_id
-            WHERE o.user_id = ? 
-              AND oi.product_id = ?
-              AND o.status IN ('Đang xử lý', 'Đang giao', 'Hoàn thành')
-            """;
+                SELECT COUNT(*) > 0
+                FROM orders o
+                JOIN order_items oi ON o.id = oi.order_id
+                WHERE o.user_id = ?
+                  AND oi.product_id = ?
+                  AND o.status IN ('Đang xử lý', 'Đang giao', 'Hoàn thành')
+                """;
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {

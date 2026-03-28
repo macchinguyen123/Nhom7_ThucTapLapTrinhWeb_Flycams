@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Quản Trị Đơn Hàng - SkyDrone</title>
@@ -18,6 +19,7 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
 <header class="main-header">
     <div class="logo">
@@ -265,7 +267,7 @@
                                 </div>
                                 <div class="info-row">
                                     <div class="info-label">Phí Vận Chuyển:</div>
-                                    <div class="info-value" id="dh-phivc">35,000₫</div>
+                                    <div class="info-value" id="dh-phivc">35,000 VNĐ</div>
                                 </div>
                             </div>
                         </div>
@@ -284,17 +286,17 @@
                                     <tr>
                                         <td>Flycam Mini 4K</td>
                                         <td>1</td>
-                                        <td>2,500,000₫</td>
+                                        <td>2,500,000 VNĐ</td>
                                     </tr>
                                     <tr>
                                         <td>Pin Dự Phòng Drone</td>
                                         <td>2</td>
-                                        <td>450,000₫</td>
+                                        <td>450,000 VNĐ</td>
                                     </tr>
                                     </tbody>
                                 </table>
                                 <div class="total-row">
-                                    Tổng Tiền: <span id="dh-tong">3,400,000₫</span>
+                                    Tổng Tiền: <span id="dh-tong">3,400,000 VNĐ</span>
                                 </div>
                             </div>
                             <div class="info-card">
@@ -376,8 +378,8 @@
                     o.completedAt ? o.completedAt.substring(0, 10) : "";
                 document.getElementById("dh-phivc").innerText =
                     o.shippingFee
-                        ? Number(o.shippingFee).toLocaleString("vi-VN") + "₫"
-                        : "0₫";
+                        ? Number(o.shippingFee).toLocaleString("vi-VN") + " VNĐ"
+                        : "0 VNĐ";
                 const items = data.items;
                 const tbody = document.getElementById("dh-sanpham");
                 tbody.innerHTML = "";
@@ -392,13 +394,13 @@
                     tr.appendChild(tdQty);
                     const tdPrice = document.createElement("td");
                     const priceNum = Number(item.price) || 0;
-                    tdPrice.textContent = priceNum.toLocaleString("vi-VN") + "₫";
+                    tdPrice.textContent = priceNum.toLocaleString("vi-VN") + " VNĐ";
                     tr.appendChild(tdPrice);
                     total += priceNum * (item.quantity || 1);
                     tbody.appendChild(tr);
                 });
                 document.getElementById("dh-tong").innerText =
-                    total.toLocaleString("vi-VN") + "₫";
+                    total.toLocaleString("vi-VN") + " VNĐ";
                 // thông tin thanh toán
                 document.getElementById("dh-httt").value =
                     o.paymentMethod || "COD";
@@ -527,4 +529,5 @@
     });
 </script>
 </body>
+
 </html>
