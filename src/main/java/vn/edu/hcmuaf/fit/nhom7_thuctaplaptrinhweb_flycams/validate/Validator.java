@@ -28,12 +28,6 @@ public class Validator {
         Matcher matcher = pattern.matcher(phoneNumber);
         return matcher.matches();
     }
-    public static boolean isValidCCCD(String cccd) {
-        if (isEmpty(cccd))
-            return false;
-        String cccdRegex = "^\\d{12}$";
-        return cccd.matches(cccdRegex);
-    }
     public static boolean isValidUsername(String username) {
         if (isEmpty(username))
             return false;

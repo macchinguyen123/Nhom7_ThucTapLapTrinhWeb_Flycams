@@ -55,7 +55,7 @@
                 </td>
                 <td class="gia">
                     <fmt:formatNumber value="${order.totalPrice}" type="currency"
-                                      currencySymbol="₫"/>
+                                      currencySymbol="VNĐ"/>
                 </td>
                 <td>
                     <fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yyyy"/>

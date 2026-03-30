@@ -27,7 +27,7 @@ public class AuthService {
     }
     //đăng ký
     public RegisterDTO prepareRegister(String fullName, String email, String username,
-                                       String password, String phone, String cccd, Date birthday) {
+                                       String password, String phone, Date birthday) {
         //tạo User
         User user = new User();
         user.setFullName(fullName);
@@ -35,7 +35,6 @@ public class AuthService {
         user.setUsername(username);
         user.setPassword(PasswordUtil.hashPassword(password));
         user.setPhoneNumber(phone);
-        user.setCccd(cccd);
         user.setRoleId(2);
         user.setStatus(false); // Chưa kích hoạt
         user.setBirthDate(birthday);

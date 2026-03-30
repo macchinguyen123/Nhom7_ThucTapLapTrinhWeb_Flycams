@@ -58,12 +58,14 @@
                                 </h5>
                                 <div>
                                                         <span class="gia_hien_tai text-danger fw-bold me-2">
-                                                            ${formatter.format(p.finalPrice)} ₫
+                                                           <fmt:formatNumber value="${p.finalPrice}" type="number"
+                                                                             groupingUsed="true"/> VNĐ
                                                         </span>
                                     <c:if test="${p.finalPrice <= p.price}">
                                                             <span
                                                                     class="gia_goc text-muted text-decoration-line-through">
-                                                                ${formatter.format(p.price)} ₫
+                                                                <fmt:formatNumber value="${p.price}" type="number"
+                                                                                  groupingUsed="true"/> VNĐ
                                                             </span>
                                     </c:if>
                                 </div>
@@ -282,6 +284,7 @@
                     });
             });
         });
+
         // Hàm hiển thị thông báo
         function showNotification(message, type = 'success') {
             // Xóa notification cũ nếu có
@@ -328,6 +331,7 @@
                 notification.remove();
             }, 3000);
         }
+
         // Kiểm tra wishlist trống
         function checkEmptyWishlist() {
             const productList = document.getElementById('danh_sach_san_pham');

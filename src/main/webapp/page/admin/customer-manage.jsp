@@ -2,6 +2,7 @@
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">

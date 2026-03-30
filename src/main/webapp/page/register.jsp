@@ -60,15 +60,6 @@
                 </c:if>
             </div>
             <div class="field">
-                <label for="cccd">Số CCCD (12 số)</label>
-                <input type="text" id="cccd" name="cccd" placeholder="Nhập 12 số CCCD"
-                       value="${cccd}" required oninput="validateForm()">
-                <p class="error" id="cccd_error"></p>
-                <c:if test="${not empty cccdError}">
-                    <p class="error"> ${cccdError}</p>
-                </c:if>
-            </div>
-            <div class="field">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="Nhập email" value="${email}" oninput="validateForm()">
                 <p class="hint">Hóa đơn VAT sẽ gửi qua email này</p>
@@ -129,7 +120,6 @@
         const fullname = document.getElementById('fullname').value;
         const birthday = document.getElementById('birthday').value;
         const phone = document.getElementById('phone').value;
-        const cccd = document.getElementById('cccd').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const confirm = document.getElementById('confirm').value;
@@ -193,17 +183,6 @@
         } else {
             document.getElementById('phone_error').textContent = "";
         }
-        const cccdRegex = /^\d{12}$/;
-        if (cccd.length > 0) {
-            if (!cccdRegex.test(cccd)) {
-                document.getElementById('cccd_error').textContent = "CCCD phải đúng 12 chữ số";
-                isValid = false;
-            } else {
-                document.getElementById('cccd_error').textContent = "";
-            }
-        } else {
-            document.getElementById('cccd_error').textContent = "";
-        }
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (email.length > 0) {
             if (!emailRegex.test(email)) {
@@ -253,7 +232,6 @@
             fullname.trim() === "" || 
             !birthday || 
             !phoneRegex.test(phone) || 
-            !cccdRegex.test(cccd) || 
             !emailRegex.test(email) || 
             !passwordRegex.test(password) || 
             confirm !== password) {

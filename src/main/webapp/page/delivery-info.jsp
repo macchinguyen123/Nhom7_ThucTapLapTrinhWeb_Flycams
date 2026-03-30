@@ -123,7 +123,7 @@
                         </small>
                     </div>
                     <span class="ms-auto fw-semibold">
-                                            <fmt:formatNumber value="${item.price * item.quantity}" type="number"/> ₫
+                                            <fmt:formatNumber value="${item.price * item.quantity}" type="number"/> VNĐ
                                         </span>
                 </div>
                 <c:set var="total" value="${total + (item.price * item.quantity)}"/>
@@ -131,7 +131,7 @@
             <div class="d-flex justify-content-between">
                 <span>Tạm tính</span>
                 <span>
-                                        <fmt:formatNumber value="${total}" type="number"/> ₫
+                                        <fmt:formatNumber value="${total}" type="number"/> VNĐ
                                     </span>
             </div>
             <div class="d-flex justify-content-between mb-2">
@@ -142,7 +142,7 @@
             <div class="d-flex justify-content-between fw-bold total">
                 <span>Tổng cộng</span>
                 <span id="totalDisplay">
-                    <fmt:formatNumber value="${total}" type="number"/> ₫
+                    <fmt:formatNumber value="${total}" type="number"/> VNĐ
                 </span>
             </div>
             <%-- Lưu subtotal để JS cộng phí ship --%>
@@ -289,9 +289,9 @@
                 }
                 const fee = json.data.total || 0;
                 shippingFeeInput.value = fee;
-                shippingFeeDisplay.textContent = formatVND(fee) + " ₫";
+                shippingFeeDisplay.textContent = formatVND(fee) + " VNĐ";
                 if (totalDisplay) {
-                    totalDisplay.textContent = formatVND(subtotal + fee) + " ₫";
+                    totalDisplay.textContent = formatVND(subtotal + fee) + " VNĐ";
                 }
             })
             .catch(err => {
@@ -403,9 +403,9 @@
                 }
                 const fee = json.data.total || 0;
                 shippingFeeInput.value = fee;
-                shippingFeeDisplay.textContent = formatVND(fee) + " ₫";
+                shippingFeeDisplay.textContent = formatVND(fee) + " VNĐ";
                 if (totalDisplay) {
-                    totalDisplay.textContent = formatVND(subtotal + fee) + " ₫";
+                    totalDisplay.textContent = formatVND(subtotal + fee) + " VNĐ";
                 }
             })
             .catch(() => {
@@ -434,7 +434,7 @@
     function resetShippingFee() {
         if (shippingFeeDisplay) shippingFeeDisplay.textContent = "—";
         if (shippingFeeInput) shippingFeeInput.value = 0;
-        if (totalDisplay && subtotalEl) totalDisplay.textContent = formatVND(subtotal) + " ₫";
+        if (totalDisplay && subtotalEl) totalDisplay.textContent = formatVND(subtotal) + " VNĐ";
     }
 
     function toggleRequiredFields(isRequired) {

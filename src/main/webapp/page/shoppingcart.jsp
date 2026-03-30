@@ -43,9 +43,16 @@
                             <input type="checkbox" class="chon_san_pham form-check-input me-3">
                             <a
                                     href="${pageContext.request.contextPath}/product-detail?id=${item.product.id}">
-                                <img src="${not empty item.product.images? item.product.images[0].imageUrl
-                                 : pageContext.request.contextPath.concat('/image/no-image.png')}"
-                                     class="anh_san_pham me-3">
+                                <c:choose>
+                                    <c:when test="${not empty item.product.images}">
+                                        <c:set var="imgSrc" value="${item.product.images[0].imageUrl}"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="imgSrc"
+                                               value="${pageContext.request.contextPath}/image/no-image.png"/>
+                                    </c:otherwise>
+                                </c:choose>
+                                <img src="${imgSrc}" class="anh_san_pham me-3">
                             </a>
                             <div>
                                 <h6 class="ten_san_pham mb-1 fw-semibold text-truncate"
@@ -57,12 +64,12 @@
                                         <div
                                                 class="gia_goc text-muted text-decoration-line-through small">
                                             <fmt:formatNumber value="${item.product.price}"
-                                                              type="number"/> ₫
+                                                              type="number"/> VNĐ
                                         </div>
                                     </c:if>
                                     <div class="gia_hien_tai text-danger fw-bold">
                                         <fmt:formatNumber value="${item.product.finalPrice}"
-                                                          type="number"/> ₫
+                                                          type="number"/> VNĐ
                                     </div>
                                 </div>
                             </div>
@@ -84,17 +91,17 @@
                 <div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="fw-bold">Tạm tính:</span>
-                        <span class="so_tien fw-bold">0 ₫</span>
+                        <span class="so_tien fw-bold">0 VNĐ</span>
                     </div>
                     <div class="d-flex align-items-center gap-2 text-success small mt-1 so_tien_giam"
                          style="display:none">
                         <span>Đã giảm:</span>
-                        <span class="tien_giam">0 ₫</span>
+                        <span class="tien_giam">0 VNĐ</span>
                     </div>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="tong_cong text-danger m-0">Tổng cộng: 0 ₫</h5>
+                    <h5 class="tong_cong text-danger m-0">Tổng cộng: 0 VNĐ</h5>
                     <button type="button" class="btn btn-primary nut_thanh_toan" id="btnMuaNgay">Mua ngay
                     </button>
                 </div>
@@ -109,8 +116,8 @@
     const danhSach = document.getElementById("danh_sach_san_pham");
 
     function dinhDangTien(amount) {
-        if (isNaN(amount)) return "0 ₫";
-        return amount.toLocaleString("vi-VN") + " ₫";
+        if (isNaN(amount)) return "0 VNĐ";
+        return amount.toLocaleString("vi-VN") + " VNĐ";
     }
 
     function capNhatTongTien() {

@@ -42,32 +42,32 @@
                     <label>
                         <input type="radio" name="chon-gia" value="duoi-5000000" <c:if
                                 test="${param['chon-gia'] == 'duoi-5000000'}">checked</c:if>>
-                        Dưới 5.000.000 ₫
+                        Dưới 5.000.000 VNĐ
                     </label>
                     <label>
                         <input type="radio" name="chon-gia" value="5-10" <c:if
                                 test="${param['chon-gia'] == '5-10'}">checked</c:if>>
-                        5.000.000 ₫ - 10.000.000 ₫
+                        5.000.000 VNĐ - 10.000.000 VNĐ
                     </label>
                     <label>
                         <input type="radio" name="chon-gia" value="10-20" <c:if
                                 test="${param['chon-gia'] == '10-20'}">checked</c:if>>
-                        10.000.000 ₫ - 20.000.000 ₫
+                        10.000.000 VNĐ - 20.000.000 VNĐ
                     </label>
                     <label>
                         <input type="radio" name="chon-gia" value="tren-20" <c:if
                                 test="${param['chon-gia'] == 'tren-20'}">checked</c:if>>
-                        Trên 20.000.000 ₫
+                        Trên 20.000.000 VNĐ
                     </label>
                     <p><b>Nhập vào khoảng giá bạn muốn</b></p>
                     <div class="d-flex align-items-center gap-1">
                         <input type="number" name="gia-tu" id="gia-tu"
                                class="form-control form-control-sm" value="${param['gia-tu']}"
-                               placeholder="Từ ₫" style="width: 100px;">
+                               placeholder="Từ VNĐ" style="width: 100px;">
                         <span>-</span>
                         <input type="number" name="gia-den" id="gia-den"
                                class="form-control form-control-sm" value="${param['gia-den']}"
-                               placeholder="Đến ₫" style="width: 100px;">
+                               placeholder="Đến VNĐ" style="width: 100px;">
                     </div>
                     <hr class="my-2">
                     <h6><i class="bi bi-box"></i> Lọc theo thương hiệu</h6>
@@ -158,11 +158,11 @@
                     </div>
                     <h3 class="ten-san-pham">${p.productName}</h3>
                     <div class="gia">
-                        <b>${formatter.format(p.finalPrice)} ₫</b>
+                        <b>${formatter.format(p.finalPrice)} VNĐ</b>
 
                         <c:if test="${p.price > p.finalPrice}">
                                             <span class="gia-goc">
-                                                ${formatter.format(p.price)} ₫
+                                                ${formatter.format(p.price)} VNĐ
                                             </span>
                         </c:if>
                     </div>
@@ -208,7 +208,8 @@
     </div>
     <div class="phan-trang text-center mt-4">
         <button class="btn btn-outline-primary nut-truoc">« Trang trước</button>
-        <span class="so-trang-hien-tai mx-3">Trang <span id="trang-hien-tai">1</span> / <span id="tong-trang"></span></span>
+        <span class="so-trang-hien-tai mx-3">Trang <span id="trang-hien-tai">1</span> / <span
+                id="tong-trang"></span></span>
         <button class="btn btn-outline-primary nut-sau">Trang sau »</button>
     </div>
 </section>
