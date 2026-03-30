@@ -32,7 +32,6 @@ public class Register extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirm");
         String phone = request.getParameter("phoneNumber");
-        String cccd = request.getParameter("cccd");
         String birthdayStr = request.getParameter("birthday");
         boolean hasError = false;
         Date birthday = null;
@@ -67,10 +66,6 @@ public class Register extends HttpServlet {
             request.setAttribute("phoneError", "Số điện thoại không đúng định dạng (10 số, bắt đầu bằng 0)");
             hasError = true;
         }
-        if (!Validator.isValidCCCD(cccd)) {
-            request.setAttribute("cccdError", "CCCD không đúng định dạng (12 chữ số)");
-            hasError = true;
-        }
         if (authService.isPhoneNumberExists(phone)) {
             request.setAttribute("phoneError", "Số điện thoại đã tồn tại trong hệ thống");
             hasError = true;
@@ -83,22 +78,17 @@ public class Register extends HttpServlet {
             request.setAttribute("usernameError", "Username đã tồn tại");
             hasError = true;
         }
-        if (new vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.UserDAO().isCccdExists(cccd)) {
-            request.setAttribute("cccdError", "CCCD đã tồn tại trong hệ thống");
-            hasError = true;
-        }
         if (hasError) {
             request.setAttribute("fullName", fullName);
             request.setAttribute("email", email);
             request.setAttribute("username", username);
             request.setAttribute("phoneNumber", phone);
-            request.setAttribute("cccd", cccd);
             request.setAttribute("birthday", birthdayStr);
             request.getRequestDispatcher("page/register.jsp").forward(request, response);
             return;
         }
         AuthService.RegisterDTO registerData = authService.prepareRegister(
-                fullName, email, username, password, phone, cccd, birthday);
+                fullName, email, username, password, phone, birthday);
         HttpSession session = request.getSession();
         session.setAttribute("registerUser", registerData.getUser());
         session.setAttribute("registerOtp", registerData.getOtp());

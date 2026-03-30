@@ -53,11 +53,11 @@
                         </h3>
                         <div class="gia-block">
                                             <span class="gia-moi">
-                                                <fmt:formatNumber value="${p.finalPrice}" type="number"/> ₫
+                                                <fmt:formatNumber value="${p.finalPrice}" type="number"/> VNĐ
                                             </span>
                             <c:if test="${p.price > p.finalPrice}">
                                                 <span class="gia-cu">
-                                                    <fmt:formatNumber value="${p.price}" type="number"/> ₫
+                                                    <fmt:formatNumber value="${p.price}" type="number"/> VNĐ
                                                 </span>
                             </c:if>
                         </div>

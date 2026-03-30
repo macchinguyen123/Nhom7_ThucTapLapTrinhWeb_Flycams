@@ -54,9 +54,15 @@
         <c:if test="${not empty items}">
             <c:forEach var="item" items="${items}">
                 <div class="d-flex align-items-center mb-3">
-                    <img src="${not empty item.product.images
-                    ? item.product.images[0].imageUrl
-                    : pageContext.request.contextPath.concat('/image/no-image.png')}" width="60" class="me-3 prod-img">
+                    <c:choose>
+                        <c:when test="${not empty item.product.images}">
+                            <c:set var="imgSrc" value="${item.product.images[0].imageUrl}"/>
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="imgSrc" value="${pageContext.request.contextPath}/image/no-image.png"/>
+                        </c:otherwise>
+                    </c:choose>
+                    <img src="${imgSrc}" width="60" class="me-3 prod-img">
                     <div>
                         <p class="mb-0 fw-semibold">
                                 ${item.product.productName}
@@ -66,7 +72,7 @@
                         </small>
                     </div>
                     <span class="ms-auto fw-semibold">
-                                            <fmt:formatNumber value="${item.price * item.quantity}" type="number"/> ₫
+                                            <fmt:formatNumber value="${item.price * item.quantity}" type="number"/> VNĐ
                                         </span>
                 </div>
             </c:forEach>
@@ -78,7 +84,7 @@
             <div class="d-flex justify-content-between">
                 <span>Tạm tính</span>
                 <span>
-                    <fmt:formatNumber value="${total}" type="number"/> ₫
+                    <fmt:formatNumber value="${total}" type="number"/> VNĐ
                 </span>
             </div>
             <div class="d-flex justify-content-between mb-2">
@@ -86,7 +92,7 @@
                 <span>
                     <c:choose>
                         <c:when test="${shippingFee > 0}">
-                            <fmt:formatNumber value="${shippingFee}" type="number"/> ₫
+                            <fmt:formatNumber value="${shippingFee}" type="number"/> VNĐ
                         </c:when>
                         <c:otherwise>Miễn phí</c:otherwise>
                     </c:choose>
@@ -96,7 +102,7 @@
             <div class="d-flex justify-content-between fw-bold total">
                 <span>Tổng cộng</span>
                 <span>
-                    <fmt:formatNumber value="${total + shippingFee}" type="number"/> ₫
+                    <fmt:formatNumber value="${total + shippingFee}" type="number"/> VNĐ
                 </span>
             </div>
         </c:if>

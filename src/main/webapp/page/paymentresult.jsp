@@ -23,7 +23,7 @@
     <p><b><%=txnRef%>
     </b></p>
     <p>Số tiền thanh toán</p>
-    <p class="amount"><%=Long.parseLong(amount) / 100%> ₫</p>
+    <p class="amount"><%=Long.parseLong(amount) / 100%> VNĐ</p>
     <% } else { %>
     <div class="fail">✖</div>
     <h4 class="mt-3">Thanh toán thất bại</h4>

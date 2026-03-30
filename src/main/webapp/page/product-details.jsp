@@ -110,11 +110,11 @@
                 </div>
                 <div class="price my-3">
                                         <span class="fs-1 fw-bold text-danger">
-                                            ${formatter.format(product.finalPrice)} ₫
+                                            ${formatter.format(product.finalPrice)} VNĐ
                                         </span>
                     <c:if test="${product.price > product.finalPrice}">
                                             <span class="text-muted text-decoration-line-through ms-2">
-                                                ${formatter.format(product.price)} ₫
+                                                ${formatter.format(product.price)} VNĐ
                                             </span>
                         <c:if test="${discountPercent > 0}">
                             <div class="discount-badge">-${discountPercent}%</div>
@@ -309,10 +309,10 @@
                                 ${p.productName}
                         </h3>
                         <div class="gia">
-                            <b>${formatter.format(p.finalPrice)} ₫</b>
+                            <b>${formatter.format(p.finalPrice)} VNĐ</b>
                             <c:if test="${p.price >= p.finalPrice}">
                                                     <span class="gia-goc">
-                                                        ${formatter.format(p.price)} ₫
+                                                        ${formatter.format(p.price)} VNĐ
                                                     </span>
                             </c:if>
                         </div>
@@ -433,8 +433,8 @@
     const productUrl = window.location.href;
     const productTitle = "${product.productName}";
     const productImage = "${not empty product.images ? product.images[0].imageUrl : ''}";
-    const productPrice = "${formatter.format(product.finalPrice)} ₫";
-    const productDescription = "Xem chi tiết sản phẩm ${product.productName} với giá ${formatter.format(product.finalPrice)} ₫";
+    const productPrice = "${formatter.format(product.finalPrice)} VNĐ";
+    const productDescription = "Xem chi tiết sản phẩm ${product.productName} với giá ${formatter.format(product.finalPrice)} VNĐ";
 
     function shareOnFacebook() {
         const facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(productUrl);

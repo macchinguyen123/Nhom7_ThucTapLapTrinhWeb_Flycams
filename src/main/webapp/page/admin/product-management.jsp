@@ -555,7 +555,7 @@
     });
 </script>
 <script>
-    const contextPath = '<%= request.getContextPath() %>';
+    const contextPath = '${pageContext.request.contextPath}';
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {

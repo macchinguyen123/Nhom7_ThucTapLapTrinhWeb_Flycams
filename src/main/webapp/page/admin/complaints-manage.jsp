@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -55,14 +56,14 @@
                     ${sessionScope.message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <% request.getSession().removeAttribute("message"); %>
+            <c:remove var="message" scope="session"/>
         </c:if>
         <c:if test="${not empty sessionScope.error}">
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     ${sessionScope.error}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <% request.getSession().removeAttribute("error"); %>
+            <c:remove var="error" scope="session"/>
         </c:if>
         <div class="complaint-card">
             <div class="d-flex justify-content-between align-items-center mb-3">

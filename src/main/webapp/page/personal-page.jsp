@@ -219,24 +219,24 @@
                                         <span class="badge bg-primary"><i class="bi bi-box-seam me-1"></i> Đang xử lý</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'OUT_FOR_DELIVERY'}">
-                                                                <span class="badge bg-info text-dark"><i class="bi bi-truck me-1"></i> Đang giao</span>
+                                        <span class="badge bg-info text-dark"><i class="bi bi-truck me-1"></i> Đang giao</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'DELIVERED'}">
-                                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Hoàn thành</span>
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Hoàn thành</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'CANCELLED'}">
-                                                                <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Đã huỷ</span>
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Đã huỷ</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURN_REQUESTED'}">
-                                                                <span class="badge bg-info text-dark"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</span>
+                                        <span class="badge bg-info text-dark"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURNED'}">
-                                                                <span class="badge bg-secondary"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</span>
+                                        <span class="badge bg-secondary"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</span>
                                     </c:when>
                                 </c:choose>
                             </td>
                             <td>
-                                <fmt:formatNumber value="${o.totalPrice}" type="number"/> ₫
+                                <fmt:formatNumber value="${o.totalPrice}" type="number"/> VNĐ
                             </td>
                             <td class="thao-tac-col">
                                 <a class="btn btn-view btn-sm"
@@ -488,7 +488,7 @@
                                 <div>Số lượng: ${item.quantity}</div>
                                 <div>
                                     Giá:
-                                    <fmt:formatNumber value="${item.price}" type="number"/> đ
+                                    <fmt:formatNumber value="${item.price}" type="number"/> VNĐ
                                 </div>
                             </div>
                         </a>
@@ -508,7 +508,7 @@
                                 <strong>
                                     Tổng tiền:
                                     <fmt:formatNumber value="${selectedOrder.totalPrice}"
-                                                      type="number"/> ₫
+                                                      type="number"/> VNĐ
                                 </strong>
                             </p>
                             <p>Phương thức: ${selectedOrder.paymentMethod}</p>
@@ -1083,6 +1083,7 @@
     const editProvinceSelect = document.getElementById("editProvince");
     const editDistrictSelect = document.getElementById("editDistrict");
     const editWardSelect = document.getElementById("editWard");
+
     function openEditPopup(id, fullName, phoneNumber, addressLine, province, district, ward, isDefault) {
         document.getElementById("editId").value = id;
         document.getElementById("editFullName").value = fullName;
@@ -1254,7 +1255,7 @@
                 timer: 1000,
                 showConfirmButton: false
             });
-            <% session.removeAttribute("success"); %>
+            <c:remove var="success" scope="session"/>
         }
         if (errorMsg && errorMsg !== "") {
             Swal.fire({
@@ -1262,7 +1263,7 @@
                 title: 'Lỗi',
                 text: errorMsg
             });
-            <% session.removeAttribute("error"); %>
+            <c:remove var="error" scope="session"/>
         }
     });
 </script>

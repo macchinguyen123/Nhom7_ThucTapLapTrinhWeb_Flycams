@@ -118,11 +118,11 @@
                     </div>
                     <h3 class="ten-san-pham">${p.productName}</h3>
                     <div class="gia">
-                        <b>${formatter.format(p.finalPrice)} ₫</b>
+                        <b>${formatter.format(p.finalPrice)} VNĐ</b>
 
                         <c:if test="${p.price > p.finalPrice}">
                                             <span class="gia-goc">
-                                                ${formatter.format(p.price)}  ₫
+                                                ${formatter.format(p.price)}  VNĐ
                                             </span>
                         </c:if>
                     </div>
@@ -201,10 +201,10 @@
                     </div>
                     <h3 class="ten-san-pham">${p.productName}</h3>
                     <div class="gia">
-                        <b>${formatter.format(p.finalPrice)} ₫</b>
+                        <b>${formatter.format(p.finalPrice)} VNĐ</b>
                         <c:if test="${p.price > p.finalPrice}">
                                             <span class="gia-goc">
-                                                ${formatter.format(p.price)} ₫
+                                                ${formatter.format(p.price)} VNĐ
                                             </span>
                         </c:if>
                     </div>
@@ -279,10 +279,10 @@
                     </div>
                     <h3 class="ten-san-pham">${p.productName}</h3>
                     <div class="gia">
-                        <b>${formatter.format(p.finalPrice)} ₫</b>
+                        <b>${formatter.format(p.finalPrice)} VNĐ</b>
                         <c:if test="${p.price > p.finalPrice}">
                                             <span class="gia-goc">
-                                                ${formatter.format(p.price)} ₫
+                                                ${formatter.format(p.price)} VNĐ
                                             </span>
                         </c:if>
                     </div>
@@ -355,10 +355,10 @@
                     </div>
                     <h3 class="ten-san-pham">${p.productName}</h3>
                     <div class="gia">
-                        <b>${formatter.format(p.finalPrice)} ₫</b>
+                        <b>${formatter.format(p.finalPrice)} VNĐ</b>
                         <c:if test="${p.price > p.finalPrice}">
                                             <span class="gia-goc">
-                                                ${formatter.format(p.price)} ₫
+                                                ${formatter.format(p.price)} VNĐ
                                             </span>
                         </c:if>
                     </div>

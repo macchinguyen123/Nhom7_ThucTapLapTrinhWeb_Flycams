@@ -48,8 +48,8 @@ public class UserDAO {
         return null; //mật khẩu không đúng hoặc không tìm thấy user
     }
     public boolean insertUser(User user) {
-        String sql = "INSERT INTO users (roleId, fullName, birthDate, gender, email, username, password, phoneNumber, cccd, avatar, status, createdAt, updatedAt) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        String sql = "INSERT INTO users (roleId, fullName, birthDate, gender, email, username, password, phoneNumber, avatar, status, createdAt, updatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, user.getRoleId());
@@ -66,10 +66,9 @@ public class UserDAO {
             ps.setString(6, user.getUsername());
             ps.setString(7, user.getPassword());
             ps.setString(8, user.getPhoneNumber());
-            ps.setString(9, user.getCccd());
             //avatar
-            ps.setString(10, user.getAvatar() == null ? "default.png" : user.getAvatar());
-            ps.setBoolean(11, user.isStatus());
+            ps.setString(9, user.getAvatar() == null ? "default.png" : user.getAvatar());
+            ps.setBoolean(10, user.isStatus());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
