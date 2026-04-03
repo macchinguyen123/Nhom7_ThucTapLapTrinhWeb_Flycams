@@ -225,3 +225,14 @@ a {
     object-position: center;
     display: block;
 }
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    margin: 0;
+    line-height: 1;
+}
