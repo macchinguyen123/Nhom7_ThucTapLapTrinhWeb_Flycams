@@ -255,13 +255,14 @@
     </div>
 </a>
 <section class="phan-san-pham-1">
+    <div class="section-header">
     <h2>DRONE QUAY PHIM</h2>
+        <button class="xem" onclick="location.href='${pageContext.request.contextPath}/Category?id=1001'">Xem Tất Cả »</button>
+    </div>
     <div class="khung-san-pham-1">
-        <a href="product-details.jsp">
             <div class="poster">
                 <img src="${pageContext.request.contextPath}/image/banner/img_2.png" alt="Poster 1">
             </div>
-        </a>
         <c:forEach var="p" items="${quayPhim}">
             <div class="san-pham">
                 <a class="link-chi-tiet"
@@ -326,18 +327,16 @@
             </div>
         </c:forEach>
     </div>
-    <a href="${pageContext.request.contextPath}/Category?id=1001">
-        <button class="xem">Xem Tất Cả »</button>
-    </a>
 </section>
 <section class="phan-san-pham-1">
+    <div class="section-header">
     <h2>DRONE MINI</h2>
+        <button class="xem" onclick="location.href='${pageContext.request.contextPath}/Category?id=1004'">Xem Tất Cả »</button>
+    </div>
     <div class="khung-san-pham-1">
-        <a href="product-details.jsp">
             <div class="poster">
                 <img src="${pageContext.request.contextPath}/image/banner/img.png" alt="Poster 1">
             </div>
-        </a>
         <c:forEach var="p" items="${mini}">
             <div class="san-pham">
                 <a class="link-chi-tiet"
@@ -402,9 +401,6 @@
             </div>
         </c:forEach>
     </div>
-    <a href="${pageContext.request.contextPath}/Category?id=1004">
-        <button class="xem">Xem Tất Cả »</button>
-    </a>
 </section>
 <section class="related-articles">
     <h2>BÀI VIẾT MỚI NHẤT</h2>
