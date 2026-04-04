@@ -19,6 +19,11 @@ public class Article extends HttpServlet {
 
         int blogId = Integer.parseInt(request.getParameter("id"));
         ArticleService articleService = new ArticleService();
+
+        if (request.getSession().getAttribute("viewed_post_" + blogId) == null) {
+            articleService.incrementView(blogId);
+            request.getSession().setAttribute("viewed_post_" + blogId, true);
+        }
         Post post = articleService.getPostById(blogId);
         User user = (User) request.getSession().getAttribute("user");
         boolean hasReviewed = user != null && articleService.hasUserReviewed(blogId, user.getId());

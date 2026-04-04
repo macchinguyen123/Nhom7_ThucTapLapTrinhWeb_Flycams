@@ -411,6 +411,7 @@
                     <img src="${empty post.image ? '/assets/no-image.png' : post.image}"
                          alt="${post.title}">
                     <p>${post.title}</p>
+                    <small><i class="bi bi-eye"></i> ${post.viewCount} lượt xem</small>
                 </a>
             </div>
         </c:forEach>
