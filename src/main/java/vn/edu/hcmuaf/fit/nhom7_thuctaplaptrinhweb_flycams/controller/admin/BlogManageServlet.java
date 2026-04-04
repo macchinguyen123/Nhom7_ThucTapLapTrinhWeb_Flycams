@@ -48,7 +48,7 @@ public class BlogManageServlet extends HttpServlet {
             String content = request.getParameter("content");
             String image = request.getParameter("image");
             int productId = Integer.parseInt(request.getParameter("productId"));
-            Post post = new Post(id, title, content, image, null, productId);
+            Post post = new Post(id, title, content, image, null, productId, 0);
             articleService.updatePost(post);
             response.sendRedirect(
                     request.getContextPath() + "/admin/blog-manage?msg=updated");
@@ -58,7 +58,7 @@ public class BlogManageServlet extends HttpServlet {
             String content = request.getParameter("content");
             String image = request.getParameter("image");
             int productId = Integer.parseInt(request.getParameter("productId"));
-            Post post = new Post(0, title, content, image, null, productId);
+            Post post = new Post(0, title, content, image, null, productId,0);
             boolean success = articleService.addPost(post);
             response.sendRedirect(
                     request.getContextPath() +

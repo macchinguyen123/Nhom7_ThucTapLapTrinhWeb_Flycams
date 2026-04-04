@@ -65,4 +65,8 @@ public class ArticleService {
     public boolean deletePost(int postId) {
         return postDAO.deletePost(postId);
     }
+
+    public void incrementView(int postId) {
+        blogDAO.incrementView(postId);
+    }
 }

@@ -23,6 +23,9 @@
                 <fmt:formatDate value="${post.createdAt}" pattern="dd/MM/yyyy"/>
             </span>
             <span class="author">by Admin</span>
+            <span class="view-count">
+        <i class="bi bi-eye"></i> ${post.viewCount} lượt xem
+    </span>
         </div>
         <h1 class="article-title">${post.title}</h1>
     </header>

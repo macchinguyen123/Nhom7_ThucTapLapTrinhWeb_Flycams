@@ -10,17 +10,19 @@ public class Post implements Serializable {
     private String image;
     private Date createdAt;
     private int productId;
+    private int view;
 
     public Post() {
     }
 
-    public Post(int id, String title, String content, String image, Date createdAt, int productId) {
+    public Post(int id, String title, String content, String image, Date createdAt, int productId, int view ) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.image = image;
         this.createdAt = createdAt;
         this.productId = productId;
+        this.view = view;
     }
 
     public int getId() {
@@ -70,4 +72,8 @@ public class Post implements Serializable {
     public void setProductId(int productId) {
         this.productId = productId;
     }
+
+    public int getViewCount() { return view; }
+
+    public void setViewCount(int view) { this.view = view; }
 }

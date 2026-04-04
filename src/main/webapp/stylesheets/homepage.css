@@ -236,3 +236,41 @@ a {
     margin: 0;
     line-height: 1;
 }
+.related-item a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.related-item a small {
+    margin-top: auto;
+    padding-top: 8px;
+}
+.related-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.related-item a {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+
+.related-item p {
+    flex: 1;
+}
+
+.related-item a small {
+    display: block;
+    margin-top: auto;
+    padding: 0 10px 10px;
+    color: #666;
+}
+
+.related-grid {
+    align-items: stretch;
+}

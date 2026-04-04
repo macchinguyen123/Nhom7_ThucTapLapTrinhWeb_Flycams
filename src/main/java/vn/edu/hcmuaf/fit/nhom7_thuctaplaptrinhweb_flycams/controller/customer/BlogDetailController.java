@@ -31,7 +31,10 @@ public class BlogDetailController extends HttpServlet {
             User user = (User) session.getAttribute("user");
             hasReviewed = articleService.hasUserReviewed(postId, user.getId());
         }
-        request.setAttribute("hasReviewed", hasReviewed);
+        if (request.getSession().getAttribute("viewed_post_" + postId) == null) {
+            articleService.incrementView(postId);
+            request.getSession().setAttribute("viewed_post_" + postId, true);
+        }        request.setAttribute("hasReviewed", hasReviewed);
         request.getRequestDispatcher("/page/article.jsp")
                 .forward(request, response);
     }
