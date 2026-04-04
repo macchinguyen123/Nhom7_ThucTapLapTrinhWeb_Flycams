@@ -106,32 +106,51 @@
 
         function validateLoginInput() {
             const value = loginInput.value.trim();
-            if (value === '') {
-                loginInputError.style.display = 'none';
-                return false;
-            }
-            const isPossibleEmail = value.includes('@');
-            const isPossiblePhone = /^\d+$/.test(value);
-            if (isPossibleEmail) {
-                const emailRegex = /^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
-                if (!emailRegex.test(value)) {
-                    loginInputError.textContent = "Email không đúng định dạng. Vui lòng kiểm tra lại.";
-                    loginInputError.style.display = 'block';
-                    return false;
-                }
-            } else if (isPossiblePhone) {
-                const phoneRegex = /^0\d{9}$/;
-                if (!phoneRegex.test(value)) {
-                    loginInputError.textContent = "Số điện thoại không đúng định dạng. Vui lòng kiểm tra lại.";
-                    loginInputError.style.display = 'block';
-                    return false;
-                }
-            } else {
-                loginInputError.textContent = "Vui lòng nhập đúng định dạng Email hoặc Số điện thoại.";
+            const showError = (msg) => {
+                loginInputError.textContent = msg;
                 loginInputError.style.display = 'block';
+                loginInput.style.borderColor = '#dc3545'; // Viền đỏ khi lỗi
                 return false;
+            };
+            const clearError = () => {
+                loginInputError.style.display = 'none';
+                loginInput.style.borderColor = '';
+            };
+            clearError();
+            if (value === '') {
+                return showError("Không được để trống");
             }
-            loginInputError.style.display = 'none';
+            let type = 'unknown';
+            if (value.includes('@')) {
+                type = 'email';
+            } else if (/^[0-9]/.test(value)) {
+                type = 'phone';
+            }
+            if (type === 'unknown') {
+                return showError("Sai định dạng số điện thoại hoặc email");
+            }
+            if (type === 'phone') {
+                if (/[^0-9]/.test(value)) {
+                    return showError("Số điện thoại không được chứa ký tự đặc biệt hoặc chữ cái");
+                }
+                if (!value.startsWith('0')) {
+                    return showError("Số điện thoại phải bắt đầu bằng 0");
+                }
+                if (value.length < 10 || value.length > 11) {
+                    return showError("Số điện thoại phải có 10-11 chữ số");
+                }
+            } else if (type === 'email') {
+                if (/[^a-zA-Z0-9._@]/.test(value)) {
+                    return showError("Email chứa ký tự không hợp lệ");
+                }
+                if (value.length < 6 || value.length > 50) {
+                    return showError("Email cần từ 6-50 ký tự");
+                }
+                const emailRegex = /^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(value)) {
+                    return showError("Email không đúng định dạng");
+                }
+            }
             return true;
         }
 

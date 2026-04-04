@@ -115,129 +115,112 @@
 </div>
 </body>
 <script>
+    let isFormSubmitted = false;
     function validateForm() {
-        const username = document.getElementById('local').value;
-        const fullname = document.getElementById('fullname').value;
-        const birthday = document.getElementById('birthday').value;
-        const phone = document.getElementById('phone').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const confirm = document.getElementById('confirm').value;
-        const submitBtn = document.getElementById('submitBtn');
+        const usernameInput = document.getElementById('local');
+        const username = usernameInput.value;
+        const fullnameInput = document.getElementById('fullname');
+        const fullname = fullnameInput.value;
+        const birthdayInput = document.getElementById('birthday');
+        const birthday = birthdayInput.value;
+        const phoneInput = document.getElementById('phone');
+        const phone = phoneInput.value;
+        const emailInput = document.getElementById('email');
+        const email = emailInput.value;
+        const passwordInput = document.getElementById('password');
+        const password = passwordInput.value;
+        const confirmInput = document.getElementById('confirm');
+        const confirm = confirmInput.value;
         let isValid = true;
-        const usernameSpecialCharRegex = /[^a-zA-Z0-9À-ỹ\s]/;
-        const usernameLengthRegex = /^[a-zA-Z0-9À-ỹ\s]{6,20}$/;
-        if (username.length > 0) {
-            if (usernameSpecialCharRegex.test(username)) {
-                document.getElementById('username_error').textContent = "Không được có ký tự đặc biệt";
-                isValid = false;
-            } else if (username.length < 6 || username.length > 20) {
-                document.getElementById('username_error').textContent = "Cần 6-20 ký tự";
-                isValid = false;
-            } else {
-                document.getElementById('username_error').textContent = "";
+        window.firstErrorInput = null;
+        const setError = (inputEl, errorId, msg) => {
+            document.getElementById(errorId).textContent = msg;
+            if (inputEl) {
+                inputEl.style.borderColor = '#dc3545';
+                if (!window.firstErrorInput) {
+                    window.firstErrorInput = inputEl;
+                }
             }
-        } else {
-            document.getElementById('username_error').textContent = "";
-        }
-        if (fullname.length > 0) {
-            if (fullname.trim() === "") {
-                document.getElementById('fullname_error').textContent = "Họ tên không được để trống";
-                isValid = false;
-            } else {
-                document.getElementById('fullname_error').textContent = "";
+            isValid = false;
+        };
+        const clearError = (inputEl, errorId) => {
+            document.getElementById(errorId).textContent = "";
+            if (inputEl) {
+                inputEl.style.borderColor = '';
             }
-        } else {
-            document.getElementById('fullname_error').textContent = "";
-        }
-        if (birthday.length > 0) {
-            if (isNaN(new Date(birthday).getTime())) {
-                document.getElementById('birthday_error').textContent = "Ngày sinh không hợp lệ";
-                isValid = false;
+        };
+        if (username.length === 0) {
+            if (window.isInitialLoadDone || isFormSubmitted) {
+                setError(usernameInput, 'username_error', "Không được để trống");
             } else {
-                document.getElementById('birthday_error').textContent = "";
+                clearError(usernameInput, 'username_error');
             }
+        } else if (username.includes(" ")) {
+            setError(usernameInput, 'username_error', "Tên đăng nhập không được chứa khoảng trắng");
+        } else if (/[^a-zA-Z0-9]/.test(username)) {
+            setError(usernameInput, 'username_error', "Không được có ký tự đặc biệt");
+        } else if (username.length < 6 || username.length > 20) {
+            setError(usernameInput, 'username_error', "Cần 6-20 ký tự");
         } else {
-            document.getElementById('birthday_error').textContent = "";
+            clearError(usernameInput, 'username_error');
         }
-        const validPrefixes = [
-            '032','033','034','035','036','037','038','039','086','096','097','098','070','076','077','078','079',
-            '089','090','093','056','058','092','059','099','081','082','083','084','085','088','091','094',];
+        if (fullname.length > 0 || isFormSubmitted) {
+            if (fullname.trim() === "") setError(fullnameInput, 'fullname_error', "Họ tên không được để trống");
+            else clearError(fullnameInput, 'fullname_error');
+        } else {
+            clearError(fullnameInput, 'fullname_error');
+        }
+        if (birthday.length > 0 || isFormSubmitted) {
+            if (!birthday || isNaN(new Date(birthday).getTime())) setError(birthdayInput, 'birthday_error', "Ngày sinh không hợp lệ");
+            else clearError(birthdayInput, 'birthday_error');
+        } else {
+            clearError(birthdayInput, 'birthday_error');
+        }
+        const validPrefixes = ['032','033','034','035','036','037','038','039','086','096','097','098','070','076','077','078','079','089','090','093','056','058','092','059','099','081','082','083','084','085','088','091','094'];
         const phoneRegex = /^0\d{9}$/;
-        if (phone.length > 0) {
-            if (phone[0] !== '0') {
-                document.getElementById('phone_error').textContent = "Số điện thoại phải bắt đầu bằng số 0";
-                isValid = false;
-            } else if (phone.length < 10) {
-                document.getElementById('phone_error').textContent = "SĐT phải đúng 10 chữ số";
-                isValid = false;
-            } else if (!phoneRegex.test(phone)) {
-                document.getElementById('phone_error').textContent = "SĐT phải đúng 10 chữ số";
-                isValid = false;
-            } else if (!validPrefixes.some(prefix => phone.startsWith(prefix))) {
-                document.getElementById('phone_error').textContent = "Vui lòng sử dụng số điện thoại Việt Nam";
-                isValid = false;
-            } else {
-                document.getElementById('phone_error').textContent = "";
-            }
+        if (phone.length > 0 || isFormSubmitted) {
+            if (phone.length === 0) setError(phoneInput, 'phone_error', "Số điện thoại không được để trống");
+            else if (phone[0] !== '0') setError(phoneInput, 'phone_error', "Số điện thoại phải bắt đầu bằng số 0");
+            else if (phone.length < 10 || !phoneRegex.test(phone)) setError(phoneInput, 'phone_error', "SĐT phải đúng 10 chữ số");
+            else if (!validPrefixes.some(prefix => phone.startsWith(prefix))) setError(phoneInput, 'phone_error', "Vui lòng sử dụng số điện thoại Việt Nam");
+            else clearError(phoneInput, 'phone_error');
         } else {
-            document.getElementById('phone_error').textContent = "";
+            clearError(phoneInput, 'phone_error');
         }
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (email.length > 0) {
-            if (!emailRegex.test(email)) {
-                document.getElementById('email_error').textContent = "Email không đúng định dạng";
-                isValid = false;
-            } else {
-                document.getElementById('email_error').textContent = "";
-            }
+            if (!emailRegex.test(email)) setError(emailInput, 'email_error', "Email không đúng định dạng");
+            else clearError(emailInput, 'email_error');
         } else {
-            document.getElementById('email_error').textContent = "";
+            clearError(emailInput, 'email_error');
         }
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-        if (password.length > 0) {
-            if (password.length < 8) {
-                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 8 ký tự";
-                isValid = false;
-            } else if (!/[A-Z]/.test(password)) {
-                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 chữ hoa";
-                isValid = false;
-            } else if (!/[a-z]/.test(password)) {
-                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 chữ thường";
-                isValid = false;
-            } else if (!/\d/.test(password)) {
-                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 chữ số";
-                isValid = false;
-            } else if (!/[\W_]/.test(password)) {
-                document.getElementById('password_error').textContent = "Mật khẩu phải có ít nhất 1 ký tự đặc biệt";
-                isValid = false;
-            } else {
-                document.getElementById('password_error').textContent = "";
-            }
+        if (password.length > 0 || isFormSubmitted) {
+            if (password.length === 0) setError(passwordInput, 'password_error', "Mật khẩu không được để trống");
+            else if (password.length < 8) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 8 ký tự");
+            else if (!/[A-Z]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 chữ hoa");
+            else if (!/[a-z]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 chữ thường");
+            else if (!/\d/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 chữ số");
+            else if (!/[\W_]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 ký tự đặc biệt");
+            else clearError(passwordInput, 'password_error');
         } else {
-            document.getElementById('password_error').textContent = "";
+            clearError(passwordInput, 'password_error');
         }
-        if (confirm.length > 0) {
-            if (confirm !== password) {
-                document.getElementById('confirm_error').textContent = "Mật khẩu không khớp";
-                isValid = false;
-            } else {
-                document.getElementById('confirm_error').textContent = "";
-            }
+        if (confirm.length > 0 || isFormSubmitted) {
+            if (confirm.length === 0) setError(confirmInput, 'confirm_error', "Vui lòng nhập lại mật khẩu");
+            else if (confirm !== password) setError(confirmInput, 'confirm_error', "Mật khẩu không khớp");
+            else clearError(confirmInput, 'confirm_error');
         } else {
-            document.getElementById('confirm_error').textContent = "";
+            clearError(confirmInput, 'confirm_error');
         }
-        const usernameValid = !usernameSpecialCharRegex.test(username) && usernameLengthRegex.test(username);
-        if (!usernameValid ||
-            fullname.trim() === "" || 
-            !birthday || 
-            !phoneRegex.test(phone) || 
-            !emailRegex.test(email) || 
-            !passwordRegex.test(password) || 
-            confirm !== password) {
-            isValid = false;
+        const promoCheckbox = document.getElementById('promo');
+        const promoLabel = document.querySelector('label[for="promo"]');
+        if (isFormSubmitted && promoCheckbox && !promoCheckbox.checked) {
+             if (promoLabel) promoLabel.style.color = '#dc3545';
+             isValid = false;
+        } else if (promoLabel) {
+             promoLabel.style.color = '';
         }
-        submitBtn.disabled = !isValid;
+        return isValid;
     }
     document.addEventListener('DOMContentLoaded', function () {
         const togglePassword = document.getElementById('togglePassword');
@@ -261,6 +244,25 @@
             });
         }
         validateForm();
+        window.isInitialLoadDone = true;
+        const form = document.querySelector('.register-form');
+        if (form) {
+            form.setAttribute('novalidate', '');
+            form.addEventListener('submit', function(e) {
+                isFormSubmitted = true;
+                const isValid = validateForm();
+                if (!isValid) {
+                    e.preventDefault();
+                    if (window.firstErrorInput) {
+                        window.firstErrorInput.focus();
+                    }
+                }
+            });
+            const promoCheckbox = document.getElementById('promo');
+            if (promoCheckbox) {
+                promoCheckbox.addEventListener('change', validateForm);
+            }
+        }
     });
     function onlyNumber(input) {
         input.value = input.value.replace(/[^0-9]/g, '');
