@@ -173,8 +173,20 @@
             e.target.classList.contains("nut_giam")) {
             const input = sp.querySelector(".o_so_luong");
             let soLuong = parseInt(input.value);
-            if (e.target.classList.contains("nut_tang")) soLuong++;
-            else if (soLuong > 1) soLuong--;
+            if (e.target.classList.contains("nut_tang")) {
+                soLuong++;
+            } else if (e.target.classList.contains("nut_giam")) {
+                if (soLuong > 1) {
+                    soLuong--;
+                } else {
+                    if (typeof showNotification === 'function') {
+                        showNotification("Số lượng tối thiểu là 1", "error");
+                    } else {
+                        alert("Số lượng tối thiểu là 1");
+                    }
+                    return;
+                }
+            }
             const productId = sp.dataset.id;
             // cập nhật lên server
             fetch("${pageContext.request.contextPath}/UpdateCartQuantity", {

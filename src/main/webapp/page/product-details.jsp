@@ -643,6 +643,12 @@
                     qtyInput.value = val - 1;
                     quantityHidden.value = qtyInput.value;
                     buyNowQuantity.value = qtyInput.value;
+                } else {
+                    if (typeof showNotification === 'function') {
+                        showNotification("Số lượng tối thiểu là 1", "error");
+                    } else {
+                        alert("Số lượng tối thiểu là 1");
+                    }
                 }
             });
             plusBtn.addEventListener('click', () => {
