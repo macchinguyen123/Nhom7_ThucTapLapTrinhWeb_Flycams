@@ -19,7 +19,10 @@
                   class="search-bar position-relative">
                 <i class="bi bi-search" id="searchBtn" style="cursor: pointer;"></i>
                 <input id="searchInput" name="keyword" type="text" placeholder="Tìm kiếm drone, flycam..."
-                       autocomplete="off" value="${keyword != null ? keyword : ''}">
+                       autocomplete="off" value="${keyword != null ? keyword : ''}" style="padding-right: 35px;">
+                <i class="bi bi-x-circle-fill" id="clearSearchBtn"
+                   style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; color: #adb5bd;"
+                   title="Xóa nội dung tìm kiếm"></i>
                 <ul id="suggestList" class="list-group position-absolute w-100 shadow-sm"
                     style="top: 100%; left: 0; z-index: 1000; display: none;">
                 </ul>
@@ -119,6 +122,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const btnDanhMuc = document.getElementById('btnDanhMuc');
     const menuLeft = document.getElementById('menuLeft');
@@ -180,7 +184,26 @@
             localStorage.removeItem(this.storageKey);
         }
     };
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+    function updateClearBtnVisibility() {
+        if (searchInput.value.length > 0) {
+            clearSearchBtn.style.display = "block";
+        } else {
+            clearSearchBtn.style.display = "none";
+        }
+    }
+
+    updateClearBtnVisibility();
+    clearSearchBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        searchInput.value = "";
+        updateClearBtnVisibility();
+        searchInput.focus();
+        showSearchHistory();
+    });
     searchInput.addEventListener("input", function () {
+        updateClearBtnVisibility();
         triggerSuggest();
     });
     searchInput.addEventListener("focus", function () {
@@ -328,9 +351,32 @@
     }
 
     function clearAllHistory() {
-        if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử tìm kiếm?')) {
-            SearchHistory.clear();
-            showSearchHistory();
+        suggestList.style.display = "none";
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Xác nhận xóa',
+                text: 'Bạn có chắc muốn xóa toàn bộ lịch sử tìm kiếm?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Đồng ý, xóa!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    SearchHistory.clear();
+                    showSearchHistory();
+                } else {
+                    showSearchHistory();
+                }
+            });
+        } else {
+            if (confirm('Bạn có chắc muốn xóa toàn bộ lịch sử tìm kiếm?')) {
+                SearchHistory.clear();
+                showSearchHistory();
+            } else {
+                showSearchHistory();
+            }
         }
     }
 
