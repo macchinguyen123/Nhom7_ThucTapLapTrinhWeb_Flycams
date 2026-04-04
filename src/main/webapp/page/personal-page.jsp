@@ -55,8 +55,8 @@
             <a href="${pageContext.request.contextPath}/purchasehistory">
                 <button id="logoutBtn1">Lịch sử mua hàng</button>
             </a>
-            <a href="${pageContext.request.contextPath}/Logout">
-                <button id="logoutBtn">Đăng Xuất</button>
+            <a href="${pageContext.request.contextPath}/Logout" onclick="confirmLogout(event, this.href);">
+                <button id="logoutBtn" type="button">Đăng Xuất</button>
             </a>
         </div>
     </aside>
@@ -84,8 +84,10 @@
                     <div class="form-group">
                         <label for="phoneNumber">Số điện thoại</label>
                         <input type="text" name="phoneNumber" id="phoneNumber"
-                               value="${user.phoneNumber}" required pattern="[0-9]{10}"
-                               title="Số điện thoại phải bao gồm đúng 10 chữ số">
+                               value="${user.phoneNumber}" required pattern="0[0-9]{9}"
+                               title="Số điện thoại phải bắt đầu bằng số 0 và có 10 chữ số"
+                               oninvalid="validatePhoneNumber(this)"
+                               oninput="validatePhoneNumber(this)">
                     </div>
                 </div>
                 <div class="form-row">
@@ -117,14 +119,25 @@
                   action="SendOtpChangePassword">
                 <div class="form-group">
                     <label for="currentPassword">Mật khẩu hiện tại</label>
-                    <input type="password" name="currentPassword" id="currentPassword" required>
+                    <div style="position: relative;">
+                        <input type="password" name="currentPassword" id="currentPassword" required
+                               style="padding-right: 40px; box-sizing: border-box; width: 100%;">
+                        <i class="bi bi-eye-slash toggle-password"
+                           style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; font-size: 1.1rem;"></i>
+                    </div>
+                    <div id="currentPasswordFeedback" style="font-size: 0.85rem; margin-top: 5px; display: none;"></div>
                     <c:if test="${not empty currentPasswordError}">
                         <span class="error">${currentPasswordError}</span>
                     </c:if>
                 </div>
                 <div class="form-group">
                     <label for="newPassword">Mật khẩu mới</label>
-                    <input type="password" name="password" id="newPassword" required>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="newPassword" required
+                               style="padding-right: 40px; box-sizing: border-box; width: 100%;">
+                        <i class="bi bi-eye-slash toggle-password"
+                           style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; font-size: 1.1rem;"></i>
+                    </div>
                     <div id="newPasswordFeedback"
                          style="font-size: 0.85rem; margin-top: 5px; display: none;"></div>
                     <c:if test="${not empty passwordError}">
@@ -133,7 +146,13 @@
                 </div>
                 <div class="form-group">
                     <label for="confirmPassword">Nhập lại mật khẩu mới</label>
-                    <input type="password" name="confirm" id="confirmPassword" required>
+                    <div style="position: relative;">
+                        <input type="password" name="confirm" id="confirmPassword" required
+                               style="padding-right: 40px; box-sizing: border-box; width: 100%;">
+                        <i class="bi bi-eye-slash toggle-password"
+                           style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d; font-size: 1.1rem;"></i>
+                    </div>
+                    <div id="confirmPasswordFeedback" style="font-size: 0.85rem; margin-top: 5px; display: none;"></div>
                     <c:if test="${not empty confirmPasswordError}">
                         <span class="error">${confirmPasswordError}</span>
                     </c:if>
@@ -213,10 +232,12 @@
                             <td class="status-col" data-status="${o.status.name()}">
                                 <c:choose>
                                     <c:when test="${o.status.name() eq 'PENDING'}">
-                                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Chờ xác nhận</span>
+                                        <span class="badge bg-warning text-dark"><i
+                                                class="bi bi-hourglass-split me-1"></i> Chờ xác nhận</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'PROCESSING'}">
-                                        <span class="badge bg-primary"><i class="bi bi-box-seam me-1"></i> Đang xử lý</span>
+                                        <span class="badge bg-primary"><i
+                                                class="bi bi-box-seam me-1"></i> Đang xử lý</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'OUT_FOR_DELIVERY'}">
                                         <span class="badge bg-info text-dark"><i class="bi bi-truck me-1"></i> Đang giao</span>
@@ -228,7 +249,8 @@
                                         <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Đã huỷ</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURN_REQUESTED'}">
-                                        <span class="badge bg-info text-dark"><i class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</span>
+                                        <span class="badge bg-info text-dark"><i
+                                                class="bi bi-arrow-return-left me-1"></i> Yêu cầu trả hàng</span>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURNED'}">
                                         <span class="badge bg-secondary"><i class="bi bi-box-arrow-in-left me-1"></i> Đã trả hàng</span>
@@ -335,14 +357,16 @@
                                     <i class="bi bi-arrow-return-left me-2"></i>
                                     Yêu cầu trả hàng
                                 </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <input type="hidden" name="action" value="returnOrder">
                                 <input type="hidden" name="orderId" id="returnOrderId">
                                 <div class="alert alert-info" role="alert">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Bạn có chắc chắn muốn trả đơn hàng này? Việc trả hàng chỉ được phép trong vòng 30 ngày kể từ khi hoàn thành đơn.
+                                    Bạn có chắc chắn muốn trả đơn hàng này? Việc trả hàng chỉ được phép trong vòng 30
+                                    ngày kể từ khi hoàn thành đơn.
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -378,7 +402,8 @@
                                 <input type="hidden" name="orderId" id="undoReturnOrderId">
                                 <div class="alert alert-info" role="alert">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Bạn có chắc chắn muốn hoàn tác yêu cầu trả hàng? Đơn hàng sẽ trở lại trạng thái "Hoàn thành".
+                                    Bạn có chắc chắn muốn hoàn tác yêu cầu trả hàng? Đơn hàng sẽ trở lại trạng thái
+                                    "Hoàn thành".
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -413,7 +438,8 @@
                                 <input type="hidden" name="orderId" id="receiveOrderId">
                                 <div class="alert alert-success" role="alert">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    Bạn xác nhận đã nhận được đơn hàng này thành công? Trạng thái sẽ cập nhật thành Hoàn thành.
+                                    Bạn xác nhận đã nhận được đơn hàng này thành công? Trạng thái sẽ cập nhật thành Hoàn
+                                    thành.
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -567,8 +593,11 @@
                             <input type="text" name="fullName" id="fullName" required>
                         </div>
                         <div class="form-group">
-                            <label for="phoneNumber">Số điện thoại</label>
-                            <input type="text" name="phoneNumber" id="phoneNumber" required pattern="[0-9]{10}" title="Số điện thoại phải bao gồm đúng 10 chữ số">
+                            <label for="addPhoneNumber">Số điện thoại</label>
+                            <input type="text" name="phoneNumber" id="addPhoneNumber" required pattern="0[0-9]{9}"
+                                   title="Số điện thoại phải bắt đầu bằng số 0 và có 10 chữ số"
+                                   oninvalid="validatePhoneNumber(this)"
+                                   oninput="validatePhoneNumber(this)">
                         </div>
                         <div class="form-group">
                             <label for="addressLine">Địa chỉ</label>
@@ -616,7 +645,10 @@
                         </div>
                         <div class="form-group">
                             <label for="editPhoneNumber">Số điện thoại</label>
-                            <input type="text" name="phoneNumber" id="editPhoneNumber" required pattern="[0-9]{10}" title="Số điện thoại phải bao gồm đúng 10 chữ số">
+                            <input type="text" name="phoneNumber" id="editPhoneNumber" required pattern="0[0-9]{9}"
+                                   title="Số điện thoại phải bắt đầu bằng số 0 và có 10 chữ số"
+                                   oninvalid="validatePhoneNumber(this)"
+                                   oninput="validatePhoneNumber(this)">
                         </div>
                         <div class="form-group">
                             <label for="editAddressLine">Địa chỉ</label>
@@ -1426,6 +1458,120 @@
             }
         });
     }
+
+    function validatePhoneNumber(input) {
+        input.value = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+        const val = input.value;
+        if (!val) {
+            input.setCustomValidity('Vui lòng nhập số điện thoại');
+        } else if (val[0] !== '0') {
+            input.setCustomValidity('Số điện thoại phải bắt đầu bằng số 0');
+        } else if (val.length !== 10) {
+            input.setCustomValidity('Số điện thoại phải có đúng 10 chữ số');
+        } else {
+            input.setCustomValidity('');
+        }
+        input.reportValidity();
+    }
+
+    function confirmLogout(e, url) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Xác nhận đăng xuất',
+            text: "Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#0051c6',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Đăng xuất',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".toggle-password").forEach(function (icon) {
+            icon.addEventListener("click", function () {
+                const input = this.previousElementSibling;
+                if (input.type === "password") {
+                    input.type = "text";
+                    this.classList.remove("bi-eye-slash");
+                    this.classList.add("bi-eye");
+                } else {
+                    input.type = "password";
+                    this.classList.remove("bi-eye");
+                    this.classList.add("bi-eye-slash");
+                }
+            });
+        });
+
+        let passwordTimeout = null;
+        document.getElementById("currentPassword").addEventListener("input", function () {
+            clearTimeout(passwordTimeout);
+            const val = this.value;
+            const feedback = document.getElementById("currentPasswordFeedback");
+
+            if (!val) {
+                feedback.style.display = "none";
+                return;
+            }
+
+            feedback.style.display = "block";
+            feedback.style.color = "#0051c6";
+            feedback.innerHTML = "Đang kiểm tra...";
+
+            passwordTimeout = setTimeout(() => {
+                const formData = new URLSearchParams();
+                formData.append("currentPassword", val);
+
+                fetch("${pageContext.request.contextPath}/CheckCurrentPasswordServlet", {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.valid) {
+                            feedback.style.color = "#28a745";
+                            feedback.innerHTML = "<i class='bi bi-check-circle-fill'></i> Mật khẩu chính xác";
+                        } else {
+                            feedback.style.color = "#dc3545";
+                            feedback.innerHTML = "<i class='bi bi-x-circle-fill'></i> Mật khẩu không đúng";
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Lỗi kiểm tra mật khẩu:", err);
+                        feedback.style.display = "none";
+                    });
+            }, 500);
+        });
+
+        function checkConfirmPassword() {
+            const newPass = document.getElementById("newPassword").value;
+            const confirmPass = document.getElementById("confirmPassword").value;
+            const feedback = document.getElementById("confirmPasswordFeedback");
+
+            if (!confirmPass) {
+                feedback.style.display = "none";
+                return;
+            }
+
+            feedback.style.display = "block";
+            if (newPass === confirmPass) {
+                feedback.style.color = "#28a745";
+                feedback.innerHTML = "<i class='bi bi-check-circle-fill'></i> Mật khẩu trùng khớp";
+            } else {
+                feedback.style.color = "#dc3545";
+                feedback.innerHTML = "<i class='bi bi-x-circle-fill'></i> Mật khẩu không khớp";
+            }
+        }
+
+        document.getElementById("confirmPassword").addEventListener("input", checkConfirmPassword);
+        document.getElementById("newPassword").addEventListener("input", checkConfirmPassword);
+    });
 </script>
 </body>
 
