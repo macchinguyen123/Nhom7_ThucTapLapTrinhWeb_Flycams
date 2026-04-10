@@ -297,6 +297,13 @@
                             this.classList.remove('bi-heart');
                             this.classList.add('bi-heart-fill', 'yeu-thich');
                         }
+                        if (typeof showNotification === 'function') {
+                            if (action === 'add') {
+                                showNotification('Đã thêm vào danh sách yêu thích', 'success');
+                            } else {
+                                showNotification('Đã xóa khỏi danh sách yêu thích', 'success');
+                            }
+                        }
                     } else {
                         alert(data.message || 'Có lỗi xảy ra');
                     }
