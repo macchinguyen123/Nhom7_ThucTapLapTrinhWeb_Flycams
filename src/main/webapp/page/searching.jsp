@@ -523,12 +523,28 @@
         if (trangHienTai > 1) {
             trangHienTai--;
             hienThiTrang(trangHienTai);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            let toast = document.createElement('div');
+            toast.innerHTML = '<i class="bi bi-info-circle-fill me-2"></i> Bạn đang ở trang đầu tiên!';
+            toast.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0.9); background-color:rgba(0,0,0,0.8); color:#fff; padding:15px 30px; border-radius:30px; z-index:10000; font-weight:500; font-size:16px; box-shadow:0 10px 25px rgba(0,0,0,0.3); transition: all 0.3s ease; opacity:0; pointer-events:none; text-align:center;';
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.transform = 'translate(-50%, -50%) scale(1)'; toast.style.opacity = '1'; }, 10);
+            setTimeout(() => { toast.style.transform = 'translate(-50%, -50%) scale(0.9)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2500);
         }
     });
     document.querySelector('.nut-sau').addEventListener('click', () => {
         if (trangHienTai < tongTrang) {
             trangHienTai++;
             hienThiTrang(trangHienTai);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            let toast = document.createElement('div');
+            toast.innerHTML = '<i class="bi bi-info-circle-fill me-2"></i> Không còn sản phẩm nào để hiển thị nữa!';
+            toast.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%, -50%) scale(0.9); background-color:rgba(0,0,0,0.8); color:#fff; padding:15px 30px; border-radius:30px; z-index:10000; font-weight:500; font-size:16px; box-shadow:0 10px 25px rgba(0,0,0,0.3); transition: all 0.3s ease; opacity:0; pointer-events:none; text-align:center;';
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.transform = 'translate(-50%, -50%) scale(1)'; toast.style.opacity = '1'; }, 10);
+            setTimeout(() => { toast.style.transform = 'translate(-50%, -50%) scale(0.9)'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2500);
         }
     });
 
