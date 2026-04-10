@@ -548,6 +548,13 @@
                         this.classList.toggle('bi-heart');
                         this.classList.toggle('bi-heart-fill');
                         this.classList.toggle('yeu-thich');
+                        if (typeof showNotification === 'function') {
+                            if (action === 'add') {
+                                showNotification('Đã thêm vào danh sách yêu thích', 'success');
+                            } else {
+                                showNotification('Đã xóa khỏi danh sách yêu thích', 'success');
+                            }
+                        }
                     } else if (data.error === 'login_required' || data.message === 'NOT_LOGIN') {
                         window.location.href = '${pageContext.request.contextPath}/page/login.jsp';
                     }

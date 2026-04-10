@@ -154,6 +154,13 @@
                         btn.classList.toggle('bi-heart', isActive);
                         btn.classList.toggle('bi-heart-fill', !isActive);
                         btn.classList.toggle('yeu-thich', !isActive);
+                        if (typeof showNotification === 'function') {
+                            if (!isActive) {
+                                showNotification('Đã thêm vào danh sách yêu thích', 'success');
+                            } else {
+                                showNotification('Đã xóa khỏi danh sách yêu thích', 'success');
+                            }
+                        }
                     } else {
                         if (typeof showNotification === 'function') {
                             showNotification(data.message || 'Thao tác thất bại', 'error');
