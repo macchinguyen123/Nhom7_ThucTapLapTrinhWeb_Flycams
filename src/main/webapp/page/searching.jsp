@@ -9,10 +9,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
           rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/searching.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/searching.css?v=2.2">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
           rel="stylesheet">
+    <style>
+        .khung-anh img, .san-pham img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            padding: 0 !important;
+            background-color: #ffffff !important;
+            border-radius: 12px 12px 0 0 !important;
+        }
+        .khung-anh {
+            background-color: #ffffff !important;
+        }
+    </style>
 </head>
 <body>
 <jsp:include page="/page/header-common.jsp"/>
