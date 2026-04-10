@@ -11,6 +11,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/promotion.css">
+    <style>
+        .anh-san-pham {
+            width: 100% !important;
+            height: 200px !important;
+            object-fit: contain !important;
+            padding: 0 !important;
+            background-color: #ffffff !important;
+            border-radius: 12px 12px 0 0 !important;
+        }
+        .the-san-pham a {
+            display: block;
+        }
+    </style>
 </head>
 <body>
 <jsp:include page="/page/header-common.jsp"/>
