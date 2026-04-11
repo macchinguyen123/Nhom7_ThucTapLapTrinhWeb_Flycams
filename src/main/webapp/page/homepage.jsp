@@ -416,8 +416,10 @@
     </div>
 </section>
 <section class="related-articles">
-    <h2>BÀI VIẾT MỚI NHẤT</h2>
-    <div class="related-grid">
+    <div class="section-header">
+        <h2>BÀI VIẾT MỚI NHẤT</h2>
+        <button class="xem" onclick="location.href='${pageContext.request.contextPath}//blog'">Xem Tất Cả »</button>
+    </div>
         <c:forEach var="post" items="${latestPosts}">
             <div class="related-item">
                 <a href="${pageContext.request.contextPath}/article?id=${post.id}">
@@ -431,6 +433,98 @@
     </div>
 </section>
 <jsp:include page="/page/footer.jsp"/>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.nut-mua-ngay').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const form = btn.closest('form');
+                if (!form) return;
+                const productIdInput = form.querySelector('input[name="productId"]');
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                if (!productIdInput) return;
+                const productId = productIdInput.value;
+                const quantity = quantityInput ? quantityInput.value : 1;
+                const productCard = btn.closest('.san-pham');
+                const productImg = productCard ? (productCard.querySelector('.khung-anh img') || productCard.querySelector('img')) : null;
+                if (typeof globallyHandleAddToCart === 'function') {
+                    globallyHandleAddToCart(productId, quantity, productImg, btn);
+                } else {
+                    console.error('globallyHandleAddToCart function not found');
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelectorAll('.tim-yeu-thich').forEach(tim => {
+        tim.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const productId = this.getAttribute('data-product-id');
+            const isLiked = this.classList.contains('yeu-thich');
+            const action = isLiked ? 'remove' : 'add';
+            console.log('SEND:', action, productId);
+            if (!productId) {
+                console.error('productId is null');
+                return;
+            }
+            fetch('${pageContext.request.contextPath}/wishlist', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: action,
+                    productId: productId
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        this.classList.toggle('bi-heart');
+                        this.classList.toggle('bi-heart-fill');
+                        this.classList.toggle('yeu-thich');
+                        if (typeof showNotification === 'function') {
+                            if (action === 'add') {
+                                showNotification('Đã thêm vào danh sách yêu thích', 'success');
+                            } else {
+                                showNotification('Đã xóa khỏi danh sách yêu thích', 'success');
+                            }
+                        }
+                    } else if (data.error === 'login_required' || data.message === 'NOT_LOGIN') {
+                        window.location.href = '${pageContext.request.contextPath}/page/login.jsp';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                });
+        });
+    });
+</script>
+
+<%
+    String paymentError = (String) session.getAttribute("paymentError");
+    if (paymentError != null) {
+        session.removeAttribute("paymentError");
+%>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Thanh toán thất bại!',
+        text: '<%= paymentError %>',
+        timer: 3000,
+        showConfirmButton: false
+    });
+</script>
+<%
+    }
+%>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const slider2 = document.querySelector('.slider-2-inner');
@@ -528,78 +622,6 @@
         createDots2();
         startSlide2();
         console.log('Slider 2 đã khởi động với ' + slides2.length + ' slides');
-    });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.querySelectorAll('.tim-yeu-thich').forEach(tim => {
-        tim.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const productId = this.getAttribute('data-product-id');
-            const isLiked = this.classList.contains('yeu-thich');
-            const action = isLiked ? 'remove' : 'add';
-            console.log('SEND:', action, productId);
-            if (!productId) {
-                console.error('productId is null');
-                return;
-            }
-            fetch('${pageContext.request.contextPath}/wishlist', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    action: action,
-                    productId: productId
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        this.classList.toggle('bi-heart');
-                        this.classList.toggle('bi-heart-fill');
-                        this.classList.toggle('yeu-thich');
-                        if (typeof showNotification === 'function') {
-                            if (action === 'add') {
-                                showNotification('Đã thêm vào danh sách yêu thích', 'success');
-                            } else {
-                                showNotification('Đã xóa khỏi danh sách yêu thích', 'success');
-                            }
-                        }
-                    } else if (data.error === 'login_required' || data.message === 'NOT_LOGIN') {
-                        window.location.href = '${pageContext.request.contextPath}/page/login.jsp';
-                    }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                });
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.nut-mua-ngay').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const form = btn.closest('form');
-                if (!form) return;
-                const productIdInput = form.querySelector('input[name="productId"]');
-                const quantityInput = form.querySelector('input[name="quantity"]');
-                if (!productIdInput) return;
-                const productId = productIdInput.value;
-                const quantity = quantityInput ? quantityInput.value : 1;
-                const productCard = btn.closest('.san-pham');
-                const productImg = productCard ? (productCard.querySelector('.khung-anh img') || productCard.querySelector('img')) : null;
-                if (typeof globallyHandleAddToCart === 'function') {
-                    globallyHandleAddToCart(productId, quantity, productImg, btn);
-                } else {
-                    console.error('globallyHandleAddToCart function not found');
-                    form.submit();
-                }
-            });
-        });
     });
 </script>
 </body>
