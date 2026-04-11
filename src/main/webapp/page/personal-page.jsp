@@ -1383,26 +1383,6 @@
     });
 </script>
 <script>
-    function confirmDeleteAddress(e, url) {
-        if (e) e.preventDefault();
-        Swal.fire({
-            title: 'Xác nhận xóa',
-            text: "Bạn có chắc muốn xóa địa chỉ này?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Xóa ngay',
-            cancelButtonText: 'Hủy bỏ'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url;
-            }
-        });
-    }
-</script>
-
-<script>
     function previewAndSaveAvatar(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1573,6 +1553,44 @@
         document.getElementById("newPassword").addEventListener("input", checkConfirmPassword);
     });
 </script>
+<%
+    String paymentSuccess = (String) session.getAttribute("paymentSuccess");
+    if (paymentSuccess != null) {
+        session.removeAttribute("paymentSuccess");
+%>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Thanh toán thành công!',
+        text: '<%= paymentSuccess %>',
+        timer: 3000,
+        showConfirmButton: false
+    });
+</script>
+<%
+    }
+%>
+<script>
+    function confirmDeleteAddress(e, url) {
+        if (e) e.preventDefault();
+        Swal.fire({
+            title: 'Xác nhận xóa',
+            text: "Bạn có chắc muốn xóa địa chỉ này?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Xóa ngay',
+            cancelButtonText: 'Hủy bỏ'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+</script>
+
 </body>
 
 </html>

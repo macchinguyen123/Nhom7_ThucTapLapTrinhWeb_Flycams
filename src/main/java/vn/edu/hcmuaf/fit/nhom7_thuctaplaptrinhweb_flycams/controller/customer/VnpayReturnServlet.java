@@ -133,14 +133,20 @@ public class VnpayReturnServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            request.setAttribute("message", "Thanh toán thành công!");
+            session.setAttribute("paymentSuccess", "Thanh toán thành công! Đơn hàng của bạn đã được xác nhận.");
+            response.sendRedirect(request.getContextPath() + "/personal?tab=orders");
+
         } else {
+            // Thanh toán thất bại
+            String errorMessage;
             if (!signValue.equalsIgnoreCase(vnp_SecureHash)) {
-                request.setAttribute("message", "Chữ ký không hợp lệ! Vui lòng không thay đổi tham số trên URL.");
+                errorMessage = "Chữ ký không hợp lệ! Vui lòng không thay đổi tham số trên URL.";
             } else {
-                request.setAttribute("message", "Thanh toán thất bại! Mã lỗi: " + responseCode);
+                errorMessage = "Thanh toán thất bại! Mã lỗi: " + responseCode;
             }
+            // Lưu thông báo lỗi vào session
+            session.setAttribute("paymentError", errorMessage);
+            response.sendRedirect(request.getContextPath() + "/home");
         }
-        request.getRequestDispatcher("/page/paymentresult.jsp").forward(request, response);
     }
 }
