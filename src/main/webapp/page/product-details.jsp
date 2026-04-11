@@ -14,7 +14,7 @@
           rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
           rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/product-details.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/product-details.css?v=<%= System.currentTimeMillis() %>">
 </head>
 
 <body>
@@ -109,7 +109,7 @@
                     </p>
                 </div>
                 <div class="price my-3">
-                                        <span class="fs-1 fw-bold text-danger">
+                                        <span class="fs-1 fw-bold text-danger" id="displayPrice" data-price="${product.finalPrice}">
                                             ${formatter.format(product.finalPrice)} VNĐ
                                         </span>
                     <c:if test="${product.price > product.finalPrice}">
@@ -125,7 +125,7 @@
                     <span class="me-3 fw-semibold">Số lượng</span>
                     <div class="quantity-box">
                         <button type="button" id="minus">-</button>
-                        <input type="text" id="qty" value="1" readonly>
+                        <input type="text" id="qty" value="1" data-stock="${product.quantity}">
                         <button type="button" id="plus">+</button>
                     </div>
                 </div>
@@ -422,6 +422,14 @@
         </form>
     </div>
 </div>
+<div id="imageModal" class="image-modal">
+    <span class="image-modal-close">&times;</span>
+    <button class="nav-btn-modal modal-prev-btn"><i class="bi bi-chevron-left"></i></button>
+    <button class="nav-btn-modal modal-next-btn"><i class="bi bi-chevron-right"></i></button>
+    <div class="image-modal-wrapper" id="modalWrapper">
+        <img class="image-modal-content" id="modalImg">
+    </div>
+</div>
 <jsp:include page="/page/footer.jsp"/>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -530,6 +538,62 @@
             nextBtn.addEventListener('click', () => {
                 currentIndex = (currentIndex + 1) % thumbs.length;
                 updateMainImage(currentIndex);
+            });
+        }
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImg");
+        const modalWrapper = document.getElementById("modalWrapper");
+        const closeSpan = document.getElementsByClassName("image-modal-close")[0];
+        let isZoomed = false;
+        if (displayImg && modal) {
+            displayImg.style.cursor = "zoom-in";
+            displayImg.addEventListener('click', function() {
+                modal.classList.add("active");
+                modalImg.src = this.src;
+                isZoomed = false;
+                modalImg.classList.remove("zoomed");
+            });
+        }
+        function closeModal() {
+            modal.classList.remove("active");
+        }
+        if (closeSpan) {
+            closeSpan.onclick = closeModal;
+        }
+        window.addEventListener('click', function(e) {
+            if (e.target == modal || e.target == modalWrapper) {
+                closeModal();
+            }
+        });
+        const modalPrevBtn = document.querySelector('.modal-prev-btn');
+        const modalNextBtn = document.querySelector('.modal-next-btn');
+        if (modalPrevBtn && modalNextBtn && thumbs.length > 0) {
+            modalPrevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentIndex = (currentIndex - 1 + thumbs.length) % thumbs.length;
+                updateMainImage(currentIndex);
+                modalImg.src = displayImg.src;
+                isZoomed = false;
+                modalImg.classList.remove("zoomed");
+            });
+            modalNextBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentIndex = (currentIndex + 1) % thumbs.length;
+                updateMainImage(currentIndex);
+                modalImg.src = displayImg.src;
+                isZoomed = false;
+                modalImg.classList.remove("zoomed");
+            });
+        }
+        if (modalImg) {
+            modalImg.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isZoomed = !isZoomed;
+                if (isZoomed) {
+                    this.classList.add("zoomed");
+                } else {
+                    this.classList.remove("zoomed");
+                }
             });
         }
         document.querySelectorAll('.tim-yeu-thich').forEach(tim => {
@@ -643,13 +707,42 @@
         const qtyInput = document.getElementById('qty');
         const quantityHidden = document.getElementById('quantityHidden');
         const buyNowQuantity = document.getElementById('buyNowQuantity');
-        if (minusBtn && plusBtn) {
+        const displayPriceEl = document.getElementById('displayPrice');
+        const unitPrice = parseFloat(displayPriceEl ? displayPriceEl.getAttribute('data-price') : 0);
+        const maxStock = parseInt(qtyInput ? qtyInput.getAttribute('data-stock') : 0) || 0;
+        function updateQuantityValues() {
+            quantityHidden.value = qtyInput.value;
+            buyNowQuantity.value = qtyInput.value;
+            if (displayPriceEl && unitPrice > 0) {
+                const total = unitPrice * parseInt(qtyInput.value);
+                displayPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' VNĐ';
+            }
+        }
+        if (qtyInput) {
+            qtyInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            qtyInput.addEventListener('blur', function() {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val <= 0) {
+                    this.value = 1;
+                } else if (maxStock > 0 && val > maxStock) {
+                    this.value = maxStock;
+                    if (typeof showNotification === 'function') {
+                        showNotification("Đã đạt số lượng tồn kho tối đa", "error");
+                    } else {
+                        alert("Đã đạt số lượng tồn kho tối đa");
+                    }
+                }
+                updateQuantityValues();
+            });
+        }
+        if (minusBtn && plusBtn && qtyInput) {
             minusBtn.addEventListener('click', () => {
-                let val = parseInt(qtyInput.value);
+                let val = parseInt(qtyInput.value) || 1;
                 if (val > 1) {
                     qtyInput.value = val - 1;
-                    quantityHidden.value = qtyInput.value;
-                    buyNowQuantity.value = qtyInput.value;
+                    updateQuantityValues();
                 } else {
                     if (typeof showNotification === 'function') {
                         showNotification("Số lượng tối thiểu là 1", "error");
@@ -659,10 +752,17 @@
                 }
             });
             plusBtn.addEventListener('click', () => {
-                let val = parseInt(qtyInput.value);
-                qtyInput.value = val + 1;
-                quantityHidden.value = qtyInput.value;
-                buyNowQuantity.value = qtyInput.value;
+                let val = parseInt(qtyInput.value) || 1;
+                if (maxStock === 0 || val < maxStock) {
+                    qtyInput.value = val + 1;
+                    updateQuantityValues();
+                } else {
+                    if (typeof showNotification === 'function') {
+                        showNotification("Đã đạt số lượng tồn kho tối đa", "error");
+                    } else {
+                        alert("Đã đạt số lượng tối đa");
+                    }
+                }
             });
             buyNowQuantity.value = qtyInput.value;
         }
