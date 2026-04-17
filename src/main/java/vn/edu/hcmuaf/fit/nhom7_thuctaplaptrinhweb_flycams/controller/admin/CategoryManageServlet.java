@@ -51,6 +51,18 @@ public class CategoryManageServlet extends HttpServlet {
         }
     }
 
+    private void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String idStr = req.getParameter("id");
+        if (idStr != null) {
+            try {
+                int id = Integer.parseInt(idStr);
+                categoryService.deleteCategory(id);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/category-manage?success=deleted");
+    }
     private void handleAdd(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         String name = req.getParameter("categoryName");
         String status = req.getParameter("status");
@@ -58,10 +70,9 @@ public class CategoryManageServlet extends HttpServlet {
         Part filePart = req.getPart("image");
         if (filePart != null && filePart.getSize() > 0) {
             String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-            String projectPath = System.getProperty("user.dir");
-            Path uploadDir = Paths.get(projectPath,
-                    "src", "main", "webapp",
-                    "image", "logoCategory");
+            String uploadDirStr = getServletContext().getRealPath("/image/logoCategory");
+            System.out.println(">>> Upload dir: " + uploadDirStr);
+            Path uploadDir = Paths.get(uploadDirStr);
             Files.createDirectories(uploadDir);
             Path destination = uploadDir.resolve(fileName);
             try (InputStream input = filePart.getInputStream()) {
@@ -75,7 +86,7 @@ public class CategoryManageServlet extends HttpServlet {
         c.setStatus(status);
         c.setImage(imagePath);
         categoryService.addCategory(c);
-        resp.sendRedirect(req.getContextPath() + "/admin/category-manage");
+        resp.sendRedirect(req.getContextPath() + "/admin/category-manage?success=added");
     }
 
     private void handleUpdate(HttpServletRequest req, HttpServletResponse resp)
@@ -89,10 +100,8 @@ public class CategoryManageServlet extends HttpServlet {
         if (filePart != null && filePart.getSize() > 0) {
             String fileName = Paths.get(filePart.getSubmittedFileName())
                     .getFileName().toString();
-            String projectPath = System.getProperty("user.dir");
-            Path uploadDir = Paths.get(projectPath,
-                    "src", "main", "webapp",
-                    "image", "logoCategory");
+            String uploadDirStr = getServletContext().getRealPath("/image/logoCategory");
+            Path uploadDir = Paths.get(uploadDirStr);
             Files.createDirectories(uploadDir);
             Path destination = uploadDir.resolve(fileName);
             try (InputStream input = filePart.getInputStream()) {
@@ -100,25 +109,12 @@ public class CategoryManageServlet extends HttpServlet {
             }
             imagePath = "image/logoCategory/" + fileName;
             if (!oldImage.equals("default.png")) {
-                Path oldPath = Paths.get(projectPath, "src", "main", "webapp", oldImage);
+                Path oldPath = Paths.get(getServletContext().getRealPath("/"), oldImage);
                 Files.deleteIfExists(oldPath);
             }
         }
         Categories c = new Categories(id, name, imagePath, status);
         categoryService.updateCategory(c);
-        resp.sendRedirect(req.getContextPath() + "/admin/category-manage");
-    }
-
-    private void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String idStr = req.getParameter("id");
-        if (idStr != null) {
-            try {
-                int id = Integer.parseInt(idStr);
-                categoryService.deleteCategory(id);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-        resp.sendRedirect(req.getContextPath() + "/admin/category-manage");
+        resp.sendRedirect(req.getContextPath() + "/admin/category-manage?success=updated");
     }
 }
