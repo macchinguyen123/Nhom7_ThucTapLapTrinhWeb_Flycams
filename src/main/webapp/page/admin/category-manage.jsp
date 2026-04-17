@@ -232,6 +232,8 @@
                             <input type="file" class="form-control" name="image" id="anhDM"
                                    accept="image/*">
                             <small class="text-muted" id="currentImgText"></small>
+                            <img id="previewImg" src="" alt="Preview" class="img-thumbnail mt-2"
+                                 style="width: 100px; height: 100px; object-fit: cover; display: none;">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Trạng thái</label>
@@ -386,6 +388,9 @@
             $("#trangThaiDM").val("Hiện");
             $("#anhDM").val("");
             $("#currentImgText").text("");
+            $("#previewImg").attr("src", "").hide();
+            $("#anhDM").attr("required", true);
+
         });
         $(document).on("click", ".btn-sua", function () {
             let id = $(this).data("id");
@@ -399,8 +404,24 @@
             $("#trangThaiDM").val(status);
             $("#oldImage").val(img);
             $("#currentImgText").text("Ảnh hiện tại: " + img);
+            $("#previewImg")
+                .attr("src", "${pageContext.request.contextPath}/" + encodeURI(img))
+                    .show();
             $("#modalDanhMuc").modal("show");
         });
+
+        $("#anhDM").on("change", function () {
+
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#previewImg").attr("src", e.target.result).show();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
     });
 
     function confirmDelete(id) {
@@ -419,6 +440,40 @@
             }
         });
     }
+</script>
+<script>
+    (function () {
+        const params = new URLSearchParams(window.location.search);
+        const success = params.get("success");
+        const error   = params.get("error");
+
+        const messages = {
+            added:   { icon: "success", title: "Thêm thành công!",     text: "Danh mục đã được thêm vào hệ thống." },
+            updated: { icon: "success", title: "Cập nhật thành công!", text: "Thông tin danh mục đã được cập nhật." },
+            deleted: { icon: "success", title: "Xóa thành công!",      text: "Danh mục đã được xóa khỏi hệ thống." },
+        };
+
+        let cfg = null;
+        if (success && messages[success]) cfg = messages[success];
+        else if (error) cfg = { icon: "error", title: "Có lỗi xảy ra!", text: error || "Vui lòng thử lại." };
+
+        if (cfg) {
+            Swal.fire({
+                icon: cfg.icon,
+                title: cfg.title,
+                text: cfg.text,
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                position: "center"
+            });
+
+            const url = new URL(window.location.href);
+            url.searchParams.delete("success");
+            url.searchParams.delete("error");
+            window.history.replaceState({}, "", url.toString());
+        }
+    })();
 </script>
 <script>
     document.querySelectorAll('.has-submenu .menu-item').forEach(item => {

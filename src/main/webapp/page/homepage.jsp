@@ -27,7 +27,7 @@
 </head>
 <body>
 <jsp:include page="/page/header-common.jsp"/>
-<div class="container d-flex">
+<div class="container">
     <div class="menu-left">
         <ul>
             <c:forEach items="${headerCategories}" var="cat">
@@ -418,13 +418,13 @@
 <section class="related-articles">
     <div class="section-header">
         <h2>BÀI VIẾT MỚI NHẤT</h2>
-        <button class="xem" onclick="location.href='${pageContext.request.contextPath}//blog'">Xem Tất Cả »</button>
+        <button class="xem" onclick="location.href='${pageContext.request.contextPath}/blog'">Xem Tất Cả »</button>
     </div>
+    <div class="related-grid">
         <c:forEach var="post" items="${latestPosts}">
             <div class="related-item">
                 <a href="${pageContext.request.contextPath}/article?id=${post.id}">
-                    <img src="${empty post.image ? '/assets/no-image.png' : post.image}"
-                         alt="${post.title}">
+                    <img src="${empty post.image ? '/assets/no-image.png' : post.image}" alt="${post.title}">
                     <p>${post.title}</p>
                     <small><i class="bi bi-eye"></i> ${post.viewCount} lượt xem</small>
                 </a>
