@@ -40,6 +40,7 @@
         </div>
     </c:if>
     <c:forEach var="entry" items="${promotionMap}">
+        <div class="promotion-wrapper" data-end-time="<fmt:formatDate value="${entry.key.endDate}" pattern="yyyy-MM-dd'T'HH:mm:ss"/>">
         <section class="khung-tieu-de">
             <h2 class="ten-chuong-trinh-promo"
                 style="color: #ffffff; text-align: center; font-weight: 700;">
@@ -51,6 +52,9 @@
                 đến
                 <fmt:formatDate value="${entry.key.endDate}" pattern="dd/MM/yyyy"/>
             </p>
+            <div class="promotion-countdown" style="color: #ffeb3b; font-size: 1.25rem; font-weight: bold; margin-top: 10px; text-shadow: 1px 1px 3px rgba(0,0,0,0.6);">
+                Đang tải thời gian...
+            </div>
         </section>
         <section class="danh-sach-flycam">
             <c:forEach var="p" items="${entry.value}">
@@ -114,6 +118,7 @@
                 </article>
             </c:forEach>
         </section>
+        </div>
     </c:forEach>
 </main>
 <jsp:include page="/page/footer.jsp"/>
@@ -189,6 +194,39 @@
                     }
                 });
         });
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const updateCountdowns = () => {
+            const now = new Date().getTime();
+            document.querySelectorAll('.promotion-wrapper').forEach(wrapper => {
+                const endTimeStr = wrapper.getAttribute('data-end-time');
+                if (!endTimeStr) return;
+                const endTime = new Date(endTimeStr).getTime() + 86399000;
+                const distance = endTime - now;
+                if (distance < 0) {
+                    wrapper.style.display = 'none'; // Hết thời gian thì ẩn
+                } else {
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    let timeString = 'Còn ';
+                    if (days > 0) {
+                        timeString += days + ' ngày ';
+                    }
+                    timeString += 
+                        (hours < 10 ? '0' : '') + hours + ':' + 
+                        (minutes < 10 ? '0' : '') + minutes + ':' + 
+                        (seconds < 10 ? '0' : '') + seconds;
+                    const countdownEl = wrapper.querySelector('.promotion-countdown');
+                    if (countdownEl) {
+                        countdownEl.innerHTML = '<i class="bi bi-clock-history"></i> ' + timeString;
+                    }
+                }
+            });
+        };
+        updateCountdowns();
+        setInterval(updateCountdowns, 1000);
     });
 </script>
 </body>
