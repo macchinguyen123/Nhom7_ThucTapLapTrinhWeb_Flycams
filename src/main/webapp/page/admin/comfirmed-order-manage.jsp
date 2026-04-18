@@ -201,7 +201,7 @@
         </div>
     </main>
 </div>
-<div class="modal fade" id="modalDonHang" tabindex="-1">
+<div class="modal fade" id="modalDonHang">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
@@ -372,6 +372,12 @@
                     formatDate(o.createdAt);
                 document.getElementById("dh-diachi").value =
                     o.fullAddress || "";
+                // Khóa trường nếu đơn đã bắt đầu giao
+                const isProcessing = (o.status === 'Đang xử lý');
+                document.getElementById("dh-tenkh").readOnly = !isProcessing;
+                document.getElementById("dh-sdt").readOnly = !isProcessing;
+                document.getElementById("dh-email").readOnly = !isProcessing;
+                document.getElementById("dh-diachi").readOnly = !isProcessing;
                 document.getElementById("dh-mavc").innerText =
                     o.shippingCode || "Chưa có";
                 document.getElementById("dh-ngaynhan").value =
@@ -387,7 +393,14 @@
                 items.forEach(item => {
                     const tr = document.createElement("tr");
                     const tdName = document.createElement("td");
-                    tdName.textContent = item.productName || "N/A";
+                    const imgSrc = item.imageUrl
+                        ? (item.imageUrl.startsWith('http') ? item.imageUrl : '${pageContext.request.contextPath}/' + item.imageUrl)
+                        : '${pageContext.request.contextPath}/image/logoTCN.png';
+                    tdName.innerHTML =
+                        '<div class="d-flex align-items-center justify-content-start gap-2 text-start">' +
+                        '<img src="' + imgSrc + '" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ddd;" />' +
+                        '<span class="text-truncate" style="max-width: 250px;" title="' + (item.productName || 'N/A') + '">' + (item.productName || 'N/A') + '</span>' +
+                        '</div>';
                     tr.appendChild(tdName);
                     const tdQty = document.createElement("td");
                     tdQty.textContent = item.quantity ?? "0";

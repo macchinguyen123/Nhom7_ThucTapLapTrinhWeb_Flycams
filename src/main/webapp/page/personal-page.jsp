@@ -247,6 +247,11 @@
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'CANCELLED'}">
                                         <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Đã huỷ</span>
+                                        <c:if test="${not empty o.note}">
+                                            <div class="text-danger mt-1" style="font-size: 0.8rem;">
+                                                <strong>Lý do hủy:</strong> ${o.note}
+                                            </div>
+                                        </c:if>
                                     </c:when>
                                     <c:when test="${o.status.name() eq 'RETURN_REQUESTED'}">
                                         <span class="badge bg-info text-dark"><i

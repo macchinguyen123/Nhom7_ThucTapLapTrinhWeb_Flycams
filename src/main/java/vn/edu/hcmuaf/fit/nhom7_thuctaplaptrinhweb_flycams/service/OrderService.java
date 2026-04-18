@@ -180,6 +180,10 @@ public class OrderService {
         return orderDaoAdmin.updateOrderStatus(orderId, status);
     }
 
+    // Cập nhật trạng thái đơn hàng kèm ghi chú (ví dụ Lý do hủy)
+    public boolean updateOrderStatusAndNote(int orderId, String status, String note) {
+        return orderDaoAdmin.updateOrderStatusAndNote(orderId, status, note);
+    }
     // Cập nhật toàn bộ thông tin đơn hàng
     public boolean updateOrderFull(int orderId, int userId, String fullName, String email, String phoneNumber,
             String addressLine, String province, String district,
