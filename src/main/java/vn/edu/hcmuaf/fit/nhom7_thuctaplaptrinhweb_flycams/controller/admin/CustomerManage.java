@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.CustomerService;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.ComplaintDAO;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,6 +26,7 @@ public class CustomerManage extends HttpServlet {
                         users = customerService.getAllUsers();
                 }
                 req.setAttribute("users", users);
+                req.setAttribute("complaintCount", new ComplaintDAO().getPendingComplaintsCount());
                 req.setAttribute("showDetail", Boolean.FALSE); // ← Dùng Boolean.FALSE
                 req.getRequestDispatcher("/page/admin/customer-manage.jsp")
                                 .forward(req, resp);

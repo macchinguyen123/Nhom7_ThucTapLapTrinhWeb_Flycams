@@ -25,10 +25,6 @@
             padding: 5px 10px;
         }
 
-        #complaintsTable thead th {
-            background-color: #0051c6 !important;
-            color: white !important;
-        }
     </style>
 </head>
 <body>
@@ -92,7 +88,7 @@
                 </div>
             </div>
             <table id="complaintsTable" class="table table-striped table-bordered">
-                <thead>
+                <thead class="table-dark">
                 <tr>
                     <th width="5%">ID</th>
                     <th width="15%">Khách hàng</th>
@@ -179,7 +175,7 @@
 <script>
     $(document).ready(function () {
         var table = $('#complaintsTable').DataTable({
-            "order": [[3, "desc"]],
+            "order": [],
             "paging": true,
             "lengthChange": false,
             "pageLength": 5,

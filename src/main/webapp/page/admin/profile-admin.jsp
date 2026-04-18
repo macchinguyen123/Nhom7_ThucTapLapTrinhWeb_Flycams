@@ -15,6 +15,51 @@
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/stylesheets/admin/profile-admin.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .profile-page .avatar-wrapper {
+            border-radius: 10px !important;
+        }
+
+        .profile-page .avatar-img {
+            border-radius: 10px !important;
+        }
+
+        .avatar-camera {
+            position: absolute;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            bottom: unset !important;
+            right: unset !important;
+        }
+
+        .avatar-camera i {
+            display: none;
+        }
+
+        .avatar-camera::before {
+            content: "\F4FE";
+            font-family: bootstrap-icons !important;
+            font-size: 24px;
+        }
+
+        .avatar-clear {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10;
+        }
+    </style>
 </head>
 <body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -135,6 +180,7 @@
                     <span class="avatar-camera">
                                             <i class="bi bi-camera-fill"></i>
                                         </span>
+                    <span class="avatar-clear" id="avatarClearBtn" style="display: none;">×</span>
                 </div>
             </div>
             <h3>${admin.fullName}</h3>
@@ -162,14 +208,15 @@
                 </label>
                 <label>
                     <i class="bi bi-envelope me-1"> Email</i>
-                    <input type="email" name="email" value="${admin.email}" required
+                    <input type="email" id="editEmail" name="email" value="${admin.email}" required
                            placeholder="example@email.com">
+                    <div id="emailError" class="text-danger small mt-1" style="display:none;"></div>
                 </label>
                 <label>
                     <i class="bi bi-telephone me-1"> Số điện thoại</i>
-                    <input name="phone" value="${admin.phoneNumber}" pattern="^0\d{9}$"
-                           title="Số điện thoại phải là 10 số, bắt đầu bằng 0" required
+                    <input id="editPhone" name="phone" value="${admin.phoneNumber}" required
                            placeholder="0123456789">
+                    <div id="phoneError" class="text-danger small mt-1" style="display:none;"></div>
                 </label>
                 <div class="actions">
                     <button type="submit" class="btn btn-primary">
@@ -211,15 +258,13 @@
                     <i class="bi bi-key-fill me-1"></i> Mật khẩu mới
                     <div class="input-group">
                         <input type="password" name="newPassword" id="newPassword" required
-                               minlength="8"
-                               pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"
-                               title="Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
                                placeholder="Nhập mật khẩu mới">
                         <span class="input-group-text toggle-password" data-target="newPassword"
                               style="cursor:pointer">
                                                 <i class="bi bi-eye"></i>
                                             </span>
                     </div>
+                    <div id="newPasswordError" class="text-danger small mt-1" style="display:none;"></div>
                 </label>
                 <label>
                     <i class="bi bi-shield-check me-1"></i> Xác nhận mật khẩu
@@ -290,6 +335,8 @@
                     avatarPreview.src = e.target.result;
                     const sidebarAvatar = document.getElementById("sidebarAvatar");
                     if (sidebarAvatar) sidebarAvatar.src = e.target.result;
+                    const avatarClearBtn = document.getElementById("avatarClearBtn");
+                    if (avatarClearBtn) avatarClearBtn.style.display = "flex";
                     if (processingNotification) {
                         processingNotification.style.display = "block";
                         uploadAvatar(file);
@@ -424,6 +471,89 @@
             });
         });
         const changePassForm = document.getElementById("changePassForm");
+        const newPasswordInput = document.getElementById("newPassword");
+        const newPasswordError = document.getElementById("newPasswordError");
+        if (newPasswordInput) {
+            newPasswordInput.addEventListener("input", function () {
+                let pwd = this.value;
+                if (!pwd) {
+                    newPasswordError.style.display = "none";
+                    return;
+                }
+                newPasswordError.className = "text-danger small mt-1";
+                if (pwd.length < 8) {
+                    newPasswordError.textContent = "Mật khẩu ít nhất 8 ký tự";
+                    newPasswordError.style.display = "block";
+                    return;
+                }
+                if (!/[A-Z]/.test(pwd)) {
+                    newPasswordError.textContent = "Mật khẩu thiếu chữ hoa";
+                    newPasswordError.style.display = "block";
+                    return;
+                }
+                if (!/[a-z]/.test(pwd)) {
+                    newPasswordError.textContent = "Mật khẩu thiếu chữ thường";
+                    newPasswordError.style.display = "block";
+                    return;
+                }
+                if (!/[0-9]/.test(pwd)) {
+                    newPasswordError.textContent = "Mật khẩu thiếu số";
+                    newPasswordError.style.display = "block";
+                    return;
+                }
+                if (!/[@$!%*?&]/.test(pwd)) {
+                    newPasswordError.textContent = "Mật khẩu thiếu ký tự đặc biệt";
+                    newPasswordError.style.display = "block";
+                    return;
+                }
+                newPasswordError.textContent = "Mật khẩu hợp lệ";
+                newPasswordError.className = "text-success small mt-1";
+                newPasswordError.style.display = "block";
+            });
+        }
+        const emailInput = document.getElementById("editEmail");
+        const emailError = document.getElementById("emailError");
+        const phoneInput = document.getElementById("editPhone");
+        const phoneError = document.getElementById("phoneError");
+        if (emailInput) {
+            emailInput.addEventListener("input", function () {
+                const val = this.value.trim();
+                const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!val) {
+                    emailError.style.display = "none";
+                } else if (!pattern.test(val)) {
+                    emailError.textContent = "Email chưa đúng định dạng.Vui lòng chỉnh sửa thêm!";
+                    emailError.className = "text-danger small mt-1";
+                    emailError.style.display = "block";
+                } else {
+                    emailError.textContent = "Email hợp lệ";
+                    emailError.className = "text-success small mt-1";
+                    emailError.style.display = "block";
+                }
+            });
+        }
+        if (phoneInput) {
+            phoneInput.addEventListener("input", function () {
+                const val = this.value.trim();
+                phoneError.className = "text-danger small mt-1";
+                if (!val) {
+                    phoneError.style.display = "none";
+                } else if (!val.startsWith("0")) {
+                    phoneError.textContent = "Số điện thoại phải bắt đầu bằng số 0";
+                    phoneError.style.display = "block";
+                } else if (!/^[0-9]+$/.test(val)) {
+                    phoneError.textContent = "Số điện thoại chỉ được chứa ký tự số";
+                    phoneError.style.display = "block";
+                } else if (val.length !== 10) {
+                    phoneError.textContent = "Số điện thoại phải có đúng 10 chữ số";
+                    phoneError.style.display = "block";
+                } else {
+                    phoneError.textContent = "Số điện thoại hợp lệ";
+                    phoneError.className = "text-success small mt-1";
+                    phoneError.style.display = "block";
+                }
+            });
+        }
         if (changePassForm) {
             changePassForm.addEventListener("submit", function (e) {
                 const newPassword = document.getElementById("newPassword").value;
@@ -436,9 +566,20 @@
                 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
                 if (!strongPasswordRegex.test(newPassword)) {
                     e.preventDefault();
-                    alert("Mật khẩu chưa đủ mạnh!\n\nPhải có ít nhất 8 ký tự\nBao gồm chữ hoa (A-Z)\nBao gồm chữ thường (a-z)\nBao gồm số (0-9)\nBao gồm ký tự đặc biệt (@$!%*?&)");
+                    document.getElementById("newPassword").focus();
                     return false;
                 }
+            });
+        }
+        const avatarClearBtn = document.getElementById("avatarClearBtn");
+        if (avatarClearBtn) {
+            avatarClearBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                avatarPreview.src = "${pageContext.request.contextPath}/image/logoTCN.png";
+                avatarInput.value = "";
+                avatarClearBtn.style.display = "none";
+                const sidebarAvatar = document.getElementById("sidebarAvatar");
+                if (sidebarAvatar) sidebarAvatar.src = "${pageContext.request.contextPath}/image/logoTCN.png";
             });
         }
         if (window.$) {

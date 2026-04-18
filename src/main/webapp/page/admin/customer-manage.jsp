@@ -166,7 +166,7 @@
             <div class="d-flex align-items-center gap-2">
                 <a href="${pageContext.request.contextPath}/admin/complaints"
                    class="btn btn-warning shadow-sm fw-semibold">
-                    <i class="bi bi-card-text"></i> Danh sách khiếu nại
+                    <i class="bi bi-card-text"></i> Danh sách khiếu nại (${complaintCount != null ? complaintCount : 0})
                 </a>
                 <form action="${pageContext.request.contextPath}/admin/customer-manage" method="GET" class="d-flex"
                       role="search" style="max-width: 300px;">
@@ -175,7 +175,7 @@
                             <i class="bi bi-search"></i>
                         </button>
                         <input id="search" name="keyword" value="${param.keyword}" type="search" class="form-control"
-                               placeholder="Tìm kiếm tài khoản..." aria-label="Tìm kiếm">
+                               placeholder="Tìm kiếm bằng mã, họ tên, đăng nhập, email, sđt..." aria-label="Tìm kiếm">
                     </div>
                 </form>
             </div>
@@ -257,13 +257,110 @@
                 </div>
             </div>
         </c:if>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const provinceSelect = document.getElementById("provinceSelect");
+                const districtSelect = document.getElementById("districtSelect");
+                const hiddenAddress = document.getElementById("editAddressHidden");
+                if (provinceSelect && districtSelect) {
+                    const GHN_API = "${pageContext.request.contextPath}/ghn";
+                    const oldAddress = hiddenAddress.value || "";
+                    const addressParts = oldAddress.split(",").map(x => x.trim());
+                    let savedProvince = addressParts.length >= 2 ? addressParts[addressParts.length - 1] : "";
+                    let savedDistrict = addressParts.length >= 2 ? addressParts[addressParts.length - 2] : "";
+
+                    function matchOptionByText(select, text) {
+                        if (!text) return null;
+                        const t = text.toLowerCase().replace(/(tỉnh|thành phố|thị xã|quận|huyện|phường|xã|thị trấn)\s+/gi, "").trim();
+                        for (let i = 0; i < select.options.length; i++) {
+                            const optText = select.options[i].text.toLowerCase().replace(/(tỉnh|thành phố|thị xã|quận|huyện|phường|xã|thị trấn)\s+/gi, "").trim();
+                            if (optText.includes(t) || t.includes(optText)) return select.options[i];
+                        }
+                        return null;
+                    }
+
+                    fetch(GHN_API + "/provinces")
+                        .then(r => r.json())
+                        .then(json => {
+                            if (json.code !== 200) {
+                                console.error("GHN API failed:", json);
+                                return;
+                            }
+                            json.data.forEach(p => {
+                                const option = document.createElement("option");
+                                option.value = p.ProvinceName;
+                                option.text = p.ProvinceName;
+                                option.dataset.ghnId = p.ProvinceID;
+                                provinceSelect.appendChild(option);
+                            });
+                            try {
+                                if (savedProvince) {
+                                    const matched = matchOptionByText(provinceSelect, savedProvince);
+                                    if (matched) provinceSelect.value = matched.value;
+                                }
+                            } catch (e) {
+                                console.error("Error pre-selecting province:", e);
+                            }
+                            provinceSelect.addEventListener("change", function () {
+                                districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+                                districtSelect.disabled = true;
+                                const selectedOpt = this.options[this.selectedIndex];
+                                const ghnId = selectedOpt && selectedOpt.dataset ? selectedOpt.dataset.ghnId : null;
+                                if (ghnId) {
+                                    fetch(GHN_API + "/districts?provinceId=" + ghnId)
+                                        .then(res => res.json())
+                                        .then(dJson => {
+                                            if (dJson.code !== 200) return;
+                                            dJson.data.forEach(d => {
+                                                const opt = document.createElement("option");
+                                                opt.value = d.DistrictName;
+                                                opt.text = d.DistrictName;
+                                                opt.dataset.ghnId = d.DistrictID;
+                                                districtSelect.appendChild(opt);
+                                            });
+                                            districtSelect.disabled = false;
+                                            try {
+                                                if (savedDistrict) {
+                                                    const matchedDist = matchOptionByText(districtSelect, savedDistrict);
+                                                    if (matchedDist) districtSelect.value = matchedDist.value;
+                                                    savedDistrict = "";
+                                                }
+                                            } catch (e) {
+                                                console.error("Error pre-selecting district:", e);
+                                            }
+                                            updateHiddenAddress();
+                                        })
+                                        .catch(err => console.error("GHN District error:", err));
+                                } else {
+                                    updateHiddenAddress();
+                                }
+                            });
+                            try {
+                                if (provinceSelect.value) {
+                                    provinceSelect.dispatchEvent(new Event("change"));
+                                }
+                            } catch (e) {
+                                console.error("Error dispatching change on province:", e);
+                            }
+                            districtSelect.addEventListener("change", updateHiddenAddress);
+
+                            function updateHiddenAddress() {
+                                if (provinceSelect.value && districtSelect.value) {
+                                    hiddenAddress.value = districtSelect.value + ", " + provinceSelect.value;
+                                }
+                            }
+                        })
+                        .catch(err => console.error("Error fetching provinces:", err));
+                }
+            });
+        </script>
         <c:if test="${showDetail}">
             <div class="order-card mt-4">
                 <a href="${pageContext.request.contextPath}/admin/customer-manage"
                    class="btn btn-secondary mb-3"> <i class="bi bi-arrow-left"></i> Quay lại</a>
                 <div class="edit-form-container">
                     <h5 class="mb-4"><i class="bi bi-pencil-square"></i> Chỉnh Sửa Thông Tin</h5>
-                    <form id="editCustomerForm" method="POST"
+                    <form id="editCustomerForm" method="POST" enctype="multipart/form-data"
                           action="${pageContext.request.contextPath}/admin/update-customer">
                         <input type="hidden" name="id" value="${detailUser.id}">
                         <div class="form-section">
@@ -327,8 +424,35 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label class="form-label fw-semibold">Avatar URL</label>
-                                    <input type="text" class="form-control" name="avatar" value="${detailUser.avatar}">
+                                    <label class="form-label fw-semibold">Avatar</label>
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <div class="avatar-current-box d-flex flex-column align-items-center justify-content-center border rounded position-relative p-2"
+                                             style="width:100px; height:100px;">
+                                            <c:choose>
+                                                <c:when test="${not empty detailUser.avatar}">
+                                                    <img src="${pageContext.request.contextPath}/image/avatar/${detailUser.avatar}"
+                                                         style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <i class="bi bi-person-circle text-muted"
+                                                       style="font-size:3rem;"></i>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                        <div id="newAvatarBox"
+                                             class="avatar-new-box d-flex flex-column align-items-center justify-content-center border border-dashed rounded position-relative"
+                                             style="width:100px; height:100px; border-style:dashed; cursor:pointer;">
+                                            <input type="file" name="avatarFile" id="customerAvatarInput"
+                                                   accept="image/*" hidden>
+                                            <i class="bi bi-plus-lg text-primary fs-3" id="plusIcon"></i>
+                                            <img src="" id="newAvatarPreview"
+                                                 style="width:100%;height:100%;object-fit:cover;border-radius:8px; display:none;">
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                  id="removeNewAvatarBtn" style="display:none; cursor:pointer;"
+                                                  title="Bỏ ảnh">X</span>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="oldAvatar" value="${detailUser.avatar}">
                                 </div>
                             </div>
                         </div>
@@ -355,8 +479,22 @@
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label class="form-label fw-semibold">Địa chỉ</label>
-                                    <input type="text" class="form-control" name="address"
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <select id="provinceSelect" class="form-select">
+                                                <option value="">Chọn Tỉnh/Thành phố</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <select id="districtSelect" class="form-select" disabled>
+                                                <option value="">Chọn Quận/Huyện</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="editAddressHidden" name="address"
                                            value="${detailUser.address}">
+                                    <small class="text-muted d-block mt-1">Địa chỉ hiện tại:
+                                        <strong>${detailUser.address}</strong></small>
                                 </div>
                             </div>
                         </div>
@@ -424,6 +562,7 @@
                                 <i class="bi bi-check-circle"></i> Lưu Thay Đổi
                             </button>
                         </div>
+                        <div style="height: 250px; width: 100%; display: block;"></div>
                     </form>
                 </div>
             </div>
@@ -559,7 +698,7 @@
             });
         });
         document.getElementById("confirmLockBtn").addEventListener("click", function () {
-            const reason = document.getElementById("lockReasonInput").value.trim();
+            let reason = document.getElementById("lockReasonInput").value.trim();
             if (!reason) {
                 document.getElementById("lockReasonError").style.display = "block";
                 return;
@@ -624,6 +763,7 @@
             "pageLength": 5,
             "searching": true,
             "ordering": true,
+            "order": [],
             "info": false,
             "dom": 't',
             "columnDefs": [
@@ -642,6 +782,13 @@
             }
         });
         $("#search").on("keyup search", function () {
+            if (this.value.trim() === "") {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('keyword')) {
+                    window.location.href = '${pageContext.request.contextPath}/admin/customer-manage';
+                    return;
+                }
+            }
             table.search(this.value).draw();
             updatePageInfo();
         });
@@ -715,6 +862,7 @@
                 if (passwordError) passwordError.style.display = "none";
                 return true;
             }
+            if (passwordError) passwordError.className = "text-danger small mt-1";
             if (pwd.length < 8) {
                 if (passwordError) {
                     passwordError.textContent = "Mật khẩu ít nhất 8 ký tự";
@@ -750,7 +898,11 @@
                 }
                 return false;
             }
-            if (passwordError) passwordError.style.display = "none";
+            if (passwordError) {
+                passwordError.textContent = "Mật khẩu hợp lệ";
+                passwordError.className = "text-success small mt-1";
+                passwordError.style.display = "block";
+            }
             return true;
         }
 
@@ -766,6 +918,7 @@
             if (!editEmailInput) return true;
             const email = editEmailInput.value.trim();
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailError) emailError.className = "text-danger small mt-1";
             if (email === "") {
                 if (emailError) emailError.style.display = "none";
                 return true;
@@ -777,13 +930,18 @@
                 }
                 return false;
             }
-            if (emailError) emailError.style.display = "none";
+            if (emailError) {
+                emailError.textContent = "Email hợp lệ";
+                emailError.className = "text-success small mt-1";
+                emailError.style.display = "block";
+            }
             return true;
         }
 
         function validatePhone() {
             if (!editPhoneInput) return true;
             const phone = editPhoneInput.value.trim();
+            if (phoneError) phoneError.className = "text-danger small mt-1";
             if (phone === "") {
                 if (phoneError) phoneError.style.display = "none";
                 return true;
@@ -795,15 +953,25 @@
                 }
                 return false;
             }
-            const phonePattern = /^0[0-9]{9,10}$/;
-            if (!phonePattern.test(phone)) {
+            if (!/^[0-9]+$/.test(phone)) {
                 if (phoneError) {
-                    phoneError.textContent = "Số điện thoại chưa đúng định dạng.Vui lòng chỉnh sửa thêm!";
+                    phoneError.textContent = "Số điện thoại chỉ được chứa ký tự số";
                     phoneError.style.display = "block";
                 }
                 return false;
             }
-            if (phoneError) phoneError.style.display = "none";
+            if (phone.length !== 10) {
+                if (phoneError) {
+                    phoneError.textContent = "Số điện thoại phải có đúng 10 chữ số";
+                    phoneError.style.display = "block";
+                }
+                return false;
+            }
+            if (phoneError) {
+                phoneError.textContent = "Số điện thoại hợp lệ";
+                phoneError.className = "text-success small mt-1";
+                phoneError.style.display = "block";
+            }
             return true;
         }
 
@@ -843,6 +1011,39 @@
                         showToast('Có lỗi xảy ra khi cập nhật.', 'error');
                         console.error(err);
                     });
+            });
+        }
+        const newAvatarBox = document.getElementById("newAvatarBox");
+        const customerAvatarInput = document.getElementById("customerAvatarInput");
+        const newAvatarPreview = document.getElementById("newAvatarPreview");
+        const plusIcon = document.getElementById("plusIcon");
+        const removeNewAvatarBtn = document.getElementById("removeNewAvatarBtn");
+        if (newAvatarBox && customerAvatarInput) {
+            newAvatarBox.addEventListener("click", function (e) {
+                if (e.target !== removeNewAvatarBtn) {
+                    customerAvatarInput.click();
+                }
+            });
+            customerAvatarInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        newAvatarPreview.src = e.target.result;
+                        newAvatarPreview.style.display = "block";
+                        removeNewAvatarBtn.style.display = "block";
+                        plusIcon.style.display = "none";
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            removeNewAvatarBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                customerAvatarInput.value = "";
+                newAvatarPreview.src = "";
+                newAvatarPreview.style.display = "none";
+                removeNewAvatarBtn.style.display = "none";
+                plusIcon.style.display = "block";
             });
         }
     });

@@ -386,13 +386,14 @@ public class UserDAO {
     }
     public List<User> searchUsers(String keyword) {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT * FROM users WHERE id LIKE ? OR fullName LIKE ? OR username LIKE ? OR email LIKE ? OR phoneNumber LIKE ?";
+        String sql = "SELECT * FROM users WHERE CAST(id AS CHAR) LIKE ? OR fullName LIKE ? OR username LIKE ? OR email LIKE ? OR phoneNumber LIKE ? ORDER BY (CAST(id AS CHAR) = ?) DESC, id ASC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String queryPattern = "%" + keyword + "%";
             for (int i = 1; i <= 5; i++) {
                 ps.setString(i, queryPattern);
             }
+            ps.setString(6, keyword);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     User u = new User();
