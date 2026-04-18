@@ -245,7 +245,7 @@
         </div>
     </main>
 </div>
-<div class="modal fade" id="modalSanPham" tabindex="-1">
+<div class="modal fade" id="modalSanPham" tabindex="-1" data-bs-focus="false">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
@@ -318,15 +318,21 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">
-                            Ảnh chính
-                            <small class="text-muted">(URL)</small>
+                            Ảnh chính <small class="text-muted">(URL)</small>
                         </label>
-                        <div class="input-group">
-                                            <span class="input-group-text">
-                                                <i class="bi bi-image"></i>
-                                            </span>
-                            <input type="url" class="form-control" id="anhChinh"
-                                   placeholder="https://example.com/image-main.jpg">
+                        <div class="d-flex align-items-center gap-3">
+                            <div id="previewAnhChinh" style="
+                                    width: 80px; height: 80px; min-width: 80px;
+                                    border: 1px dashed #ccc; border-radius: 8px;
+                                    display: flex; align-items: center; justify-content: center;
+                                    overflow: hidden; background: #f8f9fa;">
+                                <i class="bi bi-image text-muted fs-4"></i>
+                            </div>
+                            <div class="input-group flex-grow-1">
+                                <span class="input-group-text"><i class="bi bi-image"></i></span>
+                                <input type="url" class="form-control" id="anhChinh"
+                                       placeholder="https://example.com/image-main.jpg">
+                            </div>
                         </div>
                     </div>
                     <div class="col-12">
@@ -439,6 +445,12 @@
         const thuongHieu = $('#thuongHieu').val().trim();
         const baoHanh = $('#baoHanh').val().trim();
         const anhChinh = $('#anhChinh').val().trim();
+        const moTa   = window.descriptionEditor
+            ? window.descriptionEditor.getData().trim()
+            : $('#moTa').val().trim();
+        const thongSo = window.parameterEditor
+            ? window.parameterEditor.getData().trim()
+            : $('#thongSo').val().trim();
 
         if (!ten) {
             showToast('Vui lòng nhập tên sản phẩm!', 'warning'); return false;
@@ -507,64 +519,6 @@
                 }
             });
     });
-    $(document).on('click', '.btn-edit', function () {
-        const productId = $(this).data('id');
-        $('#productId').val(productId);
-        $('#formMode').val('edit');
-        fetch(contextPath + '/admin/product-get?id=' + productId)
-            .then(res => res.json())
-            .then(product => {
-                $('#tenSP').val(product.productName);
-                $('#danhMuc').val(product.categoryId);
-                $('#thuongHieu').val(product.brandName);
-                $('#giaGoc').val(product.price);
-                $('#giaKM').val(product.finalPrice);
-                $('#soLuong').val(product.quantity);
-                $('#trangThai').val(product.status === 'active' ? 'Đang Kinh Doanh' :
-                    product.status === 'inactive' ? 'Ẩn' : 'Hết Hàng');
-                $('#baoHanh').val(product.warranty);
-                $('#moTa').val(product.description);
-                $('#thongSo').val(product.parameter);
-                $('#anhChinh').val(product.mainImage);
-                $('#imageExtraContainer').empty();
-                if (product.images && product.images.length > 0) {
-                    product.images.forEach(img => {
-                        const $row = $('<div class="input-group mb-2 image-row"></div>');
-                        $row.append('<span class="input-group-text"><i class="bi bi-images"></i></span>');
-                        const $input = $('<input type="url" class="form-control image-extra" placeholder="URL ảnh phụ">');
-                        $input.val(img.imageUrl);
-                        $row.append($input);
-                        const $btnRemove = $(`
-            <button type="button" class="btn btn-outline-danger btn-remove-image">
-                <i class="bi bi-dash-lg"></i>
-            </button>
-        `);
-                        $row.append($btnRemove);
-                        $('#imageExtraContainer').append($row);
-                    });
-                } else {
-                    const $row = $(`
-        <div class="input-group mb-2 image-row">
-            <span class="input-group-text"><i class="bi bi-images"></i></span>
-            <input type="url" class="form-control image-extra" placeholder="URL ảnh phụ">
-            <button type="button" class="btn btn-outline-success btn-add-image">
-                <i class="bi bi-plus-lg"></i>
-            </button>
-        </div>
-    `);
-                    $('#imageExtraContainer').append($row);
-                }
-                $('#modalSanPham .modal-title').html('<i class="bi bi-pencil"></i> Chỉnh sửa sản phẩm');
-                if (window.descriptionEditor) {
-                    window.descriptionEditor.setData(product.description || '');
-                }
-                if (window.parameterEditor) {
-                    window.parameterEditor.setData(product.parameter || '');
-                }
-                const modalSanPham = new bootstrap.Modal(document.getElementById('modalSanPham'));
-                modalSanPham.show();
-            });
-    });
     $(document).on('click', '.btn-delete', function (e) {
         e.preventDefault();
         let row = $(this).closest('tr');
@@ -606,30 +560,120 @@
             }
         });
     });
+    $(document).on('click', '.btn-edit', function () {
+        const productId = $(this).data('id');
+        $('#productId').val(productId);
+        $('#formMode').val('edit');
+        fetch(contextPath + '/admin/product-get?id=' + productId)
+            .then(res => res.json())
+            .then(product => {
+                $('#tenSP').val(product.productName);
+                $('#danhMuc').val(product.categoryId);
+                $('#thuongHieu').val(product.brandName);
+                $('#giaGoc').val(product.price);
+                $('#giaKM').val(product.finalPrice);
+                $('#soLuong').val(product.quantity);
+                $('#trangThai').val(product.status === 'active' ? 'Đang Kinh Doanh' :
+                    product.status === 'inactive' ? 'Ẩn' : 'Hết Hàng');
+                $('#baoHanh').val(product.warranty);
+                $('#moTa').val(product.description);
+                $('#thongSo').val(product.parameter);
+                $('#anhChinh').val(product.mainImage);
+                const prevBox = document.getElementById('previewAnhChinh');
+                if (product.mainImage) {
+                    prevBox.innerHTML = `<img src="${product.mainImage}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
+                } else {
+                    prevBox.innerHTML = `<i class="bi bi-image text-muted fs-4"></i>`;
+                }
+                $('#imageExtraContainer').empty();
+                if (product.images && product.images.length > 0) {
+                    product.images.forEach(img => {
+                        $('#imageExtraContainer').append(createImageRow(img.imageUrl));
+                    });
+                } else {
+                    $('#imageExtraContainer').append(createImageRow(''));
+                }
+                $('#modalSanPham .modal-title').html('<i class="bi bi-pencil"></i> Chỉnh sửa sản phẩm');
+                if (window.descriptionEditor) {
+                    window.descriptionEditor.setData(product.description || '');
+                }
+                if (window.parameterEditor) {
+                    window.parameterEditor.setData(product.parameter || '');
+                }
+                const modalSanPham = new bootstrap.Modal(document.getElementById('modalSanPham'));
+                modalSanPham.show();
+            });
+    });
 </script>
 <script>
     const contextPath = '${pageContext.request.contextPath}';
 </script>
 <script>
+    function updatePreview(url, previewEl) {
+        if (!url) {
+            previewEl.innerHTML = `<i class="bi bi-image text-muted" style="font-size:18px;"></i>`;
+            return;
+        }
+        previewEl.innerHTML = `<i class="bi bi-hourglass-split text-muted" style="font-size:18px;"></i>`;
+        const img = new Image();
+        const timeout = setTimeout(() => {
+            previewEl.innerHTML = `<i class="bi bi-wifi-off text-warning" style="font-size:18px;"></i>`;
+        }, 5000);
+        img.onload = function () {
+            clearTimeout(timeout);
+            previewEl.innerHTML = '';
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:6px;';
+            previewEl.appendChild(img);
+        };
+        img.onerror = function () {
+            clearTimeout(timeout);
+            previewEl.innerHTML = `<i class="bi bi-exclamation-triangle text-danger" style="font-size:18px;"></i>`;
+        };
+        img.src = url;
+    }
+
+    function createImageRow(url = '') {
+        const row = document.createElement("div");
+        row.className = "image-row mb-2";
+        row.style.cssText = "display:flex; align-items:center; gap:8px;";
+        row.innerHTML = `
+        <div class="img-preview-small" style="
+            width:55px; height:55px; min-width:55px;
+            border:1px dashed #ccc; border-radius:6px;
+            display:flex; align-items:center; justify-content:center;
+            overflow:hidden; background:#f8f9fa;">
+            <i class="bi bi-image text-muted" style="font-size:18px;"></i>
+        </div>
+       <div class="input-group flex-grow-1">
+            <span class="input-group-text"><i class="bi bi-images"></i></span>
+            <input type="url" class="form-control image-extra"
+                   placeholder="https://example.com/image-x.jpg"
+                   value="${url}">
+            <button type="button" class="btn btn-outline-success btn-add-image" title="Thêm ảnh">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-remove-image" title="Xóa ảnh">
+                <i class="bi bi-dash-lg"></i>
+            </button>
+        </div>
+    `;
+        const input = row.querySelector('.image-extra');
+        const preview = row.querySelector('.img-preview-small');
+        input.addEventListener('input', function () {
+            updatePreview(this.value.trim(), preview);
+        });
+        if (url) updatePreview(url, preview);
+        return row;
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("imageExtraContainer");
+        container.innerHTML = '';
+        container.appendChild(createImageRow(''));
+
         document.addEventListener("click", function (e) {
             if (e.target.closest(".btn-add-image")) {
-                const container = document.getElementById("imageExtraContainer");
-                const row = document.createElement("div");
-                row.className = "input-group mb-2 image-row";
-                row.innerHTML = `
-                <span class="input-group-text">
-                    <i class="bi bi-images"></i>
-                </span>
-                <input type="url"
-                       class="form-control image-extra"
-                       placeholder="https://example.com/image-x.jpg">
-                <button type="button"
-                        class="btn btn-outline-danger btn-remove-image">
-                    <i class="bi bi-dash-lg"></i>
-                </button>
-            `;
-                container.appendChild(row);
+                document.getElementById("imageExtraContainer").appendChild(createImageRow(''));
             }
             if (e.target.closest(".btn-remove-image")) {
                 e.target.closest(".image-row").remove();
@@ -665,6 +709,11 @@
 <script
         src="https://cdn.ckeditor.com/ckeditor5-premium-features/47.2.0/ckeditor5-premium-features.umd.js"
         crossorigin></script>
+<div id="toastNotify" class="toast-notify">
+    <span class="toast-icon" id="toastIcon"></span>
+    <span id="toastMsg"></span>
+    <div class="toast-bar"></div>
+</div>
 <script>
     const {
         ClassicEditor,
@@ -722,7 +771,7 @@
         Underline,
         Base64UploadAdapter
     } = window.CKEDITOR;
-    const LICENSE_KEY = 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NzAwNzY3OTksImp0aSI6IjFkYzBmZGQ1LThhMTgtNGFhYy1iOTEwLWRkMTA0MDkxZmNjZCIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImQwYWQwMTgyIn0.4qtYn6Q_c-EZwACzzNRQTfTLUjqrjRo12fRQXuGhzTmwPnaJOT3Jw6J6NK3u0Jf_skSkzhR36nezFQka3szCuA';
+    const LICENSE_KEY = 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Nzc3NjYzOTksImp0aSI6IjZjNDQyM2I1LWE5MTYtNDcyOC05NjAyLWRkMTkwM2RhZjQ4MSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjVlNzljMTExIn0.QeBKswpbgvJ6NHs0Ng3FO3qFW2P-ZUM6qUOwk52x2JjriNGnpV5YhiekUWCDN2GPtT3Ws0oOdOo0i9NeHMhYAw';
     const editorConfig = {
         licenseKey: LICENSE_KEY,
         toolbar: {
@@ -799,64 +848,102 @@
             TableToolbar,
             Underline
         ],
+
+        image: {
+            toolbar: [
+                'imageTextAlternative',
+                'imageStyle:inline',
+                'imageStyle:block',
+                'imageStyle:side',
+                'linkImage'
+            ]
+        },
+        table: {
+            contentToolbar: [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells',
+                'tableCellProperties',
+                'tableProperties'
+            ]
+        },
         placeholder: 'Nhập nội dung...'
     };
-    var descriptionEditor, parameterEditor;
-    document.addEventListener("DOMContentLoaded", function () {
-        document.addEventListener('focusin', function (e) {
-            if (e.target.closest('.ck-body-wrapper, .ck-balloon-panel, .ck-link-form, .ck-input')) {
-                e.stopImmediatePropagation();
-            }
-        }, true);
-        if (document.querySelector('#moTa')) {
-            ClassicEditor
-                .create(document.querySelector('#moTa'), editorConfig)
+    var descriptionEditor = null;
+    var parameterEditor = null;
+    var editorsReady = false;
+
+    document.addEventListener('focusin', function (e) {
+        if (e.target.closest(
+            '.ck-body-wrapper, .ck-balloon-panel, .ck-link-form, .ck-input,' +
+            '.ck-editor__editable, .ck-toolbar, .ck-dropdown__panel,' +
+            '.ck-list, .ck-button, .ck-color-grid'
+        )) {
+            e.stopImmediatePropagation();
+        }
+    }, true);
+    $('#modalSanPham').on('shown.bs.modal', function () {
+        if (!editorsReady) {
+            ClassicEditor.create(document.querySelector('#moTa'), editorConfig)
                 .then(editor => {
                     descriptionEditor = editor;
-                    const val = document.querySelector('#moTa').value;
-                    if (val) editor.setData(val);
+                    window.descriptionEditor = editor;
                 })
-                .catch(error => console.error('Error initializing description editor:', error));
-        }
-        if (document.querySelector('#thongSo')) {
-            ClassicEditor
-                .create(document.querySelector('#thongSo'), editorConfig)
+                .catch(err => console.error('moTa editor error:', err));
+
+            ClassicEditor.create(document.querySelector('#thongSo'), editorConfig)
                 .then(editor => {
                     parameterEditor = editor;
-                    const val = document.querySelector('#thongSo').value;
-                    if (val) editor.setData(val);
+                    window.parameterEditor = editor;
                 })
-                .catch(error => console.error('Error initializing parameter editor:', error));
+                .catch(err => console.error('thongSo editor error:', err));
+
+            editorsReady = true;
         }
-        $('#modalSanPham').on('shown.bs.modal', function () {
-            if (descriptionEditor) {
-                const val = $('#moTa').val();
-                if (val !== descriptionEditor.getData()) descriptionEditor.setData(val);
-            }
-            if (parameterEditor) {
-                const val = $('#thongSo').val();
-                if (val !== parameterEditor.getData()) parameterEditor.setData(val);
-            }
-        });
-        $('#modalSanPham').on('hidden.bs.modal', function () {
-            if (descriptionEditor) descriptionEditor.setData('');
-            if (parameterEditor) parameterEditor.setData('');
-        });
-        $('#btnSaveProduct').on('click', function () {
+    });
+    $('#modalSanPham').on('hidden.bs.modal', function () {
+        document.getElementById('previewAnhChinh').innerHTML = `<i class="bi bi-image text-muted fs-4"></i>`;
+        if (descriptionEditor) descriptionEditor.setData('');
+        if (parameterEditor)   parameterEditor.setData('');
+    });
 
-            if (!validateProductForm()) {
-                return;
-            }
-            console.log("Form hợp lệ, tiến hành lưu...");
+    document.getElementById('anhChinh').addEventListener('input', function () {
+        const url = this.value.trim();
+        const preview = document.getElementById('previewAnhChinh');
 
-        });
+        preview.innerHTML = `<i class="bi bi-hourglass-split text-muted fs-4"></i>`;
+
+        if (!url) {
+            preview.innerHTML = `<i class="bi bi-image text-muted fs-4"></i>`;
+            return;
+        }
+
+        const img = new Image();
+
+        const timeout = setTimeout(() => {
+            preview.innerHTML = `<i class="bi bi-wifi-off text-warning fs-4" title="Ảnh không tải được"></i>`;
+        }, 5000);
+
+        img.onload = function () {
+            clearTimeout(timeout);
+            preview.innerHTML = '';
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;';
+            preview.appendChild(img);
+        };
+
+        img.onerror = function () {
+            clearTimeout(timeout);
+            preview.innerHTML = `
+            <div style="text-align:center;">
+                <i class="bi bi-exclamation-triangle text-danger fs-5"></i>
+                <div style="font-size:10px;color:#dc3545;margin-top:2px;">Lỗi URL</div>
+            </div>`;
+        };
+
+        img.src = url;
     });
 </script>
-<div id="toastNotify" class="toast-notify">
-    <span class="toast-icon" id="toastIcon"></span>
-    <span id="toastMsg"></span>
-    <div class="toast-bar"></div>
-</div>
+
 </body>
 
 </html>
