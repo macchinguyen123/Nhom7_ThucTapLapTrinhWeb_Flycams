@@ -152,6 +152,13 @@
                             required
                     ></textarea>
                 </div>
+                <div class="mb-4 text-start">
+                    <label class="form-label">
+                        Link minh chứng (nếu có)
+                    </label>
+                    <input type="url" class="form-control" name="evidence"
+                           placeholder="Nhập đường dẫn hình ảnh/tài liệu (Google Drive, Imgur,...)">
+                </div>
                 <button type="submit" class="btn-submit">
                     Gửi yêu cầu <i class="bi bi-send-fill ms-1"></i>
                 </button>

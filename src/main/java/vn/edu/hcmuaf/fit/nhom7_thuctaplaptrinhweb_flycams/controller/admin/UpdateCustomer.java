@@ -77,8 +77,23 @@ public class UpdateCustomer extends HttpServlet {
                 u.setPassword(hashed);
             }
 
-            if (req.getParameter("avatar") != null)
-                u.setAvatar(req.getParameter("avatar"));
+            try {
+                jakarta.servlet.http.Part avatarPart = req.getPart("avatarFile");
+                if (avatarPart != null && avatarPart.getSize() > 0) {
+                    String contentType = avatarPart.getContentType();
+                    if (contentType != null && contentType.startsWith("image/")) {
+                        String deploymentPath = getServletContext().getRealPath("/image/avatar/");
+                        String fileName = vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.FileStorageUtil.saveFile(avatarPart, deploymentPath, "avatar");
+                        if (fileName != null) {
+                            u.setAvatar(fileName);
+                        }
+                    }
+                } else if (req.getParameter("oldAvatar") != null) {
+                    u.setAvatar(req.getParameter("oldAvatar"));
+                }
+            } catch (Exception ex) {
+                System.err.println("Upload Warning: " + ex.getMessage());
+            }
 
             String address = req.getParameter("address");
             boolean addrUpdated = true;

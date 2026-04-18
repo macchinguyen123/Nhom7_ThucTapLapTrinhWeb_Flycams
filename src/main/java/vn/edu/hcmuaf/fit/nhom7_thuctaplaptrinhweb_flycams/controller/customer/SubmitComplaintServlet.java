@@ -26,13 +26,17 @@ public class SubmitComplaintServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String userIdStr = request.getParameter("userId");
         String content = request.getParameter("content");
+        String evidence = request.getParameter("evidence");
         if (userIdStr != null && content != null && !content.trim().isEmpty()) {
+            if (evidence != null && !evidence.trim().isEmpty()) {
+                content = content + "\n\nMinh chứng: " + evidence.trim();
+            }
             try {
                 int userId = Integer.parseInt(userIdStr);
                 ComplaintDAO dao = new ComplaintDAO();
                 boolean success = dao.createComplaint(userId, content);
                 if (success) {
-                    request.setAttribute("message", "Gửi khiếu nại thành công! Chúng tôi sẽ xem xét sớm nhất.");
+                    request.setAttribute("message", "Yêu cầu xem xét tài khoản. Vui lòng cung cấp chi tiết lý do và minh chứng nếu có. Gửi khiếu nại thành công! Chúng tôi sẽ xem xét sớm nhất.");
                     request.setAttribute("messageType", "success");
                 } else {
                     request.setAttribute("message", "Có lỗi xảy ra, vui lòng thử lại sau.");

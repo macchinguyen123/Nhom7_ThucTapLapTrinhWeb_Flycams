@@ -11,7 +11,7 @@ public class ComplaintDAO {
 
     public boolean createComplaint(int userId, String content) {
         String sql = "INSERT INTO complaints(userId, content, status, createdAt, updatedAt) " +
-                     "VALUES (?, ?, 0, NOW(), NOW())";
+                "VALUES (?, ?, 0, NOW(), NOW())";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -26,9 +26,9 @@ public class ComplaintDAO {
     public List<Complaint> getAllComplaints() {
         List<Complaint> list = new ArrayList<>();
         String sql = "SELECT c.*, u.email as userEmail, u.fullName as userFullName, u.phoneNumber as userPhone " +
-                     "FROM complaints c " +
-                     "JOIN users u ON c.userId = u.id " +
-                     "ORDER BY c.createdAt DESC";
+                "FROM complaints c " +
+                "JOIN users u ON c.userId = u.id " +
+                "ORDER BY c.createdAt DESC";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
@@ -64,5 +64,19 @@ public class ComplaintDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public int getPendingComplaintsCount() {
+        String sql = "SELECT COUNT(id) FROM complaints WHERE status = 0";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
