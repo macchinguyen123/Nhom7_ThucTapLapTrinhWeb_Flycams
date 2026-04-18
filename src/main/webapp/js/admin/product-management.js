@@ -8,15 +8,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     document.getElementById("btnSaveProduct").addEventListener("click", function () {
-        const productName = document.getElementById("tenSP").value.trim();
-        const priceStr = document.getElementById("giaGoc").value.trim();
-        if (!productName || !priceStr) {
-            Swal.fire({
-                title: "Lỗi!",
-                text: "Vui lòng nhập đầy đủ thông tin sản phẩm (Tên sản phẩm, Giá gốc...).",
-                icon: "error",
-                confirmButtonText: "Đóng"
-            });
+        if (typeof validateProductForm === 'function' && !validateProductForm()) {
+            return;
+        }
+        const moTa = window.descriptionEditor
+            ? window.descriptionEditor.getData()
+                .replace(/<[^>]*>/g, '')
+                .replace(/&nbsp;/g, '')
+                .trim()
+            : document.getElementById("moTa").value.trim();
+        const thongSo = window.parameterEditor
+            ? window.parameterEditor.getData().replace(/<[^>]*>/g, '').trim()
+            : document.getElementById("thongSo").value.trim();
+        if (!moTa) {
+            showToast('Vui lòng nhập mô tả chi tiết!', 'warning');
+            return;
+        }
+        if (!thongSo) {
+            showToast('Vui lòng nhập thông số kỹ thuật!', 'warning');
             return;
         }
         const data = {
