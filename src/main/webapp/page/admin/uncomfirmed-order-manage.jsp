@@ -179,7 +179,7 @@
         </div>
     </main>
 </div>
-<div class="modal fade" id="modalChiTietDonHang" tabindex="-1">
+<div class="modal fade" id="modalChiTietDonHang">
     <div class="modal-dialog modal-xl">
         <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
             <div class="modal-header bg-gradient bg-primary text-white">
@@ -346,7 +346,14 @@
                 items.forEach(item => {
                     const tr = document.createElement("tr");
                     const tdName = document.createElement("td");
-                    tdName.textContent = item.productName || "---";
+                    const imgSrc = item.imageUrl
+                        ? (item.imageUrl.startsWith('http') ? item.imageUrl : '${pageContext.request.contextPath}/' + item.imageUrl)
+                        : '${pageContext.request.contextPath}/image/logoTCN.png';
+                    tdName.innerHTML =
+                        '<div class="d-flex align-items-center justify-content-start gap-2 text-start">' +
+                        '<img src="' + imgSrc + '" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ddd;" />' +
+                        '<span class="text-truncate" style="max-width: 250px;" title="' + (item.productName || '---') + '">' + (item.productName || '---') + '</span>' +
+                        '</div>';
                     tr.appendChild(tdName);
                     const tdQty = document.createElement("td");
                     tdQty.textContent = item.quantity != null ? item.quantity : "0";
@@ -379,10 +386,11 @@
         return d.toLocaleDateString("vi-VN");
     }
 
-    function handleOrderAction(orderId, action) {
+    function handleOrderAction(orderId, action, note) {
         const params = new URLSearchParams();
         params.append('id', orderId);
         params.append('action', action);
+        if (note) params.append('note', note);
         Swal.fire({
             title: "Đang xử lý...",
             text: "Vui lòng chờ trong giây lát",
@@ -515,20 +523,38 @@
                 });
                 return;
             }
-            Swal.fire({
-                title: "Từ chối đơn hàng?",
-                text: "Đơn hàng sẽ bị hủy và không thể hoàn tác!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Từ chối",
-                cancelButtonText: "Hủy",
-                confirmButtonColor: "#dc3545",
-                cancelButtonColor: "#6c757d"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    handleOrderAction(currentOrderId, "cancel");
-                }
-            });
+            const modalEl = document.getElementById('modalChiTietDonHang');
+            const bsModal = bootstrap.Modal.getInstance(modalEl);
+            if (bsModal) {
+                bsModal.hide();
+            }
+            setTimeout(() => {
+                Swal.fire({
+                    title: "Từ chối đơn hàng?",
+                    text: "Vui lòng nhập lý do từ chối đơn hàng này (sẽ gửi cho khách hàng):",
+                    input: "textarea",
+                    inputPlaceholder: "Ví dụ: Hết hàng, không liên lạc được, v.v.",
+                    inputAttributes: {
+                        "aria-label": "Nhập lý do từ chối"
+                    },
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Xác Nhận Từ Chối",
+                    cancelButtonText: "Hủy",
+                    confirmButtonColor: "#dc3545",
+                    cancelButtonColor: "#6c757d",
+                    preConfirm: (noteValue) => {
+                        if (!noteValue || noteValue.trim().length === 0) {
+                            Swal.showValidationMessage('Bạn cần nhập lý do từ chối!');
+                        }
+                        return noteValue;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        handleOrderAction(currentOrderId, "cancel", result.value.trim());
+                    }
+                });
+            }, 300);
         });
         $("#logoutBtn").on("click", function () {
             $("#logoutModal").css("display", "flex");

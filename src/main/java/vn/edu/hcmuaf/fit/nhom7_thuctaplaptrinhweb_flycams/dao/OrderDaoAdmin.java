@@ -30,8 +30,8 @@ public class OrderDaoAdmin {
                 """;
 
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Orders o = new Orders();
@@ -80,14 +80,14 @@ public class OrderDaoAdmin {
                             a.district, ', ',
                             a.province
                         ) AS fullAddress
-
+                
                     FROM orders o
                     JOIN users u ON o.user_id = u.id
                     LEFT JOIN addresses a ON o.address_id = a.id
                     WHERE o.id = ?
                 """;
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -124,14 +124,19 @@ public class OrderDaoAdmin {
                     SELECT
                         p.productName,
                         oi.quantity,
-                        oi.price
+                        oi.price,
+                        (SELECT img.imageUrl
+                         FROM images img
+                         WHERE img.product_id = p.id
+                         ORDER BY img.id ASC
+                         LIMIT 1) AS imageUrl
                     FROM order_items oi
                     JOIN products p ON oi.product_id = p.id
                     WHERE oi.order_id = ?
                 """;
 
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
             ResultSet rs = ps.executeQuery();
@@ -140,6 +145,7 @@ public class OrderDaoAdmin {
                 map.put("productName", rs.getString("productName"));
                 map.put("quantity", rs.getInt("quantity"));
                 map.put("price", rs.getDouble("price"));
+                map.put("imageUrl", rs.getString("imageUrl"));
                 list.add(map);
             }
 
@@ -152,7 +158,7 @@ public class OrderDaoAdmin {
     public boolean updateOrderStatusAndShippingCode(int orderId, String status, String shippingCode) {
         String sql = "UPDATE orders SET `status` = ?, `shippingCode` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setString(2, shippingCode);
             ps.setInt(3, orderId);
@@ -167,9 +173,24 @@ public class OrderDaoAdmin {
     public boolean updateOrderStatus(int orderId, String status) {
         String sql = "UPDATE orders SET `status` = ? WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, orderId);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateOrderStatusAndNote(int orderId, String status, String note) {
+        String sql = "UPDATE orders SET `status` = ?, `note` = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, note);
+            ps.setInt(3, orderId);
             int rows = ps.executeUpdate();
             return rows > 0;
         } catch (Exception e) {
@@ -199,8 +220,8 @@ public class OrderDaoAdmin {
                     ORDER BY o.createdAt DESC
                 """;
         try (Connection con = DBConnection.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Orders o = new Orders();

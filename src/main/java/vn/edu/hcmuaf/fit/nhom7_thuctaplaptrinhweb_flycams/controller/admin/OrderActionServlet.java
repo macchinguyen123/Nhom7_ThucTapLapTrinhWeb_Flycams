@@ -45,7 +45,12 @@ public class OrderActionServlet extends HttpServlet {
                 success = orderService.confirmOrder(orderId);
             } else if ("cancel".equals(action)) {
                 newStatus = "Hủy";
-                success = orderService.updateOrderStatus(orderId, newStatus);
+                String note = req.getParameter("note");
+                if (note != null && !note.isEmpty()) {
+                    success = orderService.updateOrderStatusAndNote(orderId, newStatus, note);
+                } else {
+                    success = orderService.updateOrderStatus(orderId, newStatus);
+                }
             }
             Map<String, Object> result = new HashMap<>();
             result.put("success", success);

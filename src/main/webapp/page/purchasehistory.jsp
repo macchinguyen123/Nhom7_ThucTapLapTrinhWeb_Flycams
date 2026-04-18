@@ -60,10 +60,16 @@
                 <td>
                     <fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yyyy"/>
                 </td>
-                <td class="trang-thai">
-                                        <span class="status ${order.statusClass}">
-                                                ${order.statusLabel}
-                                        </span>
+                <td class="trang-thai text-center">
+                    <span class="status ${order.statusClass}">
+                        ${order.statusLabel}
+                    </span>
+                    <c:if test="${not empty order.note and order.status.name() eq 'CANCELLED'}">
+                        <br>
+                        <small class="text-danger mt-2 d-inline-block text-start" style="font-size: 0.85rem;">
+                            <strong>Lý do hủy:</strong> ${order.note}
+                        </small>
+                    </c:if>
                 </td>
                 <td>
                     <button type="button" class="nut-mua-lai" onclick="muaLai(${order.id})">
