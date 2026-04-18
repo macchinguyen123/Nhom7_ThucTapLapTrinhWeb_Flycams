@@ -27,10 +27,21 @@ public class ProductSaveServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+
         try {
             String json = req.getReader().lines().collect(Collectors.joining());
             ObjectMapper mapper = new ObjectMapper();
             Product product = mapper.readValue(json, Product.class);
+            if (product.getPrice() <= 0) {
+                resp.getWriter().write("{\"success\":false, \"message\":\"Giá phải lớn hơn 0\"}");
+                return;
+            }
+
+            if (product.getQuantity() <= 0) {
+                resp.getWriter().write("{\"success\":false, \"message\":\"Số lượng phải lớn hơn 0\"}");
+                return;
+            }
+
             int productId = productService.saveProduct(product);
             Map<String, Object> result = Map.of(
                     "success", true,

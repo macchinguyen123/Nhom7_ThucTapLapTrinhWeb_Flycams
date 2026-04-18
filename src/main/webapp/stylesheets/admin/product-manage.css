@@ -295,4 +295,54 @@ table#tableSanPham > thead.table-primary th {
     color: #fff !important; 
     border-color: #0047a3 !important; 
 }
+.toast-notify {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 99999;
+    min-width: 280px;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(-16px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+.toast-notify.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.toast-notify.success { background: #198754; }
+.toast-notify.error   { background: #dc3545; }
+.toast-notify.warning { background: #fd7e14; }
+.toast-notify .toast-icon { font-size: 20px; }
+.toast-notify .toast-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 4px;
+    border-radius: 0 0 10px 10px;
+    background: rgba(255,255,255,0.5);
+    animation: toastBar 3s linear forwards;
+}
+@keyframes toastBar {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
 
+.ck.ck-editor {
+    width: 100%;
+}
+
+.ck-editor__editable {
+    min-height: 250px;
+    pointer-events: auto;
+}

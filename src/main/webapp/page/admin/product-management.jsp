@@ -294,17 +294,17 @@
                     <div class="col-md-6">
                         <label class="form-label">Giá gốc</label>
                         <input type="number" class="form-control" id="giaGoc"
-                               placeholder="Nhập giá gốc">
+                               placeholder="Nhập giá gốc" min="1">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Giá khuyến mãi</label>
                         <input type="number" class="form-control" id="giaKM"
-                               placeholder="Nhập giá khuyến mãi (nếu có)">
+                               placeholder="Nhập giá khuyến mãi (nếu có)" min="1">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Số lượng</label>
                         <input type="number" class="form-control" id="soLuong"
-                               placeholder="Nhập số lượng">
+                               placeholder="Nhập số lượng" min="1">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Đánh giá trung bình</label>
@@ -387,11 +387,9 @@
             "zeroRecords": "Không tìm thấy dữ liệu"
         }
     });
-    // Tìm kiếm
     $('#searchInput').on('keyup', function () {
         table.search(this.value).draw();
     });
-    // Thay đổi số dòng hiển thị
     $('#rowsPerPage').on('change', function () {
         table.page.len(parseInt($(this).val())).draw();
         updatePageInfo();
@@ -402,7 +400,6 @@
     $("#cancelLogout").on("click", function () {
         $("#logoutModal").hide();
     });
-    // Nút phân trang trước / sau
     $('#prevPage').on('click', function () {
         table.page('previous').draw('page');
         updatePageInfo();
@@ -412,13 +409,104 @@
         updatePageInfo();
     });
 
-    // Cập nhật số trang hiển thị
     function updatePageInfo() {
         var info = table.page.info();
         $('#pageInfo').text((info.page + 1) + ' / ' + info.pages);
     }
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toastNotify');
+        const msg   = document.getElementById('toastMsg');
+
+        toast.className = 'toast-notify ' + type;
+        msg.textContent = message;
+
+        const bar = toast.querySelector('.toast-bar');
+        bar.style.animation = 'none';
+        bar.offsetHeight;
+        bar.style.animation = '';
+
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+    function validateProductForm() {
+        const ten    = $('#tenSP').val().trim();
+        const gia    = parseFloat($('#giaGoc').val());
+        const giaKM  = $('#giaKM').val();
+        const soLuong = $('#soLuong').val().trim();
+        const thuongHieu = $('#thuongHieu').val().trim();
+        const baoHanh = $('#baoHanh').val().trim();
+        const anhChinh = $('#anhChinh').val().trim();
+
+        if (!ten) {
+            showToast('Vui lòng nhập tên sản phẩm!', 'warning'); return false;
+        }
+        if (!thuongHieu) {
+            showToast('Vui lòng nhập thương hiệu!', 'warning'); return false;
+        }
+        const soLuongNum = Number(soLuong);
+        const giaNum = Number(gia);
+
+        if (!Number.isInteger(soLuongNum) || soLuongNum <= 0) {
+            showToast('Số lượng phải là số nguyên > 0!', 'warning');
+            return false;
+        }
+
+        if (isNaN(giaNum) || giaNum <= 0) {
+            showToast('Giá gốc phải > 0!', 'warning');
+            return false;
+        }
+        if (giaKM !== '' && (isNaN(parseFloat(giaKM)) || parseFloat(giaKM) <= 0)) {
+            showToast('Giá khuyến mãi phải lớn hơn 0!', 'warning');
+            return false;
+        }
+        if (!baoHanh) {
+            showToast('Vui lòng nhập thông tin bảo hành!', 'warning'); return false;
+        }
+        if (!anhChinh) {
+            showToast('Vui lòng nhập URL ảnh chính!', 'warning'); return false;
+        }
+        return true;
+    }
 
     updatePageInfo();
+    $(document).on('click', '.btn-toggle', function () {
+        const row = $(this).closest('tr');
+        const statusCell = row.find('td:eq(6)');
+        const productId = $(this).data('id');
+        let newStatus;
+        if (statusCell.text().trim() === "Đang KD") {
+            newStatus = "inactive";
+        } else {
+            newStatus = "active";
+        }
+        fetch(contextPath + '/admin/product-toggle-status', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: productId, status: newStatus})
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (newStatus === "inactive") {
+                        statusCell.html('<span class="badge bg-secondary">Ẩn</span>');
+                        $(this).find('i').removeClass('bi-eye-slash').addClass('bi-eye');
+                    } else {
+                        statusCell.html('<span class="badge bg-success">Đang KD</span>');
+                        $(this).find('i').removeClass('bi-eye').addClass('bi-eye-slash');
+                    }
+                } else {
+                    Swal.fire({
+                        title: "Lỗi!",
+                        text: data.message,
+                        icon: "error",
+                        confirmButtonColor: "#0d6efd"
+                    });
+                }
+            });
+    });
     $(document).on('click', '.btn-edit', function () {
         const productId = $(this).data('id');
         $('#productId').val(productId);
@@ -517,41 +605,6 @@
                     });
             }
         });
-    });
-    $(document).on('click', '.btn-toggle', function () {
-        const row = $(this).closest('tr');
-        const statusCell = row.find('td:eq(6)');
-        const productId = $(this).data('id');
-        let newStatus;
-        if (statusCell.text().trim() === "Đang KD") {
-            newStatus = "inactive";
-        } else {
-            newStatus = "active";
-        }
-        fetch(contextPath + '/admin/product-toggle-status', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({id: productId, status: newStatus})
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    if (newStatus === "inactive") {
-                        statusCell.html('<span class="badge bg-secondary">Ẩn</span>');
-                        $(this).find('i').removeClass('bi-eye-slash').addClass('bi-eye');
-                    } else {
-                        statusCell.html('<span class="badge bg-success">Đang KD</span>');
-                        $(this).find('i').removeClass('bi-eye').addClass('bi-eye-slash');
-                    }
-                } else {
-                    Swal.fire({
-                        title: "Lỗi!",
-                        text: data.message,
-                        icon: "error",
-                        confirmButtonColor: "#0d6efd"
-                    });
-                }
-            });
     });
 </script>
 <script>
@@ -789,8 +842,21 @@
             if (descriptionEditor) descriptionEditor.setData('');
             if (parameterEditor) parameterEditor.setData('');
         });
+        $('#btnSaveProduct').on('click', function () {
+
+            if (!validateProductForm()) {
+                return;
+            }
+            console.log("Form hợp lệ, tiến hành lưu...");
+
+        });
     });
 </script>
+<div id="toastNotify" class="toast-notify">
+    <span class="toast-icon" id="toastIcon"></span>
+    <span id="toastMsg"></span>
+    <div class="toast-bar"></div>
+</div>
 </body>
 
 </html>
