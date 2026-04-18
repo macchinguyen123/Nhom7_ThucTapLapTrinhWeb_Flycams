@@ -152,6 +152,7 @@
                 <th>Tên Chương Trình</th>
                 <th>Mức Giảm</th>
                 <th>Thời Gian Áp Dụng</th>
+                <th>Trạng Thái</th>
                 <th>Phạm Vi Áp Dụng</th>
                 <th>Thao Tác</th>
             </tr>
@@ -179,6 +180,11 @@
                         <fmt:formatDate value="${p.startDate}" pattern="yyyy-MM-dd"/>
                         -
                         <fmt:formatDate value="${p.endDate}" pattern="yyyy-MM-dd"/>
+                    </td>
+                    <td>
+                        <span class="admin-countdown badge bg-secondary" data-end-time="<fmt:formatDate value="${p.endDate}" pattern="yyyy-MM-dd'T'HH:mm:ss"/>">
+                            Đang tải...
+                        </span>
                     </td>
                     <td>
                             ${scopeMap[p.id]}
@@ -1059,6 +1065,40 @@
                 form.submit();
             }
         });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const updateAdminCountdowns = () => {
+            const now = new Date().getTime();
+            document.querySelectorAll('.admin-countdown').forEach(el => {
+                const endTimeStr = el.getAttribute('data-end-time');
+                if (!endTimeStr) return;
+                const endTime = new Date(endTimeStr).getTime() + 86399000;
+                const distance = endTime - now;
+                if (distance < 0) {
+                    el.className = 'admin-countdown badge bg-secondary';
+                    el.textContent = 'Đã hết hạn';
+                } else {
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    let timeString = 'Còn ';
+                    if (days > 0) {
+                        timeString += days + ' ngày ';
+                    }
+                    timeString += 
+                        (hours < 10 ? '0' : '') + hours + ':' + 
+                        (minutes < 10 ? '0' : '') + minutes + ':' + 
+                        (seconds < 10 ? '0' : '') + seconds;
+                    el.className = 'admin-countdown badge bg-success';
+                    el.innerHTML = '<i class="bi bi-clock"></i> ' + timeString;
+                }
+            });
+        };
+        updateAdminCountdowns();
+        setInterval(updateAdminCountdowns, 1000);
     });
 </script>
 </body>
