@@ -49,15 +49,23 @@ public class BlogManageServlet extends HttpServlet {
             String image = request.getParameter("image");
             int productId = Integer.parseInt(request.getParameter("productId"));
             Post post = new Post(id, title, content, image, null, productId, 0);
-            articleService.updatePost(post);
+            boolean success = articleService.updatePost(post);
             response.sendRedirect(
-                    request.getContextPath() + "/admin/blog-manage?msg=updated");
+                    request.getContextPath() + "/admin/blog-manage?msg=" + (success ? "edited" : "edit_failed"));
         }
         if ("add".equals(action)) {
             String title = request.getParameter("title");
             String content = request.getParameter("content");
+            System.out.println("Content received: " + content);
             String image = request.getParameter("image");
-            int productId = Integer.parseInt(request.getParameter("productId"));
+            String productIdStr = request.getParameter("productId");
+            int productId = (productIdStr != null && !productIdStr.trim().isEmpty())
+                    ? Integer.parseInt(productIdStr) : 0;
+
+            if (title == null || title.trim().isEmpty() || content == null || content.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/admin/blog-manage?error=add_failed");
+                return;
+            }
             Post post = new Post(0, title, content, image, null, productId,0);
             boolean success = articleService.addPost(post);
             response.sendRedirect(

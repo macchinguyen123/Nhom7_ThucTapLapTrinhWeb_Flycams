@@ -23,7 +23,7 @@ public class PostDAO {
                         rs.getString("title"),
                         rs.getString("content"),
                         rs.getString("image"),
-                        rs.getTimestamp("createdAt"),
+                        rs.getTimestamp("createdAt") != null ? rs.getTimestamp("createdAt") : new java.sql.Timestamp(System.currentTimeMillis()),
                         rs.getInt("product_id"),
                         rs.getInt("view")
                 );
@@ -33,6 +33,21 @@ public class PostDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public boolean addPost(Post post) {
+        String sql = "INSERT INTO posts (title, content, image, createdAt, product_id, `view`) VALUES (?, ?, ?, NOW(), ?, 0)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, post.getTitle());
+            ps.setString(2, post.getContent());
+            ps.setString(3, post.getImage());
+            ps.setInt(4, post.getProductId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean deletePost(int postId) {
@@ -54,22 +69,6 @@ public class PostDAO {
             return false;
         }
     }
-
-    public boolean addPost(Post post) {
-        String sql = "INSERT INTO posts (title, content, image, createdAt, product_id) VALUES (?, ?, ?, NOW(), ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, post.getTitle());
-            ps.setString(2, post.getContent());
-            ps.setString(3, post.getImage());
-            ps.setInt(4, post.getProductId());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public boolean updatePost(Post post) {
         String sql = "UPDATE posts SET title=?, content=?, image=?, product_id=? WHERE id=?";
         try (Connection conn = DBConnection.getConnection();
