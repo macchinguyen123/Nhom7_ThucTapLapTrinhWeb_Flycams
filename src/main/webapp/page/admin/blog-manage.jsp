@@ -9,7 +9,6 @@
     <title>Trang Quản Lý Blog - SkyDrone</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../stylesheets/admin/blog-manage.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -197,8 +196,15 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Link ảnh</label>
-                                <input type="text" name="image" class="form-control"
-                                       placeholder="https://...">
+                                <div class="img-preview-wrap">
+                                    <img id="add-img-thumb" class="img-preview-thumb" alt="Preview">
+                                    <div id="add-img-err" class="img-preview-err">
+                                        <i class="bi bi-image-slash" style="font-size:20px;"></i>
+                                        <span>URL lỗi</span>
+                                    </div>
+                                    <input type="text" name="image" id="add-image" class="form-control"
+                                           placeholder="https://...">
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Mã sản phẩm</label>
@@ -367,8 +373,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Ảnh</label>
-                                    <input type="text" name="image" id="edit-image"
-                                           class="form-control">
+                                    <div class="img-preview-wrap">
+                                        <img id="edit-img-thumb" class="img-preview-thumb" alt="Preview">
+                                        <div id="edit-img-err" class="img-preview-err">
+                                            <i class="bi bi-image-slash" style="font-size:20px;"></i>
+                                            <span>URL lỗi</span>
+                                        </div>
+                                        <input type="text" name="image" id="edit-image" class="form-control">
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Mã sản phẩm</label>
@@ -470,48 +482,27 @@
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         const error = urlParams.get('error');
-        if (msg === 'added') {
+
+        const alerts = {
+            added:        { icon: 'success', title: 'Thành công!',  text: 'Đã thêm bài viết mới.' },
+            edited:       { icon: 'success', title: 'Thành công!',  text: 'Đã cập nhật bài viết.' },
+            deleted:      { icon: 'success', title: 'Đã xóa!',      text: 'Bài viết đã được xóa.' },
+            add_failed:   { icon: 'error',   title: 'Thất bại!',    text: 'Không thể thêm bài viết. Vui lòng thử lại.' },
+            edit_failed:  { icon: 'error',   title: 'Thất bại!',    text: 'Không thể cập nhật bài viết. Vui lòng thử lại.' },
+            delete_failed:{ icon: 'error',   title: 'Thất bại!',    text: 'Không thể xóa bài viết. Vui lòng thử lại.' },
+        };
+
+        const key = msg || error;
+        if (key && alerts[key]) {
             Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                text: 'Đã thêm bài viết mới thành công.',
-                timer: 2000,
-                showConfirmButton: false
+                icon: alerts[key].icon,
+                title: alerts[key].title,
+                text: alerts[key].text,
+                timer: alerts[key].icon === 'success' ? 2000 : undefined,
+                showConfirmButton: alerts[key].icon !== 'success',
+                confirmButtonColor: '#0d6efd'
             });
-        } else if (msg === 'edited') {
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                text: 'Đã cập nhật bài viết thành công.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        } else if (msg === 'deleted') {
-            Swal.fire({
-                icon: 'success',
-                title: 'Đã xóa!',
-                text: 'Bài viết đã được xóa khỏi hệ thống.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        } else if (error === 'add_failed') {
-            Swal.fire({
-                icon: 'error',
-                title: 'Thất bại!',
-                text: 'Không thể thêm bài viết. Vui lòng thử lại.',
-            });
-        } else if (error === 'edit_failed') {
-            Swal.fire({
-                icon: 'error',
-                title: 'Thất bại!',
-                text: 'Không thể cập nhật bài viết. Vui lòng thử lại.',
-            });
-        } else if (error === 'delete_failed') {
-            Swal.fire({
-                icon: 'error',
-                title: 'Thất bại!',
-                text: 'Không thể xóa bài viết. Vui lòng thử lại.',
-            });
+            window.history.replaceState({}, '', window.location.pathname);
         }
     });
     const {
@@ -572,7 +563,8 @@
     } = window.CKEDITOR;
     let addEditor, editEditor;
     const editorConfig = {
-        licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NzAwNzY3OTksImp0aSI6IjFkYzBmZGQ1LThhMTgtNGFhYy1iOTEwLWRkMTA0MDkxZmNjZCIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImQwYWQwMTgyIn0.4qtYn6Q_c-EZwACzzNRQTfTLUjqrjRo12fRQXuGhzTmwPnaJOT3Jw6J6NK3u0Jf_skSkzhR36nezFQka3szCuA',
+        licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Nzc3NjYzOTksImp0aSI6IjZjNDQyM2I1LWE5MTYtNDcyOC05NjAyLWRkMTkwM2RhZjQ4MSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6IjVlNzljMTExIn0.QeBKswpbgvJ6NHs0Ng3FO3qFW2P-ZUM6qUOwk52x2JjriNGnpV5YhiekUWCDN2GPtT3Ws0oOdOo0i9NeHMhYAw',
+
         toolbar: {
             items: [
                 'undo', 'redo',
@@ -763,6 +755,12 @@
         }
     }
 
+
+
+    function showList() {
+        $('#blog-detail').hide();
+        $('.users-table').show();
+    }
     function syncEditEditor() {
         try {
             if (editEditor) {
@@ -778,6 +776,7 @@
                     });
                     return false;
                 }
+
                 const textarea = document.querySelector('#edit-content');
                 if (textarea) {
                     textarea.value = content;
@@ -817,11 +816,6 @@
         $('#pageInfo').text((info.page + 1) + ' / ' + info.pages);
     }
 
-    function showList() {
-        $('#blog-detail').hide();
-        $('.users-table').show();
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
         const logoutBtn = document.getElementById("logoutBtn");
         const logoutModal = document.getElementById("logoutModal");
@@ -831,6 +825,26 @@
             cancelLogout.addEventListener("click", () => logoutModal.style.display = "none");
         }
     });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuItems = document.querySelectorAll(".has-submenu .menu-item");
+        menuItems.forEach(item => {
+            item.addEventListener("click", function () {
+                const parent = this.parentElement;
+                parent.classList.toggle("open");
+            });
+        });
+    });
+    setTimeout(() => {
+        const alert = document.getElementById("alertMsg");
+        if (alert) {
+            alert.classList.add("fade");
+            alert.style.opacity = "0";
+            setTimeout(() => alert.remove(), 500);
+        }
+    }, 3000);
 </script>
 <script>
     function openEditModal(btn) {
@@ -842,6 +856,9 @@
         if (editEditor) {
             editEditor.setData(btn.dataset.content);
         }
+        const editImgInput = document.getElementById('edit-image');
+        if (editImgInput._triggerPreview) editImgInput._triggerPreview();
+
         let modal = new bootstrap.Modal(
             document.getElementById("editBlogModal")
         );
@@ -895,24 +912,46 @@
         })
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const menuItems = document.querySelectorAll(".has-submenu .menu-item");
-        menuItems.forEach(item => {
-            item.addEventListener("click", function () {
-                const parent = this.parentElement;
-                parent.classList.toggle("open");
-            });
+    function bindImgPreview(inputId, thumbId, errId) {
+        const input = document.getElementById(inputId);
+        const thumb = document.getElementById(thumbId);
+        const errBox = document.getElementById(errId);
+
+        function update() {
+            const url = input.value.trim();
+            if (!url) {
+                thumb.classList.remove('show');
+                errBox.classList.remove('show');
+                return;
+            }
+            thumb.onload = () => {
+                thumb.classList.add('show');
+                errBox.classList.remove('show');
+            };
+            thumb.onerror = () => {
+                thumb.classList.remove('show');
+                errBox.classList.add('show');
+            };
+            thumb.src = url;
+        }
+
+        input.addEventListener('input', update);
+        input._triggerPreview = update;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        bindImgPreview('add-image', 'add-img-thumb', 'add-img-err');
+        bindImgPreview('edit-image', 'edit-img-thumb', 'edit-img-err');
+
+        document.getElementById('addBlogModal').addEventListener('hidden.bs.modal', function () {
+            const thumb = document.getElementById('add-img-thumb');
+            const errBox = document.getElementById('add-img-err');
+            thumb.classList.remove('show');
+            errBox.classList.remove('show');
+            thumb.src = '';
         });
     });
-    setTimeout(() => {
-        const alert = document.getElementById("alertMsg");
-        if (alert) {
-            alert.classList.add("fade");
-            alert.style.opacity = "0";
-            setTimeout(() => alert.remove(), 500);
-        }
-    }, 3000);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </html>
