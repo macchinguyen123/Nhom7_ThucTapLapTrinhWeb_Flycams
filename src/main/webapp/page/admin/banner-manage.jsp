@@ -256,6 +256,14 @@
                         <label class="form-label">Link ảnh banner</label>
                         <input type="text" name="image" class="form-control"
                                placeholder="https://..." id="add-image-input">
+                        <div class="mt-2" id="add-img-preview-wrap" style="display:none;">
+                            <img id="add-img-preview" src="" alt="Preview"
+                                 style="max-width: 100%; max-height: 200px; border-radius: 6px;
+                                 box-shadow: 0 2px 8px rgba(0,0,0,0.15); object-fit: cover;">
+                        </div>
+                        <div id="add-img-err" class="text-danger mt-1" style="display:none;">
+                            <i class="bi bi-exclamation-triangle"></i> URL ảnh không hợp lệ
+                        </div>
                     </div>
                     <div class="mb-3 d-none" id="add-video-group">
                         <label class="form-label">Link video banner</label>
@@ -489,22 +497,6 @@
         modal.show();
     }
 
-    function openViewModal(btn) {
-        document.getElementById('view-id').innerText = btn.dataset.id;
-        document.getElementById('view-type').innerText = btn.dataset.type === 'image' ? 'Hình Ảnh' : 'Video';
-        document.getElementById('view-link').innerText = btn.dataset.link || '---';
-        document.getElementById('view-order').innerText = btn.dataset.order;
-        document.getElementById('view-status').innerText = btn.dataset.status === 'active' ? 'Hoạt động' : 'Tạm ẩn';
-        const mediaContainer = document.getElementById('view-media-container');
-        if (btn.dataset.type === 'image') {
-            mediaContainer.innerHTML = '<img src="' + btn.dataset.image + '" style="max-width: 100%; border-radius: 6px;">';
-        } else {
-            mediaContainer.innerHTML = '<video src="' + btn.dataset.video + '" controls style="max-width: 100%; border-radius: 6px;"></video>';
-        }
-        let modal = new bootstrap.Modal(document.getElementById('viewBannerModal'));
-        modal.show();
-    }
-
     function confirmDelete(btn) {
         const id = btn.dataset.id;
         Swal.fire({
@@ -535,6 +527,21 @@
                 form.submit();
             }
         })
+    }
+    function openViewModal(btn) {
+        document.getElementById('view-id').innerText = btn.dataset.id;
+        document.getElementById('view-type').innerText = btn.dataset.type === 'image' ? 'Hình Ảnh' : 'Video';
+        document.getElementById('view-link').innerText = btn.dataset.link || '---';
+        document.getElementById('view-order').innerText = btn.dataset.order;
+        document.getElementById('view-status').innerText = btn.dataset.status === 'active' ? 'Hoạt động' : 'Tạm ẩn';
+        const mediaContainer = document.getElementById('view-media-container');
+        if (btn.dataset.type === 'image') {
+            mediaContainer.innerHTML = '<img src="' + btn.dataset.image + '" style="max-width: 100%; border-radius: 6px;">';
+        } else {
+            mediaContainer.innerHTML = '<video src="' + btn.dataset.video + '" controls style="max-width: 100%; border-radius: 6px;"></video>';
+        }
+        let modal = new bootstrap.Modal(document.getElementById('viewBannerModal'));
+        modal.show();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -587,6 +594,34 @@
             setTimeout(() => alert.remove(), 500);
         }
     }, 3000);
+    const addImageInput = document.getElementById('add-image-input');
+    const addImgPreview = document.getElementById('add-img-preview');
+    const addImgPreviewWrap = document.getElementById('add-img-preview-wrap');
+    const addImgErr = document.getElementById('add-img-err');
+
+    addImageInput.addEventListener('input', function () {
+        const url = this.value.trim();
+        if (!url) {
+            addImgPreviewWrap.style.display = 'none';
+            addImgErr.style.display = 'none';
+            return;
+        }
+        addImgPreview.onload = () => {
+            addImgPreviewWrap.style.display = 'block';
+            addImgErr.style.display = 'none';
+        };
+        addImgPreview.onerror = () => {
+            addImgPreviewWrap.style.display = 'none';
+            addImgErr.style.display = 'block';
+        };
+        addImgPreview.src = url;
+    });
+    document.getElementById('addBannerModal').addEventListener('hidden.bs.modal', function () {
+        addImageInput.value = '';
+        addImgPreview.src = '';
+        addImgPreviewWrap.style.display = 'none';
+        addImgErr.style.display = 'none';
+    });
 </script>
 </body>
 

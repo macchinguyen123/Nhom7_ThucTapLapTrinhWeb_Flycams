@@ -73,7 +73,7 @@ public class Post implements Serializable {
         this.productId = productId;
     }
 
-    public int getViewCount() { return view; }
+    public int getView() { return view; }
 
-    public void setViewCount(int view) { this.view = view; }
+    public void setView(int view) { this.view = view; }
 }
