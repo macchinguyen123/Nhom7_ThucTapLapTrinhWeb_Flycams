@@ -224,6 +224,29 @@
                 </div>
             </div>
         </div>
+        <div class="d-flex justify-content-start align-items-center mb-2 gap-3 flex-wrap">
+            <div class="d-flex align-items-center">
+                <label class="me-2">Hiển thị</label>
+                <select id="rowsPerPage" class="form-select d-inline-block" style="width:80px;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+                <label class="ms-2">bài viết</label>
+            </div>
+            <div class="d-flex align-items-center">
+                <label class="me-2">Sắp xếp</label>
+                <select id="sortSelect" class="form-select" style="width:220px;">
+                    <option value="">-- Tùy chọn --</option>
+                    <option value="name-asc">Tên A → Z</option>
+                    <option value="name-desc">Tên Z → A</option>
+                    <option value="id-asc">Mã BV ↑ (Thấp → Cao)</option>
+                    <option value="id-desc">Mã BV ↓ (Cao → Thấp)</option>
+                    <option value="custom">Theo ý admin</option>
+                </select>
+            </div>
+        </div>
+
         <div id="dsblog" class="users-table mt-4">
             <section>
                 <table id="tableBlog"
@@ -236,6 +259,7 @@
                         <th>Ảnh</th>
                         <th>Ngày tạo</th>
                         <th>Mã sản phẩm</th>
+                        <th>Lượt xem</th>
                         <th>Hành động</th>
                     </tr>
                     </thead>
@@ -274,31 +298,37 @@
                                                 pattern="yyyy-MM-dd"/>
                             </td>
                             <td>${p.productId}</td>
+                            <td>${p.view}</td>
                             <td>
-                                <button type="button"
-                                        class="btn btn-warning btn-sm me-1"
-                                        data-id="${p.id}"
-                                        data-title="${fn:escapeXml(p.title)}"
-                                        data-content="${fn:escapeXml(p.content)}"
-                                        data-image="${p.image}"
-                                        data-product="${p.productId}"
-                                        onclick="openEditModal(this)">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-danger btn-sm"
-                                        data-id="${p.id}" onclick="confirmDelete(this)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                                <button type="button" class="btn btn-info btn-sm"
-                                        data-id="${p.id}"
-                                        data-title="${fn:escapeXml(p.title)}"
-                                        data-content="${fn:escapeXml(p.content)}"
-                                        data-image="${p.image}"
-                                        data-date="<fmt:formatDate value='${p.createdAt}' pattern='yyyy-MM-dd'/>"
-                                        data-product="${p.productId}"
-                                        onclick="openViewModal(this)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button type="button"
+                                            class="btn btn-warning btn-sm"
+                                            data-id="${p.id}"
+                                            data-title="${fn:escapeXml(p.title)}"
+                                            data-content="${fn:escapeXml(p.content)}"
+                                            data-image="${p.image}"
+                                            data-product="${p.productId}"
+                                            onclick="openEditModal(this)"
+                                            title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                            data-id="${p.id}" onclick="confirmDelete(this)"
+                                            title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-info btn-sm"
+                                            data-id="${p.id}"
+                                            data-title="${fn:escapeXml(p.title)}"
+                                            data-content="${fn:escapeXml(p.content)}"
+                                            data-image="${p.image}"
+                                            data-date="<fmt:formatDate value='${p.createdAt}' pattern='yyyy-MM-dd'/>"
+                                            data-product="${p.productId}"
+                                            onclick="openViewModal(this)"
+                                            title="Xem">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>
@@ -438,6 +468,10 @@
                                     <th>Mã sản phẩm</th>
                                     <td id="view-product"></td>
                                 </tr>
+                                <tr>
+                                    <th>Lượt xem</th>
+                                    <td id="view-views"></td>
+                                </tr>
                             </table>
                         </div>
                         <div class="modal-footer">
@@ -457,7 +491,8 @@
     $(document).ready(function () {
         blogTable = $('#tableBlog').DataTable({
             pageLength: 5,
-            columnDefs: [{targets: [2, 3, 6], orderable: false}],
+            order: [],
+            columnDefs: [{targets: [2, 3, 7], orderable: false}],
             language: {zeroRecords: "Không tìm thấy dữ liệu"}
         });
         $('#searchBlogInput').on('keyup', function () {
@@ -471,6 +506,29 @@
         $('#nextPage').click(() => {
             blogTable.page('next').draw('page');
             updatePageInfo();
+        });
+        $('#sortSelect').change(function () {
+            let value = $(this).val();
+            switch (value) {
+                case 'name-asc':
+                    blogTable.order([1, 'asc']).draw();
+                    break;
+                case 'name-desc':
+                    blogTable.order([1, 'desc']).draw();
+                    break;
+                case 'id-asc':
+                    blogTable.order([0, 'asc']).draw();
+                    break;
+                case 'id-desc':
+                    blogTable.order([0, 'desc']).draw();
+                    break;
+                default:
+                    blogTable.order([]).draw();
+            }
+        });
+
+        $('#rowsPerPage').change(function () {
+            blogTable.page.len($(this).val()).draw();
         });
         blogTable.on('draw', updatePageInfo);
         updatePageInfo();
@@ -826,26 +884,6 @@
         }
     });
 </script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const menuItems = document.querySelectorAll(".has-submenu .menu-item");
-        menuItems.forEach(item => {
-            item.addEventListener("click", function () {
-                const parent = this.parentElement;
-                parent.classList.toggle("open");
-            });
-        });
-    });
-    setTimeout(() => {
-        const alert = document.getElementById("alertMsg");
-        if (alert) {
-            alert.classList.add("fade");
-            alert.style.opacity = "0";
-            setTimeout(() => alert.remove(), 500);
-        }
-    }, 3000);
-</script>
 <script>
     function openEditModal(btn) {
         document.getElementById("edit-id").value = btn.dataset.id;
@@ -872,6 +910,7 @@
         document.getElementById("view-content").innerHTML = btn.dataset.content;
         document.getElementById("view-date").innerText = btn.dataset.date;
         document.getElementById("view-product").innerText = "SP" + btn.dataset.product;
+        document.getElementById("view-views").innerText = btn.dataset.views;
         const img = document.getElementById("view-image");
         img.src = btn.dataset.image;
         let modal = new bootstrap.Modal(
@@ -912,6 +951,26 @@
         })
     }
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuItems = document.querySelectorAll(".has-submenu .menu-item");
+        menuItems.forEach(item => {
+            item.addEventListener("click", function () {
+                const parent = this.parentElement;
+                parent.classList.toggle("open");
+            });
+        });
+    });
+    setTimeout(() => {
+        const alert = document.getElementById("alertMsg");
+        if (alert) {
+            alert.classList.add("fade");
+            alert.style.opacity = "0";
+            setTimeout(() => alert.remove(), 500);
+        }
+    }, 3000);
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function bindImgPreview(inputId, thumbId, errId) {
