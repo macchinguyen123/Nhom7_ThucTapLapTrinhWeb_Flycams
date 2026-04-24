@@ -309,6 +309,62 @@ public class DashboardDAO {
         return list;
     }
 
+    // Lấy danh sách đơn hàng theo ngày bất kỳ
+    public List<Orders> getOrdersByDate(String dateStr) {
+        List<Orders> list = new ArrayList<>();
+        String sql = """
+                    SELECT o.id,
+                    o.shippingCode,
+                    u.fullName AS customerName,
+                    o.createdAt,
+                    o.totalPrice,
+                    o.status
+                    FROM orders o
+                    JOIN users u ON o.user_id = u.id
+                    WHERE DATE(o.createdAt) = ?
+                    ORDER BY o.createdAt DESC
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, dateStr);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Orders o = new Orders();
+                o.setId(rs.getInt("id"));
+                o.setShippingCode(rs.getString("shippingCode"));
+                o.setCustomerName(rs.getString("customerName"));
+                o.setCreatedAt(rs.getTimestamp("createdAt"));
+                o.setTotalPrice(rs.getDouble("totalPrice"));
+                String status = rs.getString("status");
+                switch (status) {
+                    case "Xác nhận" -> {
+                        o.setStatusLabel("Chờ xác nhận");
+                        o.setStatusClass("bg-warning text-dark");
+                    }
+                    case "Đang xử lý" -> {
+                        o.setStatusLabel("Đang xử lý");
+                        o.setStatusClass("bg-info");
+                    }
+                    case "Đang giao" -> {
+                        o.setStatusLabel("Đang giao");
+                        o.setStatusClass("bg-primary");
+                    }
+                    case "Hoàn thành" -> {
+                        o.setStatusLabel("Đã giao");
+                        o.setStatusClass("bg-success");
+                    }
+                    default -> {
+                        o.setStatusLabel("Hủy");
+                        o.setStatusClass("bg-danger");
+                    }
+                }
+                list.add(o);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
     //doanh thu hôm nay
     public double getRevenueToday() {
@@ -347,7 +403,7 @@ public class DashboardDAO {
     }
 
     public Map<String, Integer> getBestSellingProduct() {
-        Map<String, Integer> result = new HashMap<>();
+        Map<String, Integer> result = new LinkedHashMap<>();
         String sql = """
                     SELECT p.productName, SUM(oi.quantity) totalSold
                     FROM order_items oi
@@ -356,12 +412,12 @@ public class DashboardDAO {
                     WHERE o.status = 'Hoàn thành'
                     GROUP BY p.id
                     ORDER BY totalSold DESC
-                    LIMIT 1
+                    LIMIT 5
                 """;
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
+            while (rs.next()) {
                 result.put(
                         rs.getString("productName"),
                         rs.getInt("totalSold")

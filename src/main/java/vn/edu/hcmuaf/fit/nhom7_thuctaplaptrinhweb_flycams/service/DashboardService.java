@@ -99,4 +99,9 @@ public class DashboardService {
     public List<Orders> getTodayOrders() {
         return dashboardDAO.getTodayOrders();
     }
+
+    //Lấy danh sách đơn hàng theo ngày bất kỳ
+    public List<Orders> getOrdersByDate(String dateStr) {
+        return dashboardDAO.getOrdersByDate(dateStr);
+    }
 }

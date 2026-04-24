@@ -113,8 +113,8 @@
     </aside>
     <main class="main-content p-4 flex-fill">
         <section class="mb-5">
-            <h4 class="mb-3"><i class="bi bi-truck"></i><b> Danh Sách Đơn Hàng Trong Ngày</b></h4>
-            <div class="d-flex align-items-center mb-3">
+            <h4 class="mb-3"><i class="bi bi-truck"></i><b> Danh Sách Đơn Hàng Ngày ${selectedDate}</b></h4>
+            <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
                 <div class="d-flex align-items-center shadow-sm"
                      style="background:#fff;border-radius:8px;overflow:hidden;border:1px solid #dee2e6;max-width:320px;">
                     <div class="d-flex align-items-center justify-content-center"
@@ -122,7 +122,14 @@
                         <i class="bi bi-search"></i>
                     </div>
                     <input id="searchBox" type="text" class="form-control border-0"
-                           placeholder="Tìm kiếm đơn hàng..." style="box-shadow:none;height:40px;">
+                           placeholder="Tìm kiếm nhanh..." style="box-shadow:none;height:40px;">
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <label for="filterDate" class="fw-semibold text-secondary">Chọn ngày xem các đơn hàng:</label>
+                    <input type="date" id="filterDate" class="form-control"
+                           style="width:180px;height:40px;border-radius:8px;border:1px solid #dee2e6;"
+                           value="${selectedDate}"
+                           onchange="location.href='${pageContext.request.contextPath}/admin/statistics?orderDate=' + this.value">
                 </div>
             </div>
             <div class="d-flex justify-content-start align-items-center mb-2">
@@ -165,7 +172,7 @@
         </section>
         <section>
             <h4 class="mb-3"><i class="bi bi-bar-chart"></i><b> Thống Kê Tổng Quan</b></h4>
-            <div class="d-flex flex-wrap gap-3">
+            <div class="d-flex flex-wrap gap-3 mb-4">
                 <div class="card flex-fill text-center p-3">
                     <i class="fa fa-chart-bar fs-2 mb-2" style="color:#0d6efd;"></i>
                     <h5>Doanh thu hôm nay</h5>
@@ -185,32 +192,71 @@
                     <h5>Đơn hôm nay</h5>
                     <p>${ordersToday} đơn</p>
                 </div>
-                <div class="card flex-fill text-center p-3">
-                    <i class="fa fa-crown fs-2 mb-2" style="color:#0d6efd;"></i>
-                    <h5>Sản phẩm bán chạy</h5>
-                    <c:choose>
-                        <c:when test="${empty bestProduct}">
-                            <p>Chưa có dữ liệu</p>
-                        </c:when>
-                        <c:otherwise>
-                            <c:forEach var="p" items="${bestProduct}">
-                                <p>${p.key} (SL: ${p.value})</p>
-                            </c:forEach>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+            </div>
+        </section>
+        <%-- TOP 5 SẢN PHẨM BÁN CHẠY --%>
+        <section class="mb-4">
+            <h4 class="mb-3"><i class="bi bi-trophy"></i><b> Top 5 Sản Phẩm Bán Chạy</b></h4>
+            <div class="card shadow-sm p-3">
+                <c:choose>
+                    <c:when test="${empty bestProduct}">
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <span>Chưa có dữ liệu sản phẩm bán chạy</span>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped text-center mb-0">
+                                <thead style="background-color:#0051c6;color:#fff;">
+                                    <tr>
+                                        <th style="width:60px;">Hạng</th>
+                                        <th>Tên Sản Phẩm</th>
+                                        <th style="width:160px;">Số Lượng Đã Bán</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="p" items="${bestProduct}" varStatus="st">
+                                        <tr>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${st.index == 0}"><span class="badge" style="background:#FFD700;color:#333;font-size:14px;">🥇 1</span></c:when>
+                                                    <c:when test="${st.index == 1}"><span class="badge" style="background:#C0C0C0;color:#333;font-size:14px;">🥈 2</span></c:when>
+                                                    <c:when test="${st.index == 2}"><span class="badge" style="background:#CD7F32;color:#fff;font-size:14px;">🥉 3</span></c:when>
+                                                    <c:otherwise><span class="badge bg-secondary" style="font-size:14px;">${st.index + 1}</span></c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="text-start fw-semibold">${p.key}</td>
+                                            <td class="fw-bold text-primary">${p.value} sản phẩm</td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </section>
         <section class="mt-4">
-            <h4 class="mb-3"><i class="bi bi-graph-up-arrow"></i><b> Biểu đồ doanh thu 8 ngày gần
-                nhất</b></h4>
+            <h4 class="mb-3"><i class="bi bi-graph-up-arrow"></i><b> Biểu đồ doanh thu 8 ngày gần nhất</b></h4>
             <div class="card shadow-sm p-3 mb-4">
-                <canvas id="chartDoanhThuNgay" height="250"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="chartDoanhThuNgay" height="250"></canvas>
+                    <div id="emptyDay" class="chart-empty-state" style="display:none;">
+                        <i class="bi bi-bar-chart-line fs-1 d-block mb-2"></i>
+                        <span>Chưa có dữ liệu doanh thu trong 8 ngày gần nhất</span>
+                    </div>
+                </div>
             </div>
-            <h4 class="mb-3"><i class="bi bi-graph-up-arrow"></i> <b> Biểu đồ doanh thu theo tháng </b>
-            </h4>
+            <h4 class="mb-3"><i class="bi bi-graph-up-arrow"></i> <b> Biểu đồ doanh thu theo tháng</b></h4>
             <div class="card shadow-sm p-3">
-                <canvas id="chartDoanhThuThang" height="250"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="chartDoanhThuThang" height="250"></canvas>
+                    <div id="emptyMonth" class="chart-empty-state" style="display:none;">
+                        <i class="bi bi-bar-chart-line fs-1 d-block mb-2"></i>
+                        <span>Chưa có dữ liệu doanh thu trong năm nay</span>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -272,30 +318,44 @@
         ${v}<c:if test="${!st.last}">, </c:if>
         </c:forEach>
     ];
-    const ctx = document.getElementById('chartDoanhThuNgay').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: revenueDays.map(d => {
-                let dt = new Date(d);
-                return ("0" + dt.getDate()).slice(-2) + "/" + ("0" + (dt.getMonth() + 1)).slice(-2);
-            }),
-            datasets: [{
-                label: 'Doanh thu (VNĐ)',
-                data: revenueValues,
-                backgroundColor: '#0d6efd',
-                borderRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {legend: {display: false}},
-            scales: {
-                y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " VNĐ"}},
-                x: {grid: {display: false}}
+    // Kiểm tra empty state cho biểu đồ 8 ngày
+    const isDayEmpty = revenueValues.every(v => v === 0 || v === null);
+    if (isDayEmpty) {
+        document.getElementById('emptyDay').style.display = 'flex';
+        document.getElementById('chartDoanhThuNgay').style.display = 'none';
+    } else {
+        const ctx = document.getElementById('chartDoanhThuNgay').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: revenueDays.map(d => {
+                    let dt = new Date(d);
+                    return ("0" + dt.getDate()).slice(-2) + "/" + ("0" + (dt.getMonth() + 1)).slice(-2);
+                }),
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: revenueValues,
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.parsed.y.toLocaleString("vi-VN") + " VNĐ"
+                        }
+                    }
+                },
+                scales: {
+                    y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " VNĐ"}},
+                    x: {grid: {display: false}}
+                }
             }
-        }
-    });
+        });
+    }
     const revenueMonths = [
         <c:forEach var="m" items="${revenueMonths}" varStatus="st">
         "${m}"<c:if test="${!st.last}">, </c:if>
@@ -306,34 +366,41 @@
         ${v}<c:if test="${!st.last}">, </c:if>
         </c:forEach>
     ];
-    const ctxMonth = document.getElementById('chartDoanhThuThang').getContext('2d');
-    new Chart(ctxMonth, {
-        type: 'bar',
-        data: {
-            labels: revenueMonths.map(m => "Tháng " + m),
-            datasets: [{
-                label: 'Doanh thu (VNĐ)',
-                data: revenueMonthValues,
-                backgroundColor: '#0d6efd',
-                borderRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {display: false},
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ctx.formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VNĐ"
-                    }
-                }
+    // Kiểm tra empty state cho biểu đồ tháng
+    const isMonthEmpty = revenueMonthValues.every(v => v === 0 || v === null);
+    if (isMonthEmpty) {
+        document.getElementById('emptyMonth').style.display = 'flex';
+        document.getElementById('chartDoanhThuThang').style.display = 'none';
+    } else {
+        const ctxMonth = document.getElementById('chartDoanhThuThang').getContext('2d');
+        new Chart(ctxMonth, {
+            type: 'bar',
+            data: {
+                labels: revenueMonths.map(m => "Tháng " + m),
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: revenueMonthValues,
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 5
+                }]
             },
-            scales: {
-                y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " VNĐ"}},
-                x: {grid: {display: false}}
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.parsed.y.toLocaleString("vi-VN") + " VNĐ"
+                        }
+                    }
+                },
+                scales: {
+                    y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " VNĐ"}},
+                    x: {grid: {display: false}}
+                }
             }
-        }
-    });
+        });
+    }
 </script>
 </body>
 

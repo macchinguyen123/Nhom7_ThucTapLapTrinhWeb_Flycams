@@ -384,11 +384,11 @@ h4 {
     border: 2px solid #0051c6;
 }
 
-table#tableDonTrongNgay>thead.table-primary {
+table#tableDonTrongNgay > thead.table-primary {
     background-color: #0051c6 !important;
 }
 
-table#tableDonTrongNgay>thead.table-primary th {
+table#tableDonTrongNgay > thead.table-primary th {
     background-color: #0051c6 !important;
     color: #fff !important;
     border-color: #0047a3 !important;
@@ -416,4 +416,19 @@ table#tableDonTrongNgay>thead.table-primary th {
 
 .table-light {
     background-color: #f8f9fa;
+}
+
+.chart-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 15px;
+    background: #f9fafb;
+    border-radius: 8px;
+    gap: 6px;
+    min-height: 250px;
+    width: 100%;
+    border: 2px dashed #dee2e6;
 }
