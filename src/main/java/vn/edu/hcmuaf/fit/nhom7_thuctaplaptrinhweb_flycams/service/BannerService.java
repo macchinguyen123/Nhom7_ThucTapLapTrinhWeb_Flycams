@@ -7,7 +7,7 @@ import java.util.List;
 
 public class BannerService {
     private BannerDAO bannerDAO = new BannerDAO();
-    //lấy danh sách banner đang hoạt động
+
     public List<Banner> getActiveBanners() {
         return bannerDAO.getActiveBanners();
     }
@@ -28,5 +28,8 @@ public class BannerService {
     }
     public boolean deleteBanner(int id) {
         return bannerDAO.deleteBanner(id);
+    }
+    public boolean updateStatus(int id, String status) {
+        return bannerDAO.updateStatus(id, status);
     }
 }

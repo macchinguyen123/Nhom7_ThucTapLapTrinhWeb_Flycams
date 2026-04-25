@@ -137,8 +137,21 @@ public class BannerDAO extends DBConnection {
             return false;
         }
     }
-    //lấy banner active để hiển thị trên trang chủ
+
     public List<Banner> getActiveBanners() {
         return getBannersByStatus("active");
+    }
+
+    public boolean updateStatus(int id, String status) {
+        String sql = "UPDATE banner SET status = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
