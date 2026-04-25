@@ -158,8 +158,7 @@ public class HomeDao {
                            content,
                            image,
                            createdAt,
-                           product_id,
-                           `view`
+                           product_id
                     FROM posts
                     ORDER BY createdAt DESC
                     LIMIT ?
@@ -177,7 +176,7 @@ public class HomeDao {
                             rs.getString("image"),
                             rs.getTimestamp("createdAt"),
                             rs.getInt("product_id"),
-                            rs.getInt("view")
+                            0
                     );
                     list.add(p);
                 }

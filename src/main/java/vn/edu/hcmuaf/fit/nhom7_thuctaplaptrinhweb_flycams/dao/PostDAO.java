@@ -13,7 +13,7 @@ import java.util.List;
 public class PostDAO {
     public List<Post> getAllPosts() {
         List<Post> list = new ArrayList<>();
-        String sql = "SELECT id, title, content, image, createdAt, product_id, `view` FROM posts ORDER BY createdAt DESC";
+        String sql = "SELECT id, title, content, image, createdAt, product_id FROM posts ORDER BY createdAt DESC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -25,7 +25,7 @@ public class PostDAO {
                         rs.getString("image"),
                         rs.getTimestamp("createdAt") != null ? rs.getTimestamp("createdAt") : new java.sql.Timestamp(System.currentTimeMillis()),
                         rs.getInt("product_id"),
-                        rs.getInt("view")
+                        0
                 );
                 list.add(p);
             }
@@ -36,7 +36,7 @@ public class PostDAO {
     }
 
     public boolean addPost(Post post) {
-        String sql = "INSERT INTO posts (title, content, image, createdAt, product_id, `view`) VALUES (?, ?, ?, NOW(), ?, 0)";
+        String sql = "INSERT INTO posts (title, content, image, createdAt, product_id) VALUES (?, ?, ?, NOW(), ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, post.getTitle());

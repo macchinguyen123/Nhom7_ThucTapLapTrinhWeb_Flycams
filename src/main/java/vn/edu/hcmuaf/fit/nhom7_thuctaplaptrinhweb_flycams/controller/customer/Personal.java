@@ -32,12 +32,7 @@ public class Personal extends HttpServlet {
         AddressService addressService = new AddressService();
         AuthService authService = new AuthService();
         long startTime = System.currentTimeMillis();
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/Login");
-            return;
-        }
-
+        HttpSession session = request.getSession();
         User sessionUser = (User) session.getAttribute("user");
         User user;
         String refresh = request.getParameter("refresh");
@@ -105,12 +100,7 @@ public class Personal extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         OrderService orderService = new OrderService();
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/Login");
-            return;
-        }
-        User user = (User) session.getAttribute("user");
+        User user = (User) request.getSession().getAttribute("user");
         String action = request.getParameter("action");
         if ("cancelOrder".equals(action)) {
             try {

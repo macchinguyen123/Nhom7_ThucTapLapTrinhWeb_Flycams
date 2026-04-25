@@ -22,12 +22,8 @@ public class UpdateAvatarController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        User user = (session != null) ? (User) session.getAttribute("user") : null;
-        if (user == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
 
         Part filePart = request.getPart("avatar");
         if (filePart == null || filePart.getSize() == 0) {

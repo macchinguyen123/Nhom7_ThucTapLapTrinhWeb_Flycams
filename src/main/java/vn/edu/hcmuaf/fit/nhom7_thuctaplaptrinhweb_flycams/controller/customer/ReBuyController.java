@@ -34,10 +34,6 @@ public class ReBuyController extends HttpServlet {
         }
         HttpSession session = req.getSession();
         User user = (User) session.getAttribute("user");
-        if (user == null) {
-            resp.sendRedirect("login.jsp");
-            return;
-        }
         List<OrderItems> items = cartService.prepareBuyNowFromOrder(orderId, user.getId());
         if (items == null || items.isEmpty()) {
             resp.sendRedirect(req.getContextPath() + "/purchasehistory");

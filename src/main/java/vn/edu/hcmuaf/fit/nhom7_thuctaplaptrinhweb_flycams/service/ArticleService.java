@@ -5,12 +5,12 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.HomeDao;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.PostDAO;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Post;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class ArticleService {
     private BlogDAO blogDAO = new BlogDAO();
-    private HomeDao homeDao = new HomeDao();
 
     //Lấy thông tin bài viết theo ID
     public Post getPostById(int id) {
@@ -34,7 +34,12 @@ public class ArticleService {
 
     //Lấy danh sách bài viết mới nhất
     public List<Post> getLatestPosts(int limit) {
-        return homeDao.getLatestPosts(limit);
+        List<Post> allPosts = blogDAO.getAllPosts();
+        if (allPosts != null) {
+            int toIndex = Math.min(allPosts.size(), limit);
+            return new ArrayList<>(allPosts.subList(0, toIndex));
+        }
+        return new ArrayList<>();
     }
 
     //Lấy thêm bài viết

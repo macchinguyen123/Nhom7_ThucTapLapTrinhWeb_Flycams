@@ -20,12 +20,7 @@ public class PurchaseHistoryController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         OrderService orderService = new OrderService();
-        HttpSession session = req.getSession();
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            resp.sendRedirect("login.jsp");
-            return;
-        }
+        User user = (User) req.getSession().getAttribute("user");
         List<Orders> orders = orderService.getOrdersWithItemsByUser(user.getId());
         req.setAttribute("orders", orders);
         req.getRequestDispatcher("/page/purchasehistory.jsp")

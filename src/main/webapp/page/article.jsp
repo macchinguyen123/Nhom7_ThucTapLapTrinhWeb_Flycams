@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
-<%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,14 +24,15 @@
             </span>
             <span class="author">by Admin</span>
             <span class="view-count">
-        <i class="bi bi-eye"></i> ${post.viewCount} lượt xem
-    </span>
+                <i class="bi bi-eye"></i> ${post.view} lượt xem
+            </span>
         </div>
         <h1 class="article-title">${post.title}</h1>
     </header>
     <div class="article-content">
         <div class="article-image">
-            <img src="${post.image}" alt="${post.title}">
+            <c:set var="detailImg" value="${post.image}"/>
+            <img src="${empty detailImg ? pageContext.request.contextPath.concat('/assets/no-image.png') : (fn:contains(detailImg, '://') ? detailImg : pageContext.request.contextPath.concat(fn:startsWith(detailImg, '/') ? '' : '/').concat(detailImg))}" alt="${post.title}">
         </div>
         <div class="article-text" style="white-space: pre-line;">
             ${post.content}
@@ -57,7 +58,8 @@
                     <div class="col-md-4 col-6 mb-4">
                         <a href="${pageContext.request.contextPath}/article?id=${p.id}"
                            class="text-decoration-none text-dark">
-                            <img src="${p.image}" class="img-fluid rounded mb-2">
+                        <c:set var="relImg" value="${p.image}"/>
+                        <img src="${empty relImg ? pageContext.request.contextPath.concat('/assets/no-image.png') : (fn:contains(relImg, '://') ? relImg : pageContext.request.contextPath.concat(fn:startsWith(relImg, '/') ? '' : '/').concat(relImg))}" class="img-fluid rounded mb-2">
                             <h6 class="fw-semibold">${p.title}</h6>
                             <small class="text-muted">
                                 <fmt:formatDate value="${p.createdAt}" pattern="dd/MM/yyyy"/>

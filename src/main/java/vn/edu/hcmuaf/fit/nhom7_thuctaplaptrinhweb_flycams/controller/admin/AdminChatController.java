@@ -29,16 +29,7 @@ public class AdminChatController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            resp.sendRedirect(req.getContextPath() + "/Login");
-            return;
-        }
-        User user = (User) session.getAttribute("user");
-        if (user.getRoleId() != 1) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
+        User user = (User) req.getSession().getAttribute("user");
         String path = req.getServletPath();
         if ("/admin/chat-manage".equals(path)) {
             req.getRequestDispatcher("/page/admin/chat-manage.jsp").forward(req, resp);
@@ -60,16 +51,7 @@ public class AdminChatController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-        User user = (User) session.getAttribute("user");
-        if (user.getRoleId() != 1) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
+        User user = (User) req.getSession().getAttribute("user");
         String action = req.getParameter("action");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
