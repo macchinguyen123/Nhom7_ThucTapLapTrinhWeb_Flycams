@@ -133,15 +133,43 @@
         </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="input-group" style="max-width: 350px;">
-                                    <span class="input-group-text bg-primary text-white">
-                                        <i class="bi bi-search"></i>
-                                    </span>
+        <span class="input-group-text bg-primary text-white">
+            <i class="bi bi-search"></i>
+        </span>
                 <input type="search" class="form-control" id="searchBannerInput"
                        placeholder="Tìm kiếm banner...">
             </div>
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBannerModal">
                 <i class="bi bi-plus-lg"></i> Thêm Banner
             </button>
+        </div>
+
+        <div class="d-flex justify-content-start align-items-center mb-2 gap-2">
+            <label class="me-1">Hiển thị</label>
+            <select id="rowsPerPage" class="form-select d-inline-block" style="width:80px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+            </select>
+            <label>banner</label>
+
+            <div class="ms-4 d-flex align-items-center gap-2">
+                <label class="mb-0">Lọc loại:</label>
+                <select id="filterType" class="form-select d-inline-block" style="width:140px;">
+                    <option value="">Tất cả</option>
+                    <option value="Hình Ảnh">Hình Ảnh</option>
+                    <option value="Video">Video</option>
+                </select>
+            </div>
+
+            <div class="ms-4 d-flex align-items-center gap-2">
+                <label class="mb-0">Trạng thái:</label>
+                <select id="filterStatus" class="form-select d-inline-block" style="width:150px;">
+                    <option value="">Tất cả</option>
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Tạm ẩn">Tạm ẩn</option>
+                </select>
+            </div>
         </div>
         <div class="users-table mt-4">
             <section>
@@ -209,6 +237,14 @@
                                         data-id="${banner.id}" onclick="confirmDelete(this)">
                                     <i class="bi bi-trash"></i>
                                 </button>
+                                <button type="button"
+                                        class="btn btn-sm me-1 ${banner.status == 'active' ? 'btn-success' : 'btn-secondary'}"
+                                        data-id="${banner.id}"
+                                        data-status="${banner.status}"
+                                        title="${banner.status == 'active' ? 'Đang hoạt động - nhấn để tắt' : 'Đang tạm ẩn - nhấn để bật'}"
+                                        onclick="toggleStatus(this)">
+                                    <i class="bi ${banner.status == 'active' ? 'bi-toggle-on' : 'bi-toggle-off'}"></i>
+                                </button>
                                 <button type="button" class="btn btn-info btn-sm"
                                         data-id="${banner.id}" data-type="${banner.type}"
                                         data-image="${fn:escapeXml(banner.imageUrl)}"
@@ -254,15 +290,14 @@
                     </div>
                     <div class="mb-3" id="add-image-group">
                         <label class="form-label">Link ảnh banner</label>
-                        <input type="text" name="image" class="form-control"
-                               placeholder="https://..." id="add-image-input">
-                        <div class="mt-2" id="add-img-preview-wrap" style="display:none;">
-                            <img id="add-img-preview" src="" alt="Preview"
-                                 style="max-width: 100%; max-height: 200px; border-radius: 6px;
-                                 box-shadow: 0 2px 8px rgba(0,0,0,0.15); object-fit: cover;">
-                        </div>
-                        <div id="add-img-err" class="text-danger mt-1" style="display:none;">
-                            <i class="bi bi-exclamation-triangle"></i> URL ảnh không hợp lệ
+                        <div class="img-preview-wrap">
+                            <img id="add-img-thumb" class="img-preview-thumb" alt="Preview">
+                            <div id="add-img-err" class="img-preview-err">
+                                <i class="bi bi-image-slash" style="font-size:20px;"></i>
+                                <span>URL lỗi</span>
+                            </div>
+                            <input type="text" name="image" class="form-control"
+                                   placeholder="https://..." id="add-image-input">
                         </div>
                     </div>
                     <div class="mb-3 d-none" id="add-video-group">
@@ -318,7 +353,14 @@
                     </div>
                     <div class="mb-3" id="edit-image-group">
                         <label class="form-label">Link ảnh</label>
-                        <input type="text" name="image" id="edit-image" class="form-control">
+                        <div class="img-preview-wrap">
+                            <img id="edit-img-thumb" class="img-preview-thumb" alt="Preview">
+                            <div id="edit-img-err" class="img-preview-err">
+                                <i class="bi bi-image-slash" style="font-size:20px;"></i>
+                                <span>URL lỗi</span>
+                            </div>
+                            <input type="text" name="image" id="edit-image" class="form-control">
+                        </div>
                     </div>
                     <div class="mb-3 d-none" id="edit-video-group">
                         <label class="form-label">Link video</label>
@@ -391,10 +433,14 @@
         </div>
     </div>
 </div>
+<div class="hover-preview-popup" id="hoverPreview">
+    <img id="hoverPreviewImg" src="" alt="Preview">
+</div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
 <script>
     const baseUrl = "${pageContext.request.contextPath}";
     let bannerTable;
@@ -414,6 +460,18 @@
         });
         $('#nextPage').click(() => {
             bannerTable.page('next').draw('page');
+            updatePageInfo();
+        });
+        $('#rowsPerPage').on('change', function () {
+            bannerTable.page.len(parseInt($(this).val())).draw();
+            updatePageInfo();
+        });
+        $('#filterType').on('change', function () {
+            bannerTable.column(1).search(this.value).draw();
+            updatePageInfo();
+        });
+        $('#filterStatus').on('change', function () {
+            bannerTable.column(4).search(this.value).draw();
             updatePageInfo();
         });
         bannerTable.on('draw', updatePageInfo);
@@ -464,6 +522,7 @@
                 text: 'Không thể xóa banner. Vui lòng thử lại.',
             });
         }
+
     });
 
     function updatePageInfo() {
@@ -493,8 +552,9 @@
         document.getElementById('edit-order').value = btn.dataset.order;
         document.getElementById('edit-status').value = btn.dataset.status;
         toggleMediaInput('edit');
-        let modal = new bootstrap.Modal(document.getElementById('editBannerModal'));
-        modal.show();
+        const editImg = document.getElementById('edit-image');
+        if (editImg._triggerPreview) editImg._triggerPreview();
+        new bootstrap.Modal(document.getElementById('editBannerModal')).show();
     }
 
     function confirmDelete(btn) {
@@ -599,30 +659,81 @@
     const addImgPreviewWrap = document.getElementById('add-img-preview-wrap');
     const addImgErr = document.getElementById('add-img-err');
 
-    addImageInput.addEventListener('input', function () {
-        const url = this.value.trim();
-        if (!url) {
-            addImgPreviewWrap.style.display = 'none';
-            addImgErr.style.display = 'none';
-            return;
+    function bindImgPreview(inputId, thumbId, errId) {
+        const input = document.getElementById(inputId);
+        const thumb = document.getElementById(thumbId);
+        const errBox = document.getElementById(errId);
+        if (!input || !thumb || !errBox) return;
+
+        function update() {
+            const url = input.value.trim();
+            if (!url) {
+                thumb.classList.remove('show');
+                errBox.classList.remove('show');
+                return;
+            }
+            thumb.onload = () => { thumb.classList.add('show'); errBox.classList.remove('show'); };
+            thumb.onerror = () => { thumb.classList.remove('show'); errBox.classList.add('show'); };
+            thumb.src = url;
         }
-        addImgPreview.onload = () => {
-            addImgPreviewWrap.style.display = 'block';
-            addImgErr.style.display = 'none';
-        };
-        addImgPreview.onerror = () => {
-            addImgPreviewWrap.style.display = 'none';
-            addImgErr.style.display = 'block';
-        };
-        addImgPreview.src = url;
-    });
+
+        input.addEventListener('input', update);
+        input._triggerPreview = update;
+    }
+
+    bindImgPreview('add-image-input', 'add-img-thumb', 'add-img-err');
+    bindImgPreview('edit-image', 'edit-img-thumb', 'edit-img-err');
+
     document.getElementById('addBannerModal').addEventListener('hidden.bs.modal', function () {
-        addImageInput.value = '';
-        addImgPreview.src = '';
-        addImgPreviewWrap.style.display = 'none';
-        addImgErr.style.display = 'none';
+        const thumb = document.getElementById('add-img-thumb');
+        const errBox = document.getElementById('add-img-err');
+        document.getElementById('add-image-input').value = '';
+        thumb.src = '';
+        thumb.classList.remove('show');
+        errBox.classList.remove('show');
     });
+    function toggleStatus(btn) {
+        const id = btn.dataset.id;
+        const currentStatus = btn.dataset.status;
+
+        fetch(baseUrl + '/admin/banner-manage', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'action=toggle&id=' + id + '&status=' + currentStatus
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const isActive = data.newStatus === 'active';
+
+                    btn.dataset.status = data.newStatus;
+                    btn.className = 'btn btn-sm me-1 ' + (isActive ? 'btn-success' : 'btn-secondary');
+                    btn.querySelector('i').className = isActive ? 'bi bi-toggle-on' : 'bi bi-toggle-off';
+                    btn.title = isActive ? 'Đang hoạt động - nhấn để tắt' : 'Đang tạm ẩn - nhấn để bật';
+
+                    const statusCell = btn.closest('tr').querySelector('td:nth-child(5)');
+                    statusCell.innerHTML = isActive
+                        ? '<span class="badge bg-success">Hoạt động</span>'
+                        : '<span class="badge bg-secondary">Tạm ẩn</span>';
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: isActive ? 'Đã bật!' : 'Đã tắt!',
+                        text: isActive ? 'Banner đang hoạt động.' : 'Banner đã tạm ẩn.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire('Lỗi!', 'Không thể cập nhật trạng thái.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Lỗi!', 'Mất kết nối đến server.', 'error');
+            });
+    }
+
 </script>
+
 </body>
 
 </html>

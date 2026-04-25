@@ -49,6 +49,9 @@ public class BannerManageServlet extends HttpServlet {
                 case "delete":
                     handleDeleteBanner(request, response);
                     break;
+                case "toggle":
+                    handleToggleStatus(request, response);
+                    break;
                 default:
                     response.sendRedirect(request.getContextPath() + "/admin/banner-manage");
             }
@@ -175,6 +178,25 @@ public class BannerManageServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=delete_failed");
+        }
+    }
+    private void handleToggleStatus(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String currentStatus = request.getParameter("status");
+            String newStatus = "active".equals(currentStatus) ? "inactive" : "active";
+            boolean success = bannerService.updateStatus(id, newStatus);
+            if (success) {
+                response.getWriter().write("{\"success\":true,\"newStatus\":\"" + newStatus + "\"}");
+            } else {
+                response.getWriter().write("{\"success\":false,\"message\":\"Cập nhật thất bại\"}");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().write("{\"success\":false,\"message\":\"Lỗi hệ thống\"}");
         }
     }
 }
