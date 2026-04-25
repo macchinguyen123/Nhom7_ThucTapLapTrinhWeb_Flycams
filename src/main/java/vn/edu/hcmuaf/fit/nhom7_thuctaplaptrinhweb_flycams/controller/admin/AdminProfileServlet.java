@@ -20,10 +20,6 @@ public class AdminProfileServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User admin = (User) request.getSession().getAttribute("user");
-        if (admin == null || admin.getRoleId() != 1) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
-            return;
-        }
         User refreshedAdmin = authService.getUserByEmail(admin.getEmail());
         if (refreshedAdmin != null) {
             request.getSession().setAttribute("user", refreshedAdmin);
@@ -57,10 +53,6 @@ public class AdminProfileServlet extends HttpServlet {
     private void updateInfo(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, ServletException {
         User admin = (User) req.getSession().getAttribute("user");
-        if (admin == null) {
-            resp.sendRedirect(req.getContextPath() + "/login.jsp");
-            return;
-        }
         String fullName = req.getParameter("fullName");
         String email = req.getParameter("email");
         String phone = req.getParameter("phone");
@@ -138,10 +130,6 @@ public class AdminProfileServlet extends HttpServlet {
     private void changePassword(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         User admin = (User) req.getSession().getAttribute("user");
-        if (admin == null) {
-            resp.sendRedirect(req.getContextPath() + "/login.jsp");
-            return;
-        }
         String oldPass = req.getParameter("oldPassword");
         String newPass = req.getParameter("newPassword");
         String confirmPass = req.getParameter("confirmPassword");

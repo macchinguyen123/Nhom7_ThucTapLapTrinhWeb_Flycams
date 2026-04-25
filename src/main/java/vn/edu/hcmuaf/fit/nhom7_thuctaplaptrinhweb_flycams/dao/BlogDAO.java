@@ -15,7 +15,7 @@ import java.util.Map;
 public class BlogDAO extends DBConnection {
     public List<Post> getAllPosts() {
         List<Post> list = new ArrayList<>();
-        String sql = "SELECT id, title, content, image, createdAt, product_id, `view` FROM posts ORDER BY createdAt DESC";
+        String sql = "SELECT id, title, content, image, createdAt, product_id FROM posts ORDER BY createdAt DESC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -27,7 +27,7 @@ public class BlogDAO extends DBConnection {
                         rs.getString("image"),
                         rs.getTimestamp("createdAt"),
                         rs.getInt("product_id"),
-                        rs.getInt("view")
+                        0
                 );
                 list.add(p);
             }
@@ -38,7 +38,7 @@ public class BlogDAO extends DBConnection {
     }
 
     public Post getPostById(int id) {
-        String sql = "SELECT id, title, content, image, createdAt, product_id, `view` FROM posts WHERE id = ?";
+        String sql = "SELECT id, title, content, image, createdAt, product_id FROM posts WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -51,7 +51,7 @@ public class BlogDAO extends DBConnection {
                         rs.getString("image"),
                         rs.getTimestamp("createdAt"),
                         rs.getInt("product_id"),
-                        rs.getInt("view")
+                        0
                 );
             }
         } catch (Exception e) {
@@ -163,13 +163,5 @@ public class BlogDAO extends DBConnection {
         return list;
     }
     public void incrementView(int postId) {
-        String sql = "UPDATE posts SET `view` = `view` + 1 WHERE id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, postId);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

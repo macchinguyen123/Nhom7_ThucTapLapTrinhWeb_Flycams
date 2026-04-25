@@ -26,12 +26,6 @@ public class ReviewServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
         User user = (User) request.getSession().getAttribute("user");
-
-        if (user == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"status\":\"login_required\",\"message\":\"Bạn cần đăng nhập để đánh giá\"}");
-            return;
-        }
         try {
             String productIdRaw = request.getParameter("product_id");
             String ratingRaw = request.getParameter("rating");

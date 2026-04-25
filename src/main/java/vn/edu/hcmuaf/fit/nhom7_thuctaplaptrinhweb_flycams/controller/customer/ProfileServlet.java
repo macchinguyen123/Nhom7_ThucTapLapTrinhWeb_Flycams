@@ -16,10 +16,6 @@ public class ProfileServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         User user = (User) req.getSession().getAttribute("user");
-        if (user == null) {
-            resp.sendRedirect("login.jsp");
-            return;
-        }
         if (user.getBirthDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             req.setAttribute("birthDate", sdf.format(user.getBirthDate()));

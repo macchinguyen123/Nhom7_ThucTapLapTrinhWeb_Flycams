@@ -22,10 +22,6 @@ public class UpdateProfileController extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession();
         User user = (User) session.getAttribute("user");
-        if (user == null) {
-            resp.sendRedirect("login.jsp");
-            return;
-        }
         String fullName = req.getParameter("fullName");
         String username = req.getParameter("username");
         String phoneNumber = req.getParameter("phoneNumber");

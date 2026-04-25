@@ -20,16 +20,6 @@ public class AdminDashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/Login");
-            return;
-        }
-        User user = (User) session.getAttribute("user");
-        if (user.getRoleId() != 1) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
         request.setAttribute("totalUsers", dashboardService.getTotalUsers());
         request.setAttribute("totalProducts", dashboardService.getTotalProducts());
         request.setAttribute("totalOrders", dashboardService.getTotalOrders());

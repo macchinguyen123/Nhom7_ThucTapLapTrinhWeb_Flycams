@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,24 +44,24 @@
     <c:if test="${not empty banners && banners.size() > 0}">
         <c:set var="banner" value="${banners[0]}"/>
         <div class="banner-right">
-            <c:choose>
-                <c:when test="${banner.type == 'video'}">
-                    <a
-                            href="${not empty banner.link ? banner.link : '#'}">
-                        <video autoplay loop muted playsinline>
-                            <source src="${banner.videoUrl}"
-                                    type="video/mp4">
-                        </video>
-                    </a>
-                </c:when>
-                <c:otherwise>
-                    <a
-                            href="${not empty banner.link ? banner.link : '#'}">
-                        <img src="${banner.imageUrl}"
-                             alt="Banner ${banner.id}">
-                    </a>
-                </c:otherwise>
-            </c:choose>
+                <c:choose>
+                    <c:when test="${banner.type == 'video'}">
+                        <c:set var="vUrl" value="${banner.videoUrl}"/>
+                        <a href="${not empty banner.link ? banner.link : '#'}">
+                            <video autoplay loop muted playsinline>
+                                <source src="${not empty vUrl && fn:contains(vUrl, '://') ? vUrl : pageContext.request.contextPath.concat(not empty vUrl && fn:startsWith(vUrl, '/') ? '' : '/').concat(not empty vUrl ? vUrl : '')}"
+                                        type="video/mp4">
+                            </video>
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="iUrl" value="${banner.imageUrl}"/>
+                        <a href="${not empty banner.link ? banner.link : '#'}">
+                            <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}"
+                                 alt="Banner ${banner.id}">
+                        </a>
+                    </c:otherwise>
+                </c:choose>
         </div>
     </c:if>
 </div>
@@ -71,11 +72,13 @@
                 <div class="banner-item">
                     <c:choose>
                         <c:when test="${banner.type == 'image'}">
-                            <img src="${banner.imageUrl}" alt="Banner ${banner.id}">
+                            <c:set var="iUrl" value="${banner.imageUrl}"/>
+                            <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}" alt="Banner ${banner.id}">
                         </c:when>
                         <c:otherwise>
+                            <c:set var="vUrl" value="${banner.videoUrl}"/>
                             <video autoplay loop muted playsinline>
-                                <source src="${banner.videoUrl}" type="video/mp4">
+                                <source src="${not empty vUrl && fn:contains(vUrl, '://') ? vUrl : pageContext.request.contextPath.concat(not empty vUrl && fn:startsWith(vUrl, '/') ? '' : '/').concat(not empty vUrl ? vUrl : '')}" type="video/mp4">
                             </video>
                         </c:otherwise>
                     </c:choose>
@@ -92,13 +95,15 @@
                     <div class="slide">
                         <c:choose>
                             <c:when test="${banner.type == 'image'}">
-                                <img src="${banner.imageUrl}" alt="Banner ${banner.id}"
+                                <c:set var="iUrl" value="${banner.imageUrl}"/>
+                                <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}" alt="Banner ${banner.id}"
                                      style="width: 100%; height: 100%; object-fit: cover;">
                             </c:when>
                             <c:otherwise>
+                                <c:set var="vUrl" value="${banner.videoUrl}"/>
                                 <video autoplay loop muted playsinline
                                        style="width: 100%; height: 100%; object-fit: cover;">
-                                    <source src="${banner.videoUrl}" type="video/mp4">
+                                    <source src="${not empty vUrl && fn:contains(vUrl, '://') ? vUrl : pageContext.request.contextPath.concat(not empty vUrl && fn:startsWith(vUrl, '/') ? '' : '/').concat(not empty vUrl ? vUrl : '')}" type="video/mp4">
                                 </video>
                             </c:otherwise>
                         </c:choose>
@@ -262,7 +267,7 @@
         </c:forEach>
     </div>
 </section>
-<a href="http://localhost:8080/Nhom12LapTrinhWebFlycams/page/payment-policy.jsp">
+<a href="${pageContext.request.contextPath}/page/payment-policy.jsp">
     <div class="banner">
         <img src="${pageContext.request.contextPath}/image/banner/hinh4.png" alt="Banner ưu đãi">
     </div>
@@ -424,9 +429,9 @@
         <c:forEach var="post" items="${latestPosts}">
             <div class="related-item">
                 <a href="${pageContext.request.contextPath}/article?id=${post.id}">
-                    <img src="${empty post.image ? '/assets/no-image.png' : post.image}" alt="${post.title}">
+                    <c:set var="pImg" value="${post.image}"/>
+                    <img src="${empty pImg ? pageContext.request.contextPath.concat('/assets/no-image.png') : (fn:contains(pImg, '://') ? pImg : pageContext.request.contextPath.concat(fn:startsWith(pImg, '/') ? '' : '/').concat(pImg))}" alt="${post.title}">
                     <p>${post.title}</p>
-                    <small><i class="bi bi-eye"></i> ${post.viewCount} lượt xem</small>
                 </a>
             </div>
         </c:forEach>

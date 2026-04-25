@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
-<%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +27,8 @@
                 <article class="post-card">
                     <div class="post-thumb">
                         <a href="${pageContext.request.contextPath}/article?id=${post.id}">
-                            <img src="${post.image}" alt="${post.title}">
+                            <c:set var="blogListImg" value="${post.image}"/>
+                            <img src="${empty blogListImg ? pageContext.request.contextPath.concat('/assets/no-image.png') : (fn:contains(blogListImg, '://') ? blogListImg : pageContext.request.contextPath.concat(fn:startsWith(blogListImg, '/') ? '' : '/').concat(blogListImg))}" alt="${post.title}">
                         </a>
                     </div>
                     <div class="post-info">
