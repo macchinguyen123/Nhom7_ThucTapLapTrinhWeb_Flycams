@@ -152,10 +152,19 @@
         </ul>
     </aside>
     <main class="main-content container-fluid p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-primary fw-bold"><i class="bi bi-journal-text"></i> Quản Lý Blog
-            </h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="text-primary fw-bold"><i class="bi bi-journal-text"></i> Quản Lý Blog</h4>
         </div>
+        <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-primary" id="tabBlog" onclick="showTab('blog')">
+                <i class="bi bi-journal-text"></i> Bài Viết
+            </button>
+            <button class="btn btn-outline-primary" id="tabReview" onclick="showTab('review')">
+                <i class="bi bi-chat-left-text"></i> Bình Luận
+                <span class="badge bg-danger ms-1">${fn:length(reviews)}</span>
+            </button>
+        </div>
+        <div id="panelBlog">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <form class="d-flex" role="search" style="max-width: 300px;">
                 <div class="input-group">
@@ -246,7 +255,6 @@
                 </select>
             </div>
         </div>
-
         <div id="dsblog" class="users-table mt-4">
             <section>
                 <table id="tableBlog"
@@ -483,6 +491,50 @@
                 </div>
             </div>
         </div>
+        </div>
+        <div id="panelReview" style="display:none;">
+            <div class="input-group mb-3" style="max-width:300px;">
+        <span class="input-group-text bg-primary text-white">
+            <i class="bi bi-search"></i>
+        </span>
+                <input type="search" id="searchReviewInput" class="form-control"
+                       placeholder="Tìm kiếm bình luận...">
+            </div>
+            <table id="tableReview" class="table table-striped table-bordered align-middle text-center">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Bài Viết</th>
+                    <th>Người Dùng</th>
+                    <th>Nội dung</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:forEach var="r" items="${reviews}">
+                    <tr>
+                        <td>${r.id}</td>
+                        <td class="text-start">${fn:escapeXml(r.blogTitle)}</td>
+                        <td>${fn:escapeXml(r.username)}</td>
+                        <td class="text-start" style="max-width:300px;">${fn:escapeXml(r.content)}</td>
+                        <td><fmt:formatDate value="${r.createdAt}" pattern="yyyy-MM-dd HH:mm"/></td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    data-id="${r.id}" onclick="confirmDeleteReview(this)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </c:forEach>
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-end align-items-center mt-3">
+                <button id="prevReviewPage" class="btn btn-outline-primary btn-sm">Trước</button>
+                <span id="reviewPageInfo" class="mx-2">1 / 1</span>
+                <button id="nextReviewPage" class="btn btn-outline-primary btn-sm">Sau</button>
+            </div>
+        </div>
     </main>
 </div>
 </body>
@@ -548,6 +600,8 @@
             add_failed:   { icon: 'error',   title: 'Thất bại!',    text: 'Không thể thêm bài viết. Vui lòng thử lại.' },
             edit_failed:  { icon: 'error',   title: 'Thất bại!',    text: 'Không thể cập nhật bài viết. Vui lòng thử lại.' },
             delete_failed:{ icon: 'error',   title: 'Thất bại!',    text: 'Không thể xóa bài viết. Vui lòng thử lại.' },
+            review_deleted:      { icon: 'success', title: 'Đã xóa!',   text: 'Bình luận đã được xóa.' },
+            review_delete_failed:{ icon: 'error',   title: 'Thất bại!', text: 'Không thể xóa bình luận.' },
         };
 
         const key = msg || error;
@@ -1012,5 +1066,76 @@
             thumb.src = '';
         });
     });
+</script>
+<script>
+    let reviewTable;
+
+    function showTab(tab) {
+        if (tab === 'blog') {
+            document.getElementById('panelBlog').style.display = 'block';
+            document.getElementById('panelReview').style.display = 'none';
+            document.getElementById('tabBlog').className = 'btn btn-primary';
+            document.getElementById('tabReview').className = 'btn btn-outline-primary';
+        } else {
+            document.getElementById('panelBlog').style.display = 'none';
+            document.getElementById('panelReview').style.display = 'block';
+            document.getElementById('tabBlog').className = 'btn btn-outline-primary';
+            document.getElementById('tabReview').className = 'btn btn-primary';
+            if (!reviewTable) {
+                reviewTable = $('#tableReview').DataTable({
+                    pageLength: 5,
+                    columnDefs: [{targets: [3, 5], orderable: false}],
+                    language: {zeroRecords: "Không có bình luận"}
+                });
+                $('#searchReviewInput').on('keyup', function () {
+                    reviewTable.search(this.value).draw();
+                    updateReviewPageInfo();
+                });
+                $('#prevReviewPage').click(() => {
+                    reviewTable.page('previous').draw('page');
+                    updateReviewPageInfo();
+                });
+                $('#nextReviewPage').click(() => {
+                    reviewTable.page('next').draw('page');
+                    updateReviewPageInfo();
+                });
+                reviewTable.on('draw', updateReviewPageInfo);
+                updateReviewPageInfo();
+            }
+        }
+    }
+
+    function updateReviewPageInfo() {
+        const info = reviewTable.page.info();
+        $('#reviewPageInfo').text((info.page + 1) + ' / ' + info.pages);
+    }
+
+    function confirmDeleteReview(btn) {
+        const id = btn.dataset.id;
+        Swal.fire({
+            title: 'Xóa bình luận?',
+            text: 'Bình luận này sẽ bị xóa vĩnh viễn!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then(result => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = baseUrl + '/admin/blog-manage';
+                const a = document.createElement('input');
+                a.type = 'hidden'; a.name = 'action'; a.value = 'delete_review';
+                const i = document.createElement('input');
+                i.type = 'hidden'; i.name = 'id'; i.value = id;
+                form.appendChild(a);
+                form.appendChild(i);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
 </script>
 </html>

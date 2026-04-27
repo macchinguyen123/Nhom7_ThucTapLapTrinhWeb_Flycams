@@ -9,6 +9,8 @@ public class BlogReview implements Serializable {
     private int userId;
     private String content;
     private Date createdAt;
+    private String username;
+    private String blogTitle;
 
     public int getId() {
         return id;
@@ -30,6 +32,10 @@ public class BlogReview implements Serializable {
         return blogId;
     }
 
+    public String getUsername() { return username; }
+
+    public String getBlogTitle() { return blogTitle; }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -50,5 +56,7 @@ public class BlogReview implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public void setUsername(String username) { this.username = username; }
 
+    public void setBlogTitle(String blogTitle) { this.blogTitle = blogTitle; }
 }
