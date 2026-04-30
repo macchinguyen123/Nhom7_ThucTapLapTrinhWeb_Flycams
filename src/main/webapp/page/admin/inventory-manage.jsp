@@ -141,9 +141,9 @@
                                placeholder="Tìm kiếm sản phẩm..." aria-label="Tìm kiếm">
                     </div>
                 </form>
-                <a href="${pageContext.request.contextPath}/admin/inventory-import" class="btn btn-success">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalMultiImport">
                     <i class="bi bi-file-earmark-plus"></i> Tạo Phiếu Nhập
-                </a>
+                </button>
             </div>
         </div>
         <div class="d-flex justify-content-start align-items-center mb-2">
@@ -336,6 +336,107 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="modalMultiImport" tabindex="-1" data-bs-focus="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-plus"></i> Tạo Phiếu Nhập Kho</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-white">
+                                <h5 class="card-title fw-bold mb-0"><i class="bi bi-info-circle"></i> Thông Tin Chung</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="infoForm">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Người lập phiếu</label>
+                                        <input type="text" class="form-control" value="${sessionScope.user.fullName != null ? sessionScope.user.fullName : 'Admin'}" disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Ngày nhập</label>
+                                        <input type="datetime-local" class="form-control" id="importDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Nhà cung cấp <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="supplier" placeholder="Nhập tên nhà cung cấp..." required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Ghi chú</label>
+                                        <textarea class="form-control" id="noteMulti" rows="3" placeholder="Lý do nhập hàng, đợt nhập..."></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="card-title fw-bold mb-0"><i class="bi bi-list-check"></i> Danh Sách Sản Phẩm Nhập</h5>
+                                <button type="button" class="btn btn-success btn-sm" id="btnAddRow">
+                                    <i class="bi bi-plus-circle"></i> Thêm dòng
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="importTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 5%">STT</th>
+                                                <th style="width: 35%">Sản phẩm</th>
+                                                <th style="width: 15%">Số lượng</th>
+                                                <th style="width: 20%">Đơn giá nhập (VNĐ)</th>
+                                                <th style="width: 20%">Thành tiền (VNĐ)</th>
+                                                <th style="width: 5%"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="product-row">
+                                                <td class="align-middle text-center row-stt">1</td>
+                                                <td>
+                                                    <select class="form-select product-select" required>
+                                                        <option value="" disabled selected>-- Chọn sản phẩm --</option>
+                                                        <c:forEach var="p" items="${products}">
+                                                            <option value="${p.id}">${p.productName}</option>
+                                                        </c:forEach>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control quantity-input" min="1" value="1" required>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control price-input" min="0" step="1000" placeholder="0" required>
+                                                </td>
+                                                <td class="align-middle fw-bold text-primary total-cell">0</td>
+                                                <td class="align-middle text-center">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row"><i class="bi bi-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
+                                                <td class="fw-bold text-success fs-5" id="grandTotal">0</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnSaveMultiReceipt"><i class="bi bi-save"></i> Hoàn Tất Phiếu Nhập</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const contextPath = '${pageContext.request.contextPath}';
@@ -424,17 +525,29 @@
                 Swal.showLoading();
             }
         });
-        setTimeout(() => {
-            Swal.fire({
-                title: 'Thành công!',
-                text: 'Đã nhập kho thành công.',
-                icon: 'success',
-                confirmButtonColor: '#0d6efd'
-            }).then(() => {
-                $('#modalNhapKho').modal('hide');
-                location.reload();
-            });
-        }, 1000);
+        $.ajax({
+            url: contextPath + '/admin/inventory-import-submit',
+            type: 'POST',
+            data: data,
+            success: function(response) {
+                if (response.status === 'success') {
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: 'Đã nhập kho thành công.',
+                        icon: 'success',
+                        confirmButtonColor: '#0d6efd'
+                    }).then(() => {
+                        $('#modalNhapKho').modal('hide');
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Lỗi!', response.message || 'Lỗi khi nhập kho', 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Lỗi!', 'Lỗi hệ thống khi gửi yêu cầu', 'error');
+            }
+        });
     });
     document.querySelectorAll('.has-submenu .menu-item').forEach(item => {
         item.addEventListener('click', function (e) {
@@ -459,6 +572,145 @@
             }
         });
     });
+    document.addEventListener("DOMContentLoaded", function() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        const importDateEl = document.getElementById('importDate');
+        if(importDateEl) importDateEl.value = now.toISOString().slice(0, 16);
+        updateRowNumbers();
+        const btnAddRow = document.getElementById('btnAddRow');
+        if(btnAddRow) {
+            btnAddRow.addEventListener('click', function() {
+                const tbody = document.querySelector('#importTable tbody');
+                const newRow = document.createElement('tr');
+                newRow.className = 'product-row';
+                const selectHtml = document.querySelector('.product-select').innerHTML;
+                newRow.innerHTML = `
+                    <td class="align-middle text-center row-stt"></td>
+                    <td>
+                        <select class="form-select product-select" required>
+                            ${selectHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control quantity-input" min="1" value="1" required>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control price-input" min="0" step="1000" placeholder="0" required>
+                    </td>
+                    <td class="align-middle fw-bold text-primary total-cell">0</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(newRow);
+                updateRowNumbers();
+                attachRowEvents(newRow);
+            });
+        }
+        document.querySelectorAll('.product-row').forEach(row => {
+            attachRowEvents(row);
+        });
+        const btnSaveMultiReceipt = document.getElementById('btnSaveMultiReceipt');
+        if(btnSaveMultiReceipt) {
+            btnSaveMultiReceipt.addEventListener('click', function() {
+                const supplier = document.getElementById('supplier').value.trim();
+                if(!supplier) {
+                    Swal.fire('Lỗi', 'Vui lòng nhập tên nhà cung cấp!', 'warning');
+                    return;
+                }
+                let isValid = true;
+                let hasProducts = false;
+                document.querySelectorAll('.product-row').forEach(row => {
+                    hasProducts = true;
+                    const product = row.querySelector('.product-select').value;
+                    const price = row.querySelector('.price-input').value;
+                    if(!product || !price) {
+                        isValid = false;
+                    }
+                });
+                if(!hasProducts) {
+                    Swal.fire('Lỗi', 'Phiếu nhập phải có ít nhất 1 sản phẩm!', 'warning');
+                    return;
+                }
+                if(!isValid) {
+                    Swal.fire('Lỗi', 'Vui lòng chọn sản phẩm và nhập giá cho tất cả các dòng!', 'warning');
+                    return;
+                }
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                const requests = [];
+                const noteMulti = document.getElementById('noteMulti').value.trim() || supplier;
+                document.querySelectorAll('.product-row').forEach(row => {
+                    const productId = row.querySelector('.product-select').value;
+                    const quantity = row.querySelector('.quantity-input').value;
+                    const importPrice = row.querySelector('.price-input').value;
+                    requests.push($.ajax({
+                        url: contextPath + '/admin/inventory-import-submit',
+                        type: 'POST',
+                        data: {
+                            productId: productId,
+                            quantity: quantity,
+                            importPrice: importPrice,
+                            note: noteMulti
+                        }
+                    }));
+                });
+                Promise.all(requests).then(() => {
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: 'Phiếu nhập kho đã được ghi nhận.',
+                        icon: 'success',
+                        confirmButtonColor: '#0d6efd'
+                    }).then(() => {
+                        $('#modalMultiImport').modal('hide');
+                        location.reload();
+                    });
+                }).catch(() => {
+                    Swal.fire('Lỗi', 'Có lỗi xảy ra trong quá trình nhập kho!', 'error');
+                });
+            });
+        }
+    });
+    function attachRowEvents(row) {
+        const qtyInput = row.querySelector('.quantity-input');
+        const priceInput = row.querySelector('.price-input');
+        const removeBtn = row.querySelector('.btn-remove-row');
+        qtyInput.addEventListener('input', calculateTotal);
+        priceInput.addEventListener('input', calculateTotal);
+        removeBtn.addEventListener('click', function() {
+            row.remove();
+            updateRowNumbers();
+            calculateGrandTotal();
+        });
+    }
+    function calculateTotal(e) {
+        const row = e.target.closest('.product-row');
+        const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
+        const price = parseFloat(row.querySelector('.price-input').value) || 0;
+        const total = qty * price;
+        row.querySelector('.total-cell').textContent = new Intl.NumberFormat('vi-VN').format(total);
+        calculateGrandTotal();
+    }
+    function calculateGrandTotal() {
+        let grandTotal = 0;
+        document.querySelectorAll('.product-row').forEach(row => {
+            const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            grandTotal += (qty * price);
+        });
+        const gtEl = document.getElementById('grandTotal');
+        if(gtEl) gtEl.textContent = new Intl.NumberFormat('vi-VN').format(grandTotal) + ' đ';
+    }
+    function updateRowNumbers() {
+        document.querySelectorAll('.product-row').forEach((row, index) => {
+            const stt = row.querySelector('.row-stt');
+            if(stt) stt.textContent = index + 1;
+        });
+    }
 </script>
 </body>
 </html>
