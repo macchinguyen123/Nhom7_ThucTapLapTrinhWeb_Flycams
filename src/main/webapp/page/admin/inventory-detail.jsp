@@ -85,10 +85,10 @@
         <div class="card shadow-sm mb-4 border-0">
             <div class="card-body">
                 <div class="d-flex align-items-center gap-4">
-                    <img src="https://flycamvn.com/wp-content/uploads/2022/05/DJI-Mini-3-Pro-2.jpg" alt="Flycam DJI Mini 3 Pro" class="rounded border" style="width: 120px; height: 120px; object-fit: cover;" onerror="this.src='${pageContext.request.contextPath}/image/default.jpg'">
+                    <img src="${product.mainImage}" alt="${product.productName}" class="rounded border" style="width: 120px; height: 120px; object-fit: cover;" onerror="this.src='${pageContext.request.contextPath}/image/default.jpg'">
                     <div>
-                        <h4 class="fw-bold mb-1">Flycam DJI Mini 3 Pro (ID: 1)</h4>
-                        <p class="text-muted mb-2">Danh mục: Drone mini | Thương hiệu: DJI</p>
+                        <h4 class="fw-bold mb-1">${product.productName} (ID: ${product.id})</h4>
+                        <p class="text-muted mb-2">Thương hiệu: ${product.brandName}</p>
                         <span class="badge bg-success fs-6"><i class="bi bi-check-circle"></i> Đang kinh doanh</span>
                     </div>
                 </div>
@@ -101,7 +101,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted mb-1 fw-semibold">Tồn Kho Hiện Tại</p>
-                                <h3 class="mb-0 fw-bold text-dark">45</h3>
+                                <h3 class="mb-0 fw-bold text-dark">${stats.inventory}</h3>
                             </div>
                             <div class="icon-box bg-primary text-white bg-opacity-75">
                                 <i class="bi bi-box-seam"></i>
@@ -116,7 +116,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted mb-1 fw-semibold">Tổng Đã Nhập</p>
-                                <h3 class="mb-0 fw-bold text-success">150</h3>
+                                <h3 class="mb-0 fw-bold text-success">${stats.totalImported}</h3>
                             </div>
                             <div class="icon-box bg-success text-white bg-opacity-75">
                                 <i class="bi bi-box-arrow-in-down"></i>
@@ -131,7 +131,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted mb-1 fw-semibold">Tổng Đã Bán</p>
-                                <h3 class="mb-0 fw-bold text-warning">105</h3>
+                                <h3 class="mb-0 fw-bold text-warning">${stats.totalSold}</h3>
                             </div>
                             <div class="icon-box bg-warning text-dark bg-opacity-75">
                                 <i class="bi bi-cart-check"></i>
@@ -146,7 +146,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted mb-1 fw-semibold">Tỷ Lệ Bán / Nhập</p>
-                                <h3 class="mb-0 fw-bold text-info">70%</h3>
+                                <h3 class="mb-0 fw-bold text-info"><fmt:formatNumber value="${stats.salesRatio}" maxFractionDigits="1"/>%</h3>
                             </div>
                             <div class="icon-box bg-info text-white bg-opacity-75">
                                 <i class="bi bi-pie-chart"></i>
