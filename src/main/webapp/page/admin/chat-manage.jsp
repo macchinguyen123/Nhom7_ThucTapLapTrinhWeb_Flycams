@@ -116,6 +116,20 @@
                                style="border-radius:0 20px 20px 0; font-size:13px;"
                                oninput="filterConversations(this.value)">
                     </div>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active" data-filter="all" onclick="setFilter('all', this)">
+                            Tất cả <span class="tab-badge" id="badge-all">0</span>
+                        </div>
+                        <div class="filter-tab" data-filter="unread" onclick="setFilter('unread', this)">
+                            Chưa đọc <span class="tab-badge" id="badge-unread">0</span>
+                        </div>
+                        <div class="filter-tab" data-filter="open" onclick="setFilter('open', this)">
+                            Đang mở <span class="tab-badge" id="badge-open">0</span>
+                        </div>
+                        <div class="filter-tab" data-filter="resolved" onclick="setFilter('resolved', this)">
+                            Đã giải quyết <span class="tab-badge" id="badge-resolved">0</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="conv-list-body" id="convList">
                     <div class="text-center p-5 text-muted">
@@ -126,15 +140,29 @@
             </div>
             <div class="chat-main" id="chatMain" style="display: none; flex-direction: column;">
                 <div class="chat-main-header">
-                    <div class="avatar-circle" id="currentAvatar"></div>
-                    <div>
-                        <div class="fw-bold fs-6" id="currentName"></div>
-                        <div class="text-success" style="font-size: 12px;">
-                            <i class="bi bi-circle-fill" style="font-size: 8px;"></i> Đang hoạt động
+                    <div class="chat-header-left">
+                        <div class="avatar-circle" id="currentAvatar"></div>
+                        <div>
+                            <div class="fw-bold fs-6" id="currentName"></div>
+                            <div class="text-success" style="font-size: 12px;">
+                                <i class="bi bi-circle-fill" style="font-size: 8px;"></i> Đang hoạt động
+                            </div>
                         </div>
                     </div>
+                    <button class="btn-resolve" id="btnResolve" onclick="toggleResolve()">
+                        <i class="bi bi-check2-circle"></i>
+                        <span id="resolveLabel">Đánh dấu giải quyết</span>
+                    </button>
                 </div>
                 <div class="chat-messages" id="adminChatBody">
+                </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-bubble">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span class="typing-label" id="typingLabel">đang gõ...</span>
                 </div>
                 <div class="chat-input-area">
                     <div class="input-group">
@@ -176,6 +204,10 @@
     let currentConvId = null;
     let currentParticipantId = null;
     let allConversations = [];
+    const resolvedMap = {};
+    let activeFilter  = 'all';
+    let lastMsgCount  = 0;
+    let typingTimer   = null;
     function getAvatarUrl(avatar) {
         if (!avatar) return null;
         if (avatar.startsWith('http') || avatar.startsWith('https')) return avatar;
@@ -195,9 +227,114 @@
             .then(res => res.json())
             .then(data => {
                 allConversations = data || [];
-                renderConversationList(allConversations);
+                allConversations.forEach(c => {
+                    if (resolvedMap[c.id] !== undefined) c.resolved = resolvedMap[c.id];
+                });
+                updateFilterBadges();
+                applyFilterAndSearch();
             })
             .catch(err => console.error('Lỗi tải danh sách hội thoại:', err));
+    }
+    function updateFilterBadges() {
+        const all      = allConversations.length;
+        const unread   = allConversations.filter(c => c.hasUnread === true || (typeof c.hasUnread === 'number' && c.hasUnread > 0)).length;
+        const resolved = allConversations.filter(c => c.resolved).length;
+        const open     = all - resolved;
+        document.getElementById('badge-all').textContent      = all;
+        document.getElementById('badge-unread').textContent   = unread;
+        document.getElementById('badge-open').textContent     = open;
+        document.getElementById('badge-resolved').textContent = resolved;
+    }
+
+    function setFilter(filter, tabEl) {
+        activeFilter = filter;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+        applyFilterAndSearch();
+    }
+
+    function applyFilterAndSearch() {
+        const keyword = (document.getElementById('convSearch').value || '').trim().toLowerCase();
+        let filtered = allConversations;
+        if (activeFilter === 'unread')   filtered = filtered.filter(c => c.hasUnread === true || (typeof c.hasUnread === 'number' && c.hasUnread > 0));
+        else if (activeFilter === 'open')     filtered = filtered.filter(c => !c.resolved);
+        else if (activeFilter === 'resolved') filtered = filtered.filter(c => c.resolved);
+        if (keyword) filtered = filtered.filter(c =>
+            (c.participantName || '').toLowerCase().includes(keyword) ||
+            (c.lastMessage     || '').toLowerCase().includes(keyword)
+        );
+        renderConversationList(filtered);
+    }
+
+    // Thay hàm filterConversations cũ bằng:
+    function filterConversations(keyword) {
+        applyFilterAndSearch();
+    }
+
+    function updateResolveButton(isResolved) {
+        const btn = document.getElementById('btnResolve');
+        if (isResolved) {
+            btn.classList.add('resolved');
+            btn.querySelector('i').className = 'bi bi-arrow-counterclockwise';
+            document.getElementById('resolveLabel').textContent = 'Mở lại hội thoại';
+        } else {
+            btn.classList.remove('resolved');
+            btn.querySelector('i').className = 'bi bi-check2-circle';
+            document.getElementById('resolveLabel').textContent = 'Đánh dấu giải quyết';
+        }
+    }
+
+    function toggleResolve() {
+        if (!currentConvId) {
+            console.warn('toggleResolve: currentConvId is null');
+            return;
+        }
+        const convId = String(currentConvId);
+        const conv = allConversations.find(c => String(c.id) === convId);
+
+        const wasResolved = conv ? !!conv.resolved : !!resolvedMap[convId];
+        const newResolved = !wasResolved;
+
+        resolvedMap[convId] = newResolved;
+        if (conv) conv.resolved = newResolved;
+        updateResolveButton(newResolved);
+        updateFilterBadges();
+        applyFilterAndSearch();
+
+        fetch(contextPath + '/admin/chat?action=resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                conversationId: convId,
+                resolved: newResolved ? '1' : '0'
+            })
+        })
+            .then(res => {
+                if (!res.ok) console.warn('Backend resolve chưa implement, lưu client-side.');
+                else return res.json();
+            })
+            .catch(err => console.warn('Lỗi gọi resolve:', err));
+    }
+
+    function showTypingIndicator(name) {
+        document.getElementById('typingLabel').textContent = (name || 'Khách') + ' đang gõ...';
+        document.getElementById('typingIndicator').classList.add('visible');
+        scrollToBottom(document.getElementById('adminChatBody'), true);
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(hideTypingIndicator, 8000);
+    }
+
+    function hideTypingIndicator() {
+        clearTimeout(typingTimer);
+        document.getElementById('typingIndicator').classList.remove('visible');
+    }
+
+    function checkTypingStatus() {
+        if (!currentConvId) return;
+        fetch(contextPath + '/admin/chat?action=typing&conversationId=' + currentConvId)
+            .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+            .then(data => { data && data.typing ? showTypingIndicator(data.userName) : hideTypingIndicator(); })
+            .catch(() => {});
     }
     function filterConversations(keyword) {
         const q = keyword.trim().toLowerCase();
@@ -256,14 +393,16 @@
         currentParticipantId = c.participantId;
         document.getElementById('noSelection').style.display = 'none';
         document.getElementById('chatMain').style.display = 'flex';
-        // Cập nhật thông tin người đang chat lên tiêu đề
         document.getElementById('currentName').textContent = c.participantName || 'Guest';
         const initial = c.participantName ? c.participantName.charAt(0).toUpperCase() : '?';
         const avatarSrc = getAvatarUrl(c.participantAvatar);
         document.getElementById('currentAvatar').innerHTML = avatarSrc
             ? '<img src="' + avatarSrc + '">'
             : initial;
-        loadMessages(); // Lấy tin nhắn chi tiết
+        loadMessages();
+        hideTypingIndicator();
+        lastMsgCount = 0;
+        updateResolveButton(!!c.resolved);
         loadConversations();
     }
     function formatAdminTime(ts) {
@@ -349,9 +488,9 @@
     }
     loadConversations();
     setInterval(() => {
-        if (currentConvId) loadMessages();
+        if (currentConvId) { loadMessages(); checkTypingStatus(); }
         loadConversations();
-    }, 5000);
+    }, 2500);
 </script>
 </body>
 </html>

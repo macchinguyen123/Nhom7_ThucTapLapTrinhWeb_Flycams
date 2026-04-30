@@ -83,7 +83,7 @@ public class ChatDAO {
 
     public List<Conversation> getAdminConversations() {
         List<Conversation> list = new ArrayList<>();
-        String sql = "SELECT c.*, u.fullName, u.avatar, " +
+        String sql = "SELECT c.id, c.participantId, c.resolved, u.fullName, u.avatar, " +
                 "(SELECT content FROM messages WHERE conversationId = c.id ORDER BY id DESC LIMIT 1) as lastMsg, " +
                 "(SELECT sendTime FROM messages WHERE conversationId = c.id ORDER BY id DESC LIMIT 1) as lastTime, " +
                 "(SELECT sendUserId FROM messages WHERE conversationId = c.id ORDER BY id DESC LIMIT 1) as lastSenderId, " +
@@ -106,6 +106,7 @@ public class ChatDAO {
                 Timestamp t = rs.getTimestamp("lastTime");
                 c.setLastMessageTime(t != null ? String.valueOf(t.getTime()) : "");
                 c.setHasUnread(rs.getInt("unreadCount") > 0);
+                c.setResolved(rs.getInt("resolved") == 1);
                 list.add(c);
             }
         } catch (SQLException e) {
@@ -141,6 +142,18 @@ public class ChatDAO {
             e.printStackTrace();
         }
         return 0;
+    }
+    public boolean setResolved(int conversationId, boolean resolved) {
+        String sql = "UPDATE conversations SET resolved = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, resolved ? 1 : 0);
+            ps.setInt(2, conversationId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
 
