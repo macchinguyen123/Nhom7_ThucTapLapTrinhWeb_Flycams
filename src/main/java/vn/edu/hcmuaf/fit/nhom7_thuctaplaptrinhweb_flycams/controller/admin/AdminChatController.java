@@ -71,6 +71,12 @@ public class AdminChatController extends HttpServlet {
                 result.put("success", success);
             }
         }
+         else if ("resolve".equals(action)) {
+            int convId = Integer.parseInt(req.getParameter("conversationId"));
+            int resolved = Integer.parseInt(req.getParameter("resolved"));
+            boolean success = chatDAO.setResolved(convId, resolved == 1);
+            result.put("success", success);
+        }
         resp.getWriter().write(gson.toJson(result));
     }
 }

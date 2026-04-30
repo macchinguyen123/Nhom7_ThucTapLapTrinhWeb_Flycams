@@ -9,6 +9,7 @@ public class Conversation {
     private int lastSenderId;
     private String lastMessageTime;
     private boolean hasUnread;
+    private boolean resolved;
 
     public Conversation() {
     }
@@ -76,4 +77,13 @@ public class Conversation {
     public void setHasUnread(boolean hasUnread) {
         this.hasUnread = hasUnread;
     }
+
+    public boolean isResolved() {
+        return resolved;
+    }
+
+    public void setResolved(boolean resolved) {
+        this.resolved = resolved;
+    }
+
 }

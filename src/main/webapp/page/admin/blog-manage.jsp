@@ -493,12 +493,37 @@
         </div>
         </div>
         <div id="panelReview" style="display:none;">
-            <div class="input-group mb-3" style="max-width:300px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="input-group" style="max-width:300px;">
         <span class="input-group-text bg-primary text-white">
             <i class="bi bi-search"></i>
         </span>
-                <input type="search" id="searchReviewInput" class="form-control"
-                       placeholder="Tìm kiếm bình luận...">
+                    <input type="search" id="searchReviewInput" class="form-control"
+                           placeholder="Tìm kiếm bình luận...">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-start align-items-center mb-2 gap-3 flex-wrap">
+                <div class="d-flex align-items-center">
+                    <label class="me-2">Hiển thị</label>
+                    <select id="reviewRowsPerPage" class="form-select d-inline-block" style="width:80px;">
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                    </select>
+                    <label class="ms-2">bình luận</label>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="mb-0">Sắp xếp:</label>
+                    <select id="reviewSortSelect" class="form-select" style="width:200px;">
+                        <option value="">-- Tùy chọn --</option>
+                        <option value="date-desc">Mới nhất trước</option>
+                        <option value="date-asc">Cũ nhất trước</option>
+                        <option value="user-asc">Người dùng A → Z</option>
+                        <option value="user-desc">Người dùng Z → A</option>
+                        <option value="blog-asc">Bài viết A → Z</option>
+                    </select>
+                </div>
             </div>
             <table id="tableReview" class="table table-striped table-bordered align-middle text-center">
                 <thead class="table-dark">
@@ -517,9 +542,28 @@
                         <td>${r.id}</td>
                         <td class="text-start">${fn:escapeXml(r.blogTitle)}</td>
                         <td>${fn:escapeXml(r.username)}</td>
-                        <td class="text-start" style="max-width:300px;">${fn:escapeXml(r.content)}</td>
+                        <td class="text-start">
+                            <c:set var="shortContent" value="${fn:substring(r.content, 0, 60)}"/>
+                            <c:choose>
+                                <c:when test="${fn:length(r.content) > 60}">
+                                    ${fn:escapeXml(shortContent)}...
+                                </c:when>
+                                <c:otherwise>
+                                    ${fn:escapeXml(r.content)}
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
                         <td><fmt:formatDate value="${r.createdAt}" pattern="yyyy-MM-dd HH:mm"/></td>
                         <td>
+                            <button type="button" class="btn btn-info btn-sm me-1"
+                                    data-id="${r.id}"
+                                    data-content="${fn:escapeXml(r.content)}"
+                                    data-username="${fn:escapeXml(r.username)}"
+                                    data-blogtitle="${fn:escapeXml(r.blogTitle)}"
+                                    data-date="<fmt:formatDate value='${r.createdAt}' pattern='yyyy-MM-dd HH:mm'/>"
+                                    onclick="openViewReview(this)">
+                                <i class="bi bi-eye"></i>
+                            </button>
                             <button type="button" class="btn btn-danger btn-sm"
                                     data-id="${r.id}" onclick="confirmDeleteReview(this)">
                                 <i class="bi bi-trash"></i>
@@ -533,6 +577,41 @@
                 <button id="prevReviewPage" class="btn btn-outline-primary btn-sm">Trước</button>
                 <span id="reviewPageInfo" class="mx-2">1 / 1</span>
                 <button id="nextReviewPage" class="btn btn-outline-primary btn-sm">Sau</button>
+            </div>
+        </div>
+        <div class="modal fade" id="viewReviewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="bi bi-chat-left-text"></i> Chi tiết bình luận</h5>
+                        <button type="button" class="btn-close btn-close-white"
+                                data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th style="width:150px;">Bài viết</th>
+                                <td id="vr-blogtitle"></td>
+                            </tr>
+                            <tr>
+                                <th>Người dùng</th>
+                                <td id="vr-username"></td>
+                            </tr>
+                            <tr>
+                                <th>Ngày tạo</th>
+                                <td id="vr-date"></td>
+                            </tr>
+                            <tr>
+                                <th>Nội dung</th>
+                                <td id="vr-content" style="white-space: pre-wrap; line-height: 1.7;"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -873,6 +952,13 @@
         $('#blog-detail').hide();
         $('.users-table').show();
     }
+    function openViewReview(btn) {
+        document.getElementById('vr-blogtitle').innerText = btn.dataset.blogtitle || '---';
+        document.getElementById('vr-username').innerText = btn.dataset.username || '---';
+        document.getElementById('vr-date').innerText = btn.dataset.date || '---';
+        document.getElementById('vr-content').innerText = btn.dataset.content || '---';
+        new bootstrap.Modal(document.getElementById('viewReviewModal')).show();
+    }
     function syncEditEditor() {
         try {
             if (editEditor) {
@@ -1076,7 +1162,50 @@
             document.getElementById('panelReview').style.display = 'none';
             document.getElementById('tabBlog').className = 'btn btn-primary';
             document.getElementById('tabReview').className = 'btn btn-outline-primary';
-        } else {
+        }
+        if (!reviewTable) {
+            reviewTable = $('#tableReview').DataTable({
+                pageLength: 5,
+                order: [[4, 'desc']],
+                columnDefs: [{targets: [3, 5], orderable: false}],
+                language: {zeroRecords: "Không có bình luận"}
+            });
+
+            $('#searchReviewInput').on('keyup', function () {
+                reviewTable.search(this.value).draw();
+                updateReviewPageInfo();
+            });
+
+            $('#reviewRowsPerPage').on('change', function () {
+                reviewTable.page.len(parseInt($(this).val())).draw();
+                updateReviewPageInfo();
+            });
+
+            $('#reviewSortSelect').on('change', function () {
+                switch ($(this).val()) {
+                    case 'date-desc': reviewTable.order([4, 'desc']).draw(); break;
+                    case 'date-asc':  reviewTable.order([4, 'asc']).draw();  break;
+                    case 'user-asc':  reviewTable.order([2, 'asc']).draw();  break;
+                    case 'user-desc': reviewTable.order([2, 'desc']).draw(); break;
+                    case 'blog-asc':  reviewTable.order([1, 'asc']).draw();  break;
+                    default:          reviewTable.order([4, 'desc']).draw(); break;
+                }
+                updateReviewPageInfo();
+            });
+
+            $('#prevReviewPage').click(() => {
+                reviewTable.page('previous').draw('page');
+                updateReviewPageInfo();
+            });
+            $('#nextReviewPage').click(() => {
+                reviewTable.page('next').draw('page');
+                updateReviewPageInfo();
+            });
+            reviewTable.on('draw', updateReviewPageInfo);
+            updateReviewPageInfo();
+        }
+
+        else {
             document.getElementById('panelBlog').style.display = 'none';
             document.getElementById('panelReview').style.display = 'block';
             document.getElementById('tabBlog').className = 'btn btn-outline-primary';
