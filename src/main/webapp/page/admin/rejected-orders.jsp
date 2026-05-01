@@ -108,12 +108,13 @@
     </aside>
     <main class="main-content container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="text-primary fw-bold mb-0">
-                <i class="bi bi-receipt-cutoff"></i> Quản Lý Đơn Hàng
+            <h4 class="text-danger fw-bold mb-0">
+                <i class="bi bi-shield-x"></i> Đơn Hàng Bị Từ Chối
             </h4>
             <div class="d-flex align-items-center gap-3">
-                <a href="${pageContext.request.contextPath}/admin/rejected-orders" class="btn btn-outline-danger shadow-sm">
-                    <i class="bi bi-shield-x"></i> Đơn hàng bị từ chối
+                <a href="${pageContext.request.contextPath}/admin/unconfirmed-orders"
+                   class="btn btn-outline-secondary shadow-sm">
+                    <i class="bi bi-arrow-left"></i> Quay Lại
                 </a>
                 <form class="d-flex m-0" role="search" style="max-width: 300px;">
                     <div class="input-group">
@@ -161,9 +162,7 @@
                         <fmt:formatNumber value="${o.totalPrice}" pattern="#,##0 VNĐ"/>
                     </td>
                     <td>
-                                            <span class="badge ${o.statusClass}">
-                                                    ${o.statusLabel}
-                                            </span>
+                        <span class="badge ${o.statusClass}">${o.statusLabel}</span>
                     </td>
                     <td>
                         <button class="btn btn-info btn-sm" data-id="${o.id}"
@@ -191,8 +190,7 @@
                 <h5 class="modal-title d-flex align-items-center gap-2">
                     <i class="bi bi-file-earmark-text"></i> Chi Tiết Đơn Hàng
                 </h5>
-                <button type="button" class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="row g-4">
@@ -225,8 +223,7 @@
                                     <tr>
                                         <th>Tổng tiền:</th>
                                         <td>
-                                                                <span id="md_totalPrice"
-                                                                      class="fw-bold text-danger">---</span>
+                                            <span id="md_totalPrice" class="fw-bold text-danger">---</span>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -299,11 +296,11 @@
             <div class="modal-footer bg-light d-flex justify-content-between">
                 <div class="text-muted small fst-italic">Kiểm tra kỹ trước khi xác nhận đơn hàng.</div>
                 <div>
-                    <button id="cancelBtn" class="btn btn-outline-danger">
-                        <i class="bi bi-x-circle"></i> Từ Chối
+                    <button id="cancelBtn" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Đóng
                     </button>
-                    <button id="confirmBtn" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Xác Nhận
+                    <button id="restoreBtn" class="btn btn-success">
+                        <i class="bi bi-arrow-counterclockwise"></i> Khôi Phục
                     </button>
                 </div>
             </div>
@@ -493,7 +490,7 @@
         table.on('draw', function () {
             updatePageInfo();
         });
-        $("#confirmBtn").on("click", function () {
+        $("#restoreBtn").on("click", function () {
             if (!currentOrderId) {
                 Swal.fire({
                     icon: "error",
@@ -504,62 +501,26 @@
                 return;
             }
             Swal.fire({
-                title: "Xác nhận đơn hàng?",
-                text: "Bạn có chắc chắn muốn xác nhận đơn hàng này?",
+                title: "Khôi phục đơn hàng?",
+                text: "Bạn có chắc chắn muốn khôi phục đơn hàng này về trạng thái Chưa Xác Nhận?",
                 icon: "question",
                 showCancelButton: true,
-                confirmButtonText: "Xác nhận",
+                confirmButtonText: "Khôi Phục",
                 cancelButtonText: "Hủy",
                 confirmButtonColor: "#198754",
                 cancelButtonColor: "#6c757d"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    handleOrderAction(currentOrderId, "confirm");
+                    handleOrderAction(currentOrderId, "restore");
                 }
             });
         });
         $("#cancelBtn").on("click", function () {
-            if (!currentOrderId) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Lỗi",
-                    text: "Không xác định được đơn hàng",
-                    confirmButtonColor: "#0d6efd"
-                });
-                return;
-            }
             const modalEl = document.getElementById('modalChiTietDonHang');
             const bsModal = bootstrap.Modal.getInstance(modalEl);
             if (bsModal) {
                 bsModal.hide();
             }
-            setTimeout(() => {
-                Swal.fire({
-                    title: "Từ chối đơn hàng?",
-                    text: "Vui lòng nhập lý do từ chối đơn hàng này (sẽ gửi cho khách hàng):",
-                    input: "textarea",
-                    inputPlaceholder: "Ví dụ: Hết hàng, không liên lạc được, v.v.",
-                    inputAttributes: {
-                        "aria-label": "Nhập lý do từ chối"
-                    },
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Xác Nhận Từ Chối",
-                    cancelButtonText: "Hủy",
-                    confirmButtonColor: "#dc3545",
-                    cancelButtonColor: "#6c757d",
-                    preConfirm: (noteValue) => {
-                        if (!noteValue || noteValue.trim().length === 0) {
-                            Swal.showValidationMessage('Bạn cần nhập lý do từ chối!');
-                        }
-                        return noteValue;
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        handleOrderAction(currentOrderId, "cancel", result.value.trim());
-                    }
-                });
-            }, 300);
         });
         $("#logoutBtn").on("click", function () {
             $("#logoutModal").css("display", "flex");
@@ -570,5 +531,4 @@
     });
 </script>
 </body>
-
 </html>

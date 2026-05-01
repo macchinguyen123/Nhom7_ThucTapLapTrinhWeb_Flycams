@@ -57,6 +57,46 @@ public class OrderDaoAdmin {
         return list;
     }
 
+    public List<Orders> getRejectedOrders() {
+        List<Orders> list = new ArrayList<>();
+        String sql = """
+                    SELECT o.id,
+                           o.shippingCode,
+                           o.totalPrice,
+                           o.status,
+                           o.phoneNumber,
+                           o.createdAt,
+                           o.paymentMethod,
+                           u.fullName
+                    FROM orders o
+                    JOIN users u ON o.user_id = u.id
+                    WHERE o.status = 'Hủy'
+                    ORDER BY o.createdAt DESC
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Orders o = new Orders();
+                o.setId(rs.getInt("id"));
+                o.setShippingCode(rs.getString("shippingCode"));
+                o.setTotalPrice(rs.getDouble("totalPrice"));
+                o.setPhoneNumber(rs.getString("phoneNumber"));
+                o.setCreatedAt(rs.getTimestamp("createdAt"));
+                o.setPaymentMethod(rs.getString("paymentMethod"));
+                o.setCustomerName(rs.getString("fullName"));
+                Orders.Status status = Orders.Status.fromDB(rs.getString("status"));
+                o.setStatus(status);
+                o.setStatusLabel("Đã hủy");
+                o.setStatusClass("bg-danger");
+                list.add(o);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public Map<String, Object> getOrderDetail(int orderId) {
         Map<String, Object> map = new HashMap<>();
         String sql = """

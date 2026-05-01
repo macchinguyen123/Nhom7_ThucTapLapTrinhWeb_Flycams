@@ -51,6 +51,9 @@ public class OrderActionServlet extends HttpServlet {
                 } else {
                     success = orderService.updateOrderStatus(orderId, newStatus);
                 }
+            } else if ("restore".equals(action)) {
+                newStatus = "Xác nhận";
+                success = orderService.updateOrderStatus(orderId, newStatus);
             }
             Map<String, Object> result = new HashMap<>();
             result.put("success", success);

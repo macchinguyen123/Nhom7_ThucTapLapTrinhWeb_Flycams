@@ -21,7 +21,7 @@ public class OrderService {
 
     // Đặt hàng
     public int placeOrder(User user, int addressId, String phone, String note, String paymentMethod,
-            List<OrderItems> items, Carts cart, double shippingFee) throws Exception {
+                          List<OrderItems> items, Carts cart, double shippingFee) throws Exception {
         if (items == null || items.isEmpty()) {
             return 0;
         }
@@ -156,6 +156,10 @@ public class OrderService {
         return orderDaoAdmin.getPendingOrders();
     }
 
+    public List<Orders> getRejectedOrders() {
+        return orderDaoAdmin.getRejectedOrders();
+    }
+
     // Lấy chi tiết đơn hàng cho Admin
     public Map<String, Object> getOrderDetailAdmin(int orderId) {
         return orderDaoAdmin.getOrderDetail(orderId);
@@ -184,10 +188,11 @@ public class OrderService {
     public boolean updateOrderStatusAndNote(int orderId, String status, String note) {
         return orderDaoAdmin.updateOrderStatusAndNote(orderId, status, note);
     }
+
     // Cập nhật toàn bộ thông tin đơn hàng
     public boolean updateOrderFull(int orderId, int userId, String fullName, String email, String phoneNumber,
-            String addressLine, String province, String district,
-            String paymentMethod, String status, String note, java.time.LocalDate completedAt) {
+                                   String addressLine, String province, String district,
+                                   String paymentMethod, String status, String note, java.time.LocalDate completedAt) {
         return orderDaoAdmin.updateOrderFull(orderId, userId, fullName, email, phoneNumber,
                 addressLine, province, district, paymentMethod, status, note, completedAt);
     }
