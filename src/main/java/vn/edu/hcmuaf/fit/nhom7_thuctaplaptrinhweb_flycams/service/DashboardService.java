@@ -75,33 +75,36 @@ public class DashboardService {
         return dashboardDAO.getRevenueByMonth();
     }
 
-    //Lấy doanh thu trong ngày hôm nay
-    public double getRevenueToday() {
-        return dashboardDAO.getRevenueToday();
+
+    public List<Orders> getOrdersInRange(String startDate, String endDate) {
+        return dashboardDAO.getOrdersInRange(startDate, endDate);
     }
 
-    //Lấy doanh thu trong tháng hiện tại
-    public double getRevenueThisMonth() {
-        return dashboardDAO.getRevenueThisMonth();
+    public double getRevenueInRange(String startDate, String endDate) {
+        return dashboardDAO.getRevenueInRange(startDate, endDate);
     }
 
-    //Lấy số lượng đơn hàng phát sinh trong hôm nay
-    public int getOrdersToday() {
-        return dashboardDAO.getOrdersToday();
+    public int getOrdersCountInRange(String startDate, String endDate) {
+        return dashboardDAO.getOrdersCountInRange(startDate, endDate);
     }
 
-    //Lấy sản phẩm bán chạy nhất
-    public Map<String, Integer> getBestSellingProduct() {
-        return dashboardDAO.getBestSellingProduct();
+    public Map<String, Integer> getOrderStatusDistribution(String startDate, String endDate) {
+        return dashboardDAO.getOrderStatusDistribution(startDate, endDate);
     }
 
-    //Lấy danh sách đơn hàng trong ngày hôm nay
-    public List<Orders> getTodayOrders() {
-        return dashboardDAO.getTodayOrders();
+    public Map<String, Double> getRevenueByCategory(String startDate, String endDate) {
+        return dashboardDAO.getRevenueByCategory(startDate, endDate);
     }
 
-    //Lấy danh sách đơn hàng theo ngày bất kỳ
-    public List<Orders> getOrdersByDate(String dateStr) {
-        return dashboardDAO.getOrdersByDate(dateStr);
+    public List<Map<String, Object>> getTopSellingProductsWithRevenue(String startDate, String endDate) {
+        return dashboardDAO.getTopSellingProductsWithRevenue(startDate, endDate);
+    }
+
+    public List<Map<String, Object>> getLowPerformingProducts(String startDate, String endDate) {
+        return dashboardDAO.getLowPerformingProducts(startDate, endDate);
+    }
+
+    public List<Map<String, Object>> getTopCustomersBySpending(String startDate, String endDate) {
+        return dashboardDAO.getTopCustomersBySpending(startDate, endDate);
     }
 }

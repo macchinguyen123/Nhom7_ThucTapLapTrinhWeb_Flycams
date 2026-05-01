@@ -251,220 +251,6 @@ public class DashboardDAO {
         return list;
     }
 
-    //lấy danh sách đơn hàng trong ngày hiện tại
-    public List<Orders> getTodayOrders() {
-        List<Orders> list = new ArrayList<>();
-        String sql = """
-                    SELECT o.id,
-                    o.shippingCode,
-                    u.fullName AS customerName,
-                    o.createdAt,
-                    o.totalPrice,
-                    o.status
-                    FROM orders o
-                    JOIN users u ON o.user_id = u.id
-                    WHERE o.createdAt BETWEEN ? AND ?
-                    ORDER BY o.createdAt DESC
-                """;
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setTimestamp(1, startOfToday());
-            ps.setTimestamp(2, endOfToday());
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Orders o = new Orders();
-                o.setId(rs.getInt("id"));
-                o.setShippingCode(rs.getString("shippingCode"));
-                o.setCustomerName(rs.getString("customerName"));
-                o.setCreatedAt(rs.getTimestamp("createdAt"));
-                o.setTotalPrice(rs.getDouble("totalPrice"));
-                String status = rs.getString("status");
-                switch (status) {
-                    case "Xác nhận" -> {
-                        o.setStatusLabel("Chờ xác nhận");
-                        o.setStatusClass("bg-warning text-dark");
-                    }
-                    case "Đang xử lý" -> {
-                        o.setStatusLabel("Đang xử lý");
-                        o.setStatusClass("bg-info");
-                    }
-                    case "Đang giao" -> {
-                        o.setStatusLabel("Đang giao");
-                        o.setStatusClass("bg-primary");
-                    }
-                    case "Hoàn thành" -> {
-                        o.setStatusLabel("Đã giao");
-                        o.setStatusClass("bg-success");
-                    }
-                    default -> {
-                        o.setStatusLabel("Hủy");
-                        o.setStatusClass("bg-danger");
-                    }
-                }
-                list.add(o);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    // Lấy danh sách đơn hàng theo ngày bất kỳ
-    public List<Orders> getOrdersByDate(String dateStr) {
-        List<Orders> list = new ArrayList<>();
-        String sql = """
-                    SELECT o.id,
-                    o.shippingCode,
-                    u.fullName AS customerName,
-                    o.createdAt,
-                    o.totalPrice,
-                    o.status
-                    FROM orders o
-                    JOIN users u ON o.user_id = u.id
-                    WHERE DATE(o.createdAt) = ?
-                    ORDER BY o.createdAt DESC
-                """;
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, dateStr);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Orders o = new Orders();
-                o.setId(rs.getInt("id"));
-                o.setShippingCode(rs.getString("shippingCode"));
-                o.setCustomerName(rs.getString("customerName"));
-                o.setCreatedAt(rs.getTimestamp("createdAt"));
-                o.setTotalPrice(rs.getDouble("totalPrice"));
-                String status = rs.getString("status");
-                switch (status) {
-                    case "Xác nhận" -> {
-                        o.setStatusLabel("Chờ xác nhận");
-                        o.setStatusClass("bg-warning text-dark");
-                    }
-                    case "Đang xử lý" -> {
-                        o.setStatusLabel("Đang xử lý");
-                        o.setStatusClass("bg-info");
-                    }
-                    case "Đang giao" -> {
-                        o.setStatusLabel("Đang giao");
-                        o.setStatusClass("bg-primary");
-                    }
-                    case "Hoàn thành" -> {
-                        o.setStatusLabel("Đã giao");
-                        o.setStatusClass("bg-success");
-                    }
-                    default -> {
-                        o.setStatusLabel("Hủy");
-                        o.setStatusClass("bg-danger");
-                    }
-                }
-                list.add(o);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    //doanh thu hôm nay
-    public double getRevenueToday() {
-        String sql = "SELECT IFNULL(SUM(totalPrice),0) FROM orders WHERE status = 'Hoàn thành' AND DATE(createdAt) = CURDATE()";
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next())
-                return rs.getDouble(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    //DOANH THU THÁNG NÀY
-    public double getRevenueThisMonth() {
-        String sql = """
-                    SELECT IFNULL(SUM(totalPrice),0)
-                    FROM orders
-                    WHERE MONTH(createdAt) = MONTH(CURDATE())
-                    AND YEAR(createdAt) = YEAR(CURDATE())
-                    AND status = 'Hoàn thành'
-                """;
-        return getDouble(sql);
-    }
-
-    //SỐ ĐƠN TRONG NGÀY
-    public int getOrdersToday() {
-        String sql = """
-                    SELECT COUNT(*)
-                    FROM orders
-                    WHERE DATE(createdAt) = CURDATE()
-                """;
-        return getInt(sql);
-    }
-
-    public Map<String, Integer> getBestSellingProduct() {
-        Map<String, Integer> result = new LinkedHashMap<>();
-        String sql = """
-                    SELECT p.productName, SUM(oi.quantity) totalSold
-                    FROM order_items oi
-                    JOIN products p ON oi.product_id = p.id
-                    JOIN orders o ON oi.order_id = o.id
-                    WHERE o.status = 'Hoàn thành'
-                    GROUP BY p.id
-                    ORDER BY totalSold DESC
-                    LIMIT 5
-                """;
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                result.put(
-                        rs.getString("productName"),
-                        rs.getInt("totalSold")
-                );
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    //HÀM TIỆN ÍCH
-    private double getDouble(String sql) {
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getDouble(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    private int getInt(String sql) {
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    private Timestamp startOfToday() {
-        return Timestamp.valueOf(
-                LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).atStartOfDay()
-        );
-    }
-
-    private Timestamp endOfToday() {
-        return Timestamp.valueOf(
-                LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).atTime(23, 59, 59)
-        );
-    }
-
-
     public Map<String, Double> getRevenueLast8Days() {
         Map<String, Double> dbData = new HashMap<>();
         Map<String, Double> result = new LinkedHashMap<>();
@@ -523,5 +309,233 @@ public class DashboardDAO {
             e.printStackTrace();
         }
         return data;
+    }
+
+    //lấy danh sách đơn hàng trong khoảng ngày
+    public List<Orders> getOrdersInRange(String startDate, String endDate) {
+        List<Orders> list = new ArrayList<>();
+        String sql = """
+                    SELECT o.id,
+                    o.shippingCode,
+                    u.fullName AS customerName,
+                    o.createdAt,
+                    o.totalPrice,
+                    o.status
+                    FROM orders o
+                    JOIN users u ON o.user_id = u.id
+                    WHERE DATE(o.createdAt) >= ? AND DATE(o.createdAt) <= ?
+                    ORDER BY o.createdAt DESC
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Orders o = new Orders();
+                o.setId(rs.getInt("id"));
+                o.setShippingCode(rs.getString("shippingCode"));
+                o.setCustomerName(rs.getString("customerName"));
+                o.setCreatedAt(rs.getTimestamp("createdAt"));
+                o.setTotalPrice(rs.getDouble("totalPrice"));
+                String status = rs.getString("status");
+                switch (status) {
+                    case "Xác nhận" -> {
+                        o.setStatusLabel("Chờ xác nhận");
+                        o.setStatusClass("bg-warning text-dark");
+                    }
+                    case "Đang xử lý" -> {
+                        o.setStatusLabel("Đang xử lý");
+                        o.setStatusClass("bg-info");
+                    }
+                    case "Đang giao" -> {
+                        o.setStatusLabel("Đang giao");
+                        o.setStatusClass("bg-primary");
+                    }
+                    case "Hoàn thành" -> {
+                        o.setStatusLabel("Đã giao");
+                        o.setStatusClass("bg-success");
+                    }
+                    default -> {
+                        o.setStatusLabel("Hủy");
+                        o.setStatusClass("bg-danger");
+                    }
+                }
+                list.add(o);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public double getRevenueInRange(String startDate, String endDate) {
+        String sql = "SELECT IFNULL(SUM(totalPrice),0) FROM orders WHERE status = 'Hoàn thành' AND DATE(createdAt) >= ? AND DATE(createdAt) <= ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int getOrdersCountInRange(String startDate, String endDate) {
+        String sql = "SELECT COUNT(*) FROM orders WHERE DATE(createdAt) >= ? AND DATE(createdAt) <= ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public Map<String, Integer> getOrderStatusDistribution(String startDate, String endDate) {
+        Map<String, Integer> result = new LinkedHashMap<>();
+        String sql = """
+                    SELECT status, COUNT(*) AS total
+                    FROM orders
+                    WHERE DATE(createdAt) >= ? AND DATE(createdAt) <= ?
+                    GROUP BY status
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getString("status"), rs.getInt("total"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public Map<String, Double> getRevenueByCategory(String startDate, String endDate) {
+        Map<String, Double> result = new LinkedHashMap<>();
+        String sql = """
+                    SELECT c.categoryName, SUM(oi.price * oi.quantity) AS revenue
+                    FROM order_items oi
+                    JOIN products p ON oi.product_id = p.id
+                    JOIN categories c ON p.category_id = c.id
+                    JOIN orders o ON oi.order_id = o.id
+                    WHERE o.status = 'Hoàn thành' AND DATE(o.createdAt) >= ? AND DATE(o.createdAt) <= ?
+                    GROUP BY c.id
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getString("categoryName"), rs.getDouble("revenue"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> getTopSellingProductsWithRevenue(String startDate, String endDate) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = """
+                    SELECT p.productName, SUM(oi.quantity) AS totalSold, SUM(oi.price * oi.quantity) AS totalRevenue
+                    FROM order_items oi
+                    JOIN products p ON oi.product_id = p.id
+                    JOIN orders o ON oi.order_id = o.id
+                    WHERE o.status = 'Hoàn thành' AND DATE(o.createdAt) >= ? AND DATE(o.createdAt) <= ?
+                    GROUP BY p.id
+                    ORDER BY totalSold DESC
+                    LIMIT 5
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("productName", rs.getString("productName"));
+                    map.put("totalSold", rs.getInt("totalSold"));
+                    map.put("totalRevenue", rs.getDouble("totalRevenue"));
+                    result.add(map);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> getLowPerformingProducts(String startDate, String endDate) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = """
+                    SELECT p.productName, IFNULL(SUM(oi.quantity), 0) AS totalSold
+                    FROM products p
+                    LEFT JOIN order_items oi ON p.id = oi.product_id
+                    LEFT JOIN orders o ON oi.order_id = o.id AND o.status = 'Hoàn thành' AND DATE(o.createdAt) >= ? AND DATE(o.createdAt) <= ?
+                    GROUP BY p.id
+                    ORDER BY totalSold ASC
+                    LIMIT 5
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("productName", rs.getString("productName"));
+                    map.put("totalSold", rs.getInt("totalSold"));
+                    result.add(map);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> getTopCustomersBySpending(String startDate, String endDate) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = """
+                    SELECT u.fullName, u.email, SUM(o.totalPrice) AS totalSpent, COUNT(o.id) AS totalOrders
+                    FROM orders o
+                    JOIN users u ON o.user_id = u.id
+                    WHERE o.status = 'Hoàn thành' AND DATE(o.createdAt) >= ? AND DATE(o.createdAt) <= ?
+                    GROUP BY u.id
+                    ORDER BY totalSpent DESC
+                    LIMIT 5
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("fullName", rs.getString("fullName"));
+                    map.put("email", rs.getString("email"));
+                    map.put("totalSpent", rs.getDouble("totalSpent"));
+                    map.put("totalOrders", rs.getInt("totalOrders"));
+                    result.add(map);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 }
