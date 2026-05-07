@@ -6,8 +6,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.cart.Carts;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.CartService;
 
 import java.io.IOException;
 
@@ -63,6 +65,13 @@ public class Login extends HttpServlet {
         }
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
+        Carts sessionCart = (Carts) session.getAttribute("cart");
+        CartService cartService = new CartService();
+        cartService.syncCart(user.getId(), sessionCart);
+        Carts dbCart = cartService.getCartForUser(user.getId());
+        if (dbCart != null) {
+            session.setAttribute("cart", dbCart);
+        }
         response.sendRedirect(request.getContextPath() + "/home");
     }
 }

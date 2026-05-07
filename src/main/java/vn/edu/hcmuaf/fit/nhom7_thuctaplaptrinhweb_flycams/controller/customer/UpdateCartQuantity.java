@@ -39,7 +39,9 @@ public class UpdateCartQuantity extends HttpServlet {
         try {
             int productId = Integer.parseInt(request.getParameter("productId"));
             int quantity = Integer.parseInt(request.getParameter("quantity"));
-            boolean updated = cartService.updateCartItem(cart, productId, quantity);
+            vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User user = (vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User) session.getAttribute("user");
+            Integer userId = (user != null) ? user.getId() : null;
+            boolean updated = cartService.updateCartItem(cart, productId, quantity, userId);
             if (updated) {
                 session.setAttribute("cart", cart);
                 response.setStatus(HttpServletResponse.SC_OK);

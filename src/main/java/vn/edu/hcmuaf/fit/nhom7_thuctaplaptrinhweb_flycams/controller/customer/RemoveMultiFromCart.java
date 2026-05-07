@@ -29,11 +29,15 @@ public class RemoveMultiFromCart extends HttpServlet {
         if (cart == null)
             return;
         String[] ids = request.getParameterValues("productIds[]");
+        vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User user = (vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User) session.getAttribute("user");
+        Integer userId = (user != null) ? user.getId() : null;
         CartService cartService = new CartService();
-        cartService.removeMultiFromCart(cart, ids);
+        cartService.removeMultiFromCart(cart, ids, userId);
         session.setAttribute("cart", cart);
+        Integer unviewedCount = (Integer) session.getAttribute("unviewedCartCount");
+        if (unviewedCount == null) unviewedCount = 0;
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"success\":true,\"cartSize\":" + cart.totalQuantity() + "}");
+        response.getWriter().write("{\"success\":true,\"cartSize\":" + unviewedCount + "}");
         response.setStatus(HttpServletResponse.SC_OK);
     }
 }

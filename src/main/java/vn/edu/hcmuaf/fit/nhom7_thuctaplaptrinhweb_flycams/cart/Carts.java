@@ -90,7 +90,32 @@ public class Carts implements Serializable {
         return total;
     }
 
+    public int getQuantity(int productId) {
+        CartItems item = data.get(productId);
+        return item != null ? item.getQuantity() : 0;
+    }
+
     public void updateCustomer(User user) {
         this.user = user;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public User getUser() {
+        return user;
     }
 }

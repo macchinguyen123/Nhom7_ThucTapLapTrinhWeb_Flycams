@@ -275,8 +275,8 @@
                 </div>
             </div>
             <div class="col-xl-6">
-                <h5 class="text-primary fw-bold mb-3"><i class="bi bi-exclamation-triangle"></i> Sản Phẩm Tồn Đọng Khuất
-                    Mắt</h5>
+                <h5 class="text-primary fw-bold mb-3"><i class="bi bi-exclamation-triangle"></i> Sản Phẩm Không Bán Chạy
+                </h5>
                 <div class="card shadow-sm h-100 border-0">
                     <c:choose>
                         <c:when test="${empty lowPerformingProducts}">

@@ -31,12 +31,24 @@ public class AddCart extends HttpServlet {
             if (quantityStr != null && !quantityStr.isEmpty()) {
                 quantity = Integer.parseInt(quantityStr);
             }
+            vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User user = (vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User) session.getAttribute("user");
+            if (user == null) {
+                response.getWriter().write("{\"success\":false,\"needLogin\":true,\"message\":\"Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng\"}");
+                return;
+            }
+            Integer userId = user.getId();
             Carts cart = (Carts) session.getAttribute("cart");
             if (cart == null) cart = new Carts();
-            boolean added = cartService.addToCart(cart, productId, quantity);
+
+            boolean added = cartService.addToCart(cart, productId, quantity, userId);
             if (added) {
+                // Tăng số lượng sản phẩm chưa xem trong session
+                Integer unviewedCount = (Integer) session.getAttribute("unviewedCartCount");
+                if (unviewedCount == null) unviewedCount = 0;
+                unviewedCount += 1;
+                session.setAttribute("unviewedCartCount", unviewedCount);
                 session.setAttribute("cart", cart);
-                response.getWriter().write("{\"success\":true,\"totalQuantity\":" + cart.totalQuantity() + "}");
+                response.getWriter().write("{\"success\":true,\"totalQuantity\":" + unviewedCount + "}");
             } else {
                 response.getWriter().write("{\"success\":false,\"message\":\"Sản phẩm không tồn tại\"}");
             }

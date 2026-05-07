@@ -15,8 +15,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.cart.Carts;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.UserDAO;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.CartService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,6 +78,13 @@ public class GoogleCallbackServlet extends HttpServlet {
                 return;
             }
             request.getSession().setAttribute("user", user);
+            Carts sessionCart = (Carts) request.getSession().getAttribute("cart");
+            CartService cartService = new CartService();
+            cartService.syncCart(user.getId(), sessionCart);
+            Carts dbCart = cartService.getCartForUser(user.getId());
+            if (dbCart != null) {
+                request.getSession().setAttribute("cart", dbCart);
+            }
             response.sendRedirect(request.getContextPath() + "/home");
         } catch (Exception e) {
             e.printStackTrace();

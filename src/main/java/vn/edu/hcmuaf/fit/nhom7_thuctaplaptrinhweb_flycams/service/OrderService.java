@@ -1,10 +1,7 @@
 package vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service;
 
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.cart.Carts;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.OrderDaoAdmin;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.OrderItemsDAO;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.OrdersDAO;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.ProductManagement;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.*;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.OrderItems;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Orders;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
@@ -18,6 +15,7 @@ public class OrderService {
     private OrdersDAO ordersDAO = new OrdersDAO();
     private OrderItemsDAO orderItemsDAO = new OrderItemsDAO();
     private ProductManagement productManagement = new ProductManagement();
+    private CartDAO cartDAO = new CartDAO();
 
     // Đặt hàng
     public int placeOrder(User user, int addressId, String phone, String note, String paymentMethod,
@@ -57,6 +55,9 @@ public class OrderService {
             // Update Cart
             if (cart != null) {
                 cart.removeItem(item.getProductId());
+                if (user != null) {
+                    cartDAO.removeCartItem(user.getId(), item.getProductId());
+                }
             }
         }
 
