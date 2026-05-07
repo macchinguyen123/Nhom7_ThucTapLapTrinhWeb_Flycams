@@ -39,13 +39,17 @@ public class RemoveFromCart extends HttpServlet {
 
         int productId = Integer.parseInt(request.getParameter("productId"));
 
+        vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User user = (vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User) session.getAttribute("user");
+        Integer userId = (user != null) ? user.getId() : null;
         CartService cartService = new CartService();
-        cartService.removeFromCart(cart, productId);
+        cartService.removeFromCart(cart, productId, userId);
 
         session.setAttribute("cart", cart);
 
+        Integer unviewedCount = (Integer) session.getAttribute("unviewedCartCount");
+        if (unviewedCount == null) unviewedCount = 0;
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"success\":true,\"cartSize\":" + cart.totalQuantity() + "}");
+        response.getWriter().write("{\"success\":true,\"cartSize\":" + unviewedCount + "}");
         response.setStatus(HttpServletResponse.SC_OK);
     }
 }

@@ -3,6 +3,7 @@
 <%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 <c:set var="cart" value="${sessionScope.cart}"/>
+<% session.setAttribute("unviewedCartCount", 0); %>
 <!DOCTYPE html>
 <html lang="en">
 <head>

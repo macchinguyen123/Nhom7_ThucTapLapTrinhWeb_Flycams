@@ -43,8 +43,8 @@
                         <div class="icon-wrapper">
                             <i class="bi bi-cart3"></i>
                             <span class="cart-badge badge rounded-pill bg-danger" id="cartBadge"
-                                  style="${(empty cart or cart.totalQuantity() == 0) ? 'display: none !important;' : 'display: flex !important;'}">
-                                ${not empty cart ? cart.totalQuantity() : '0'}
+                                  style="${(empty unviewedCartCount or unviewedCartCount == 0) ? 'display: none !important;' : 'display: flex !important;'}">
+                                ${not empty unviewedCartCount ? unviewedCartCount : '0'}
                             </span>
                         </div>
                         <span>Giỏ hàng</span>
@@ -480,7 +480,26 @@
     //XỬ LÝ THÊM VÀO GIỎ HÀNG TOÀN CỤC
     function globallyHandleAddToCart(productId, quantity, sourceImg, btnElement) {
         if (!productId) return;
-        //1.Hiệu ứng bay vào giỏ hàng
+        //1. Chặn người dùng chưa đăng nhập
+        const userLoggedIn = ${not empty user ? 'true' : 'false'};
+        if (!userLoggedIn) {
+            Swal.fire({
+                title: 'Yêu cầu đăng nhập',
+                text: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Đăng nhập ngay',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = contextPath + '/page/login.jsp';
+                }
+            });
+            return;
+        }
+        //2.Hiệu ứng bay vào giỏ hàng
         if (sourceImg && sourceImg.src) {
             const flyingImg = document.createElement('img');
             flyingImg.src = sourceImg.src;
