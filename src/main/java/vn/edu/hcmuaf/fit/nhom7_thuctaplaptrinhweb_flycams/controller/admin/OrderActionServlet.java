@@ -51,6 +51,16 @@ public class OrderActionServlet extends HttpServlet {
                 } else {
                     success = orderService.updateOrderStatus(orderId, newStatus);
                 }
+                // Gửi email thông báo hủy
+                if (success) {
+                    Map<String, Object> orderDetail = orderService.getOrderDetailAdmin(orderId);
+                    if (orderDetail != null) {
+                        String fullName = (String) orderDetail.get("customerName");
+                        String email = (String) orderDetail.get("email");
+                        String paymentMethod = (String) orderDetail.get("paymentMethod");
+                        orderService.sendStatusChangeEmail(orderId, newStatus, fullName, email, paymentMethod, note);
+                    }
+                }
             } else if ("restore".equals(action)) {
                 newStatus = "Xác nhận";
                 success = orderService.updateOrderStatus(orderId, newStatus);
