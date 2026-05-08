@@ -184,7 +184,7 @@
                     </td>
                     <td>
                         <button class="btn btn-primary btn-sm view" data-id="${o.id}"
-                                onclick="loadOrderDetail(${o.id}) ">
+                                onclick="loadOrderDetail('${o.id}')">
                             <i class="bi bi-eye"></i> Xem / Cập Nhật
                         </button>
                     </td>
@@ -340,6 +340,9 @@
                 <button type="submit" form="formDonHang" class="btn btn-success">
                     <i class="bi bi-check-circle"></i> Lưu Thay Đổi
                 </button>
+                <button type="button" id="btnHuyDon" class="btn btn-danger d-none" onclick="handleCancelOrder()">
+                    <i class="bi bi-x-circle"></i> Hủy Đơn
+                </button>
             </div>
         </div>
     </div>
@@ -421,6 +424,13 @@
                     o.paymentMethod ? "Đã chọn" : "Chưa thanh toán";
                 // Trạng thái vận chuyển
                 document.getElementById("dh-ttvc").value = o.status;
+                // Hiển thị nút Hủy Đơn nếu đang xử lý hoặc đang giao
+                const btnHuyDon = document.getElementById("btnHuyDon");
+                if (o.status === "Đang xử lý" || o.status === "Đang giao") {
+                    btnHuyDon.classList.remove("d-none");
+                } else {
+                    btnHuyDon.classList.add("d-none");
+                }
                 const modal = new bootstrap.Modal(
                     document.getElementById("modalDonHang")
                 );
@@ -540,6 +550,71 @@
                 Swal.fire("Lỗi", "Lỗi hệ thống", "error");
             });
     });
+
+    function handleCancelOrder() {
+        if (!currentOrderId) return;
+        const modalEl = document.getElementById('modalDonHang');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+        Swal.fire({
+            title: "Hủy đơn hàng?",
+            text: "Vui lòng nhập lý do hủy đơn hàng này (sẽ gửi cho khách hàng):",
+            input: "textarea",
+            inputPlaceholder: "Ví dụ: Hết hàng, khách yêu cầu hủy, v.v.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Xác Nhận Hủy",
+            cancelButtonText: "Quay Lại",
+            confirmButtonColor: "#dc3545",
+            cancelButtonColor: "#6c757d",
+            preConfirm: (noteValue) => {
+                if (!noteValue || noteValue.trim().length === 0) {
+                    Swal.showValidationMessage('Bạn cần nhập lý do hủy!');
+                }
+                return noteValue;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const params = new URLSearchParams();
+                params.append('id', currentOrderId);
+                params.append('action', 'cancel');
+                params.append('note', result.value.trim());
+                Swal.fire({
+                    title: "Đang xử lý...",
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                fetch('${pageContext.request.contextPath}/admin/order-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params.toString()
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Đã hủy đơn hàng",
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            bootstrap.Modal.getInstance(document.getElementById("modalDonHang")).hide();
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            Swal.fire("Lỗi", data.message || "Không thể hủy đơn hàng", "error");
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire("Lỗi", "Lỗi kết nối server", "error");
+                    });
+            }
+        });
+    }
 </script>
 </body>
 

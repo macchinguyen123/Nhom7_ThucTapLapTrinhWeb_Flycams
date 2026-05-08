@@ -1,5 +1,6 @@
 package vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service;
 
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.MailProperties.EmailSender;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.cart.Carts;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.*;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.OrderItems;
@@ -7,8 +8,10 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Orders;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class OrderService {
@@ -194,8 +197,95 @@ public class OrderService {
     public boolean updateOrderFull(int orderId, int userId, String fullName, String email, String phoneNumber,
                                    String addressLine, String province, String district,
                                    String paymentMethod, String status, String note, java.time.LocalDate completedAt) {
-        return orderDaoAdmin.updateOrderFull(orderId, userId, fullName, email, phoneNumber,
+        boolean success = orderDaoAdmin.updateOrderFull(orderId, userId, fullName, email, phoneNumber,
                 addressLine, province, district, paymentMethod, status, note, completedAt);
+        if (success) {
+            sendStatusChangeEmail(orderId, status, fullName, email, paymentMethod, note);
+        }
+        return success;
     }
 
+    public void sendStatusChangeEmail(int orderId, String status, String fullName, String email, String paymentMethod, String note) {
+        if (email == null || email.trim().isEmpty()) return;
+        new Thread(() -> {
+            try {
+                Map<String, Object> orderDetail = getOrderDetailAdmin(orderId);
+                List<Map<String, Object>> items = getOrderItemsAdmin(orderId);
+                StringBuilder itemRows = new StringBuilder();
+                NumberFormat fmt = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
+                for (Map<String, Object> item : items) {
+                    String productName = item.get("productName") != null ? item.get("productName").toString() : "N/A";
+                    double priceVal = item.get("price") != null ? Double.parseDouble(item.get("price").toString()) : 0;
+                    int qtyVal = item.get("quantity") != null ? (int) Double.parseDouble(item.get("quantity").toString()) : 0;
+                    long subtotal = (long) (priceVal * qtyVal);
+                    itemRows.append("<tr>")
+                            .append("<td style='padding:4px 8px;border:1px solid #ddd;'>").append(productName).append("</td>")
+                            .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:center;'>").append(qtyVal).append("</td>")
+                            .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'>").append(fmt.format(priceVal)).append("đ</td>")
+                            .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'>").append(fmt.format(subtotal)).append("đ</td>")
+                            .append("</tr>");
+                }
+                double finalTotal = orderDetail.get("totalPrice") != null ? Double.parseDouble(orderDetail.get("totalPrice").toString()) : 0;
+                String productTable = "<table style='width:100%;border-collapse:collapse;margin:10px 0;'>"
+                        + "<tr style='background:#f0f0f0;'>"
+                        + "<th style='padding:4px 8px;border:1px solid #ddd;text-align:left;'>Sản phẩm</th>"
+                        + "<th style='padding:4px 8px;border:1px solid #ddd;'>SL</th>"
+                        + "<th style='padding:4px 8px;border:1px solid #ddd;'>Đơn giá</th>"
+                        + "<th style='padding:4px 8px;border:1px solid #ddd;'>Thành tiền</th>"
+                        + "</tr>"
+                        + itemRows
+                        + "<tr><td colspan='3' style='padding:4px 8px;border:1px solid #ddd;text-align:right;'><b>Tổng tiền:</b></td>"
+                        + "<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'><b>" + fmt.format(finalTotal) + "đ</b></td></tr>"
+                        + "</table>";
+                String baseInfo = "<ul>"
+                        + "<li>Mã đơn hàng: <b>#" + orderId + "</b></li>"
+                        + "<li>Khách hàng: " + fullName + "</li>"
+                        + "<li>Phương thức thanh toán: " + (paymentMethod != null ? paymentMethod : "N/A") + "</li>"
+                        + "</ul>";
+                EmailSender emailSender = new EmailSender();
+                String subject = "";
+                String htmlContent = "";
+                if ("Đang giao".equalsIgnoreCase(status)) {
+                    subject = "[SkyDrone] Đơn hàng #" + orderId + " đang được giao!";
+                    htmlContent = "<p>Xin chào <b>" + fullName + "</b>,</p>"
+                            + "<p>Đơn hàng <b>#" + orderId + "</b> của bạn đang được giao.</p>"
+                            + "<p><b>Thông tin đơn hàng:</b></p>"
+                            + baseInfo
+                            + "<p><b>Danh sách sản phẩm:</b></p>"
+                            + productTable
+                            + "<p>Vui lòng chú ý điện thoại để nhận hàng.</p>"
+                            + "<p>Trân trọng,<br>Đội ngũ SkyDrone</p>";
+                } else if ("Hoàn thành".equalsIgnoreCase(status) || "Giao thành công".equalsIgnoreCase(status)) {
+                    subject = "[SkyDrone] Đơn hàng #" + orderId + " đã giao thành công!";
+                    htmlContent = "<p>Xin chào <b>" + fullName + "</b>,</p>"
+                            + "<p>Đơn hàng <b>#" + orderId + "</b> của bạn đã được giao thành công.</p>"
+                            + "<p><b>Thông tin đơn hàng:</b></p>"
+                            + baseInfo
+                            + "<p><b>Danh sách sản phẩm:</b></p>"
+                            + productTable
+                            + "<p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của SkyDrone. Hẹn gặp lại!</p>"
+                            + "<p>Trân trọng,<br>Đội ngũ SkyDrone</p>";
+                } else if ("Hủy".equalsIgnoreCase(status)) {
+                    subject = "[SkyDrone] Đơn hàng #" + orderId + " đã bị hủy";
+                    String reasonHtml = (note != null && !note.trim().isEmpty())
+                            ? "<p><b>Lý do hủy:</b> " + note + "</p>"
+                            : "";
+                    htmlContent = "<p>Xin chào <b>" + fullName + "</b>,</p>"
+                            + "<p>Chúng tôi xin thông báo đơn hàng <b>#" + orderId + "</b> của bạn đã bị hủy.</p>"
+                            + reasonHtml
+                            + "<p><b>Thông tin đơn hàng:</b></p>"
+                            + baseInfo
+                            + "<p><b>Danh sách sản phẩm:</b></p>"
+                            + productTable
+                            + "<p>Nếu bạn có thắc mắc, vui lòng liên hệ: <b>support@skydrone.vn</b></p>"
+                            + "<p>Trân trọng,<br>Đội ngũ SkyDrone</p>";
+                }
+                if (!subject.isEmpty()) {
+                    emailSender.sendOrderHtmlEmail(email, subject, htmlContent);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 }
