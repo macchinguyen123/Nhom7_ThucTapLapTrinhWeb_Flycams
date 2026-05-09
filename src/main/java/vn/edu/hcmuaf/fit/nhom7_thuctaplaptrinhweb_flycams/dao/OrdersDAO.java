@@ -380,5 +380,17 @@ public class OrdersDAO {
         }
         return false;
     }
+    public boolean updateStatusByShippingCode(String shippingCode, String status) {
+        String sql = "UPDATE orders SET status = ? WHERE shippingCode = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, shippingCode);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }
