@@ -165,6 +165,7 @@
                     <span class="typing-label" id="typingLabel">đang gõ...</span>
                 </div>
                 <div class="chat-input-area">
+                    <div id="quickReplyMenu"></div>
                     <div class="input-group">
                         <input type="text" id="adminChatInput" class="form-control"
                                placeholder="Nhập tin nhắn..." style="border-radius: 20px 0 0 20px;">
@@ -175,6 +176,27 @@
                     </div>
                 </div>
             </div>
+            <aside class="customer-details" id="customerSidebar" style="display: none;">
+                <div class="sidebar-header">Thông tin khách hàng</div>
+                <div class="sidebar-body">
+                    <div class="detail-item">
+                        <label>Số điện thoại:</label>
+                        <span id="custPhone">N/A</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Địa chỉ:</label>
+                        <span id="custAddress">N/A</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Tổng chi tiêu:</label>
+                        <span id="custTotalSpend" class="text-success fw-bold">0đ</span>
+                    </div>
+                    <hr>
+                    <h6>Đơn hàng gần đây</h6>
+                    <ul id="custOrderHistory" class="list-unstyled">
+                    </ul>
+                </div>
+            </aside>
             <div class="no-selection-panel" id="noSelection">
                 <div class="text-center">
                     <i class="bi bi-chat-dots" style="font-size: 56px; opacity: 0.3;"></i>
@@ -183,6 +205,8 @@
             </div>
         </div>
     </main>
+</div>
+<div id="quickReplyMenu" class="list-group position-absolute" style="display:none; z-index: 1000; width: 300px;">
 </div>
 <script>
     (function () {
@@ -199,6 +223,7 @@
             this.classList.toggle('open');
         });
     })();
+
     const contextPath = '${pageContext.request.contextPath}';
     const currentAdminName = '${sessionScope.user.fullName}';
     let currentConvId = null;
@@ -266,7 +291,6 @@
         renderConversationList(filtered);
     }
 
-    // Thay hàm filterConversations cũ bằng:
     function filterConversations(keyword) {
         applyFilterAndSearch();
     }
@@ -283,7 +307,39 @@
             document.getElementById('resolveLabel').textContent = 'Đánh dấu giải quyết';
         }
     }
+    const quickReplies = [
+        { key: 'Giá', text: 'Sản phẩm này có giá là [Giá] ạ.' },
+        { key: 'Bảo hành', text: 'Bảo hành 12 tháng, lỗi 1 đổi 1 ạ.' },
+        { key: 'Địa chỉ', text: 'Shop ở 123 Đường ABC, HCM bạn nhé.' },
+        { key: 'Ship', text: 'Bên mình có ship COD toàn quốc ạ.' }
+    ];
 
+    const chatInput = document.getElementById('adminChatInput');
+    const replyMenu = document.getElementById('quickReplyMenu');
+
+    function renderQuickReplies() {
+        replyMenu.innerHTML = quickReplies.map(r =>
+            '<div class="reply-item" onclick="insertReply(\'' + r.text + '\')">' +
+            '<strong>' + r.key + '</strong>' +
+            '</div>'
+        ).join('');
+    }
+
+    chatInput.addEventListener('focus', function() {
+        renderQuickReplies();
+        replyMenu.style.display = 'block';
+    });
+
+    function insertReply(text) {
+        chatInput.value = text;
+        chatInput.focus();
+
+    }
+
+    chatInput.addEventListener('blur', function() {
+        setTimeout(() => {
+        }, 200);
+    });
     function toggleResolve() {
         if (!currentConvId) {
             console.warn('toggleResolve: currentConvId is null');
@@ -365,7 +421,6 @@
                 ? '<img src="' + avatarSrc + '">'
                 : initial;
             const timeStr = c.lastMessageTime ? formatAdminTime(c.lastMessageTime) : '';
-            // Xử lý nội dung tin ngắn kèm tiền tố tên người gửi
             let lastMsgDisp = c.lastMessage || 'Chưa có tin nhắn';
             if (c.lastSenderId) {
                 const senderName = (c.lastSenderId === c.participantId)
@@ -389,6 +444,7 @@
         });
     }
     function selectConversation(c) {
+        console.log('Conversation selected:', c);
         currentConvId = c.id;
         currentParticipantId = c.participantId;
         document.getElementById('noSelection').style.display = 'none';
@@ -404,6 +460,30 @@
         lastMsgCount = 0;
         updateResolveButton(!!c.resolved);
         loadConversations();
+        document.getElementById('customerSidebar').style.display = 'block';
+        loadCustomerContext(c.participantId);
+    }
+    function loadCustomerContext(userId) {
+        fetch(contextPath + '/admin/chat?action=getCustomerInfo&userId=' + userId)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('custPhone').textContent = data.phone || 'Chưa cập nhật';
+                document.getElementById('custAddress').textContent = data.address || 'N/A';
+                document.getElementById('custTotalSpend').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.totalSpend);
+
+                let orderHtml = '';
+                if (data.orders && data.orders.length > 0) {
+                    data.orders.forEach(o => {
+                        orderHtml += '<li class="mb-2 p-2 bg-white border rounded shadow-sm">' +
+                            '<small>#' + o.id + ' - ' + o.date + '</small><br>' +
+                            '<strong>' + o.status + '</strong> - ' + o.total + 'đ' +
+                            '</li>';
+                    });
+                } else {
+                    orderHtml = '<li class="text-muted">Chưa có đơn hàng nào</li>';
+                }
+                document.getElementById('custOrderHistory').innerHTML = orderHtml;
+            });
     }
     function formatAdminTime(ts) {
         if (!ts) return '';
@@ -439,8 +519,8 @@
                 body.innerHTML = '';
                 data.sort((a, b) => a.id - b.id).forEach(m => {
                     const div = document.createElement('div');
-                    const isFromCustomer = m.sendUserId == currentParticipantId;
-                    div.className = 'message ' + (isFromCustomer ? 'admin' : 'user');
+                    const isFromCustomer = Number(m.sendUserId) === Number(currentParticipantId);
+                    div.className = 'message ' + (isFromCustomer ? 'admin' : 'user'); // ✅ Thêm dòng này
                     const timeStr = m.sendTime ? formatAdminTime(m.sendTime) : '';
                     div.innerHTML = '<span class="msg-text">' + (m.content || '') + '</span>' +
                         (timeStr ? '<span class="msg-time">' + timeStr + '</span>' : '');
@@ -454,7 +534,6 @@
     document.getElementById('adminChatInput').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendReply();
     });
-    // Gửi tin nhắn phản hồi của Admin
     function sendReply() {
         const input = document.getElementById('adminChatInput');
         const content = input.value.trim();
