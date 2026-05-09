@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'war'
+    id "org.hidetake.ssh" version "2.11.2"
 }
 
 group = 'vn.edu.hcmuaf.fit'
@@ -69,12 +70,63 @@ test {
 war {
     webAppDirName = 'src/main/webapp'
     archiveFileName = "${rootProject.name}-${version}.war"
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE  // thêm dòng này
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from('src/main/resources') {
         into('WEB-INF/classes')
     }
 }
 processResources {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE  // thêm dòng này
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from('src/main/resources')
+}
+apply plugin: 'org.hidetake.ssh'
+
+remotes {
+    host {
+        host = '192.168.206.129'
+        user = 'phuoc'
+        password = 'phuoc123'
+    }
+}
+
+ssh.settings {
+    knownHosts = allowAnyHosts
+}
+
+task docker_app_start {
+    doLast {
+        println 'begin docker_app_start'
+        ssh.run {
+            session(remotes.host) {
+                execute 'docker stop tomcat9', ignoreError: true
+                execute 'docker run -it --rm -d ' +
+                        '--name tomcat9 ' +
+                        '-v /usr/deploy:/usr/local/tomcat/webapps ' +
+                        '-p 80:8080 ' +
+                        'tomcat:10-jdk21&'
+            }
+        }
+    }
+}
+
+task docker_upload_file_to_server {
+    doLast {
+        println 'begin docker_upload_file_to_server'
+        ssh.run {
+            session(remotes.host) {
+                execute 'mkdir -p /usr/deploy', ignoreError: true
+                remove '/usr/deploy/ROOT.war'
+                remove '/usr/deploy/ROOT'
+                put from: "${project.projectDir}/build/libs/${rootProject.name}-${version}.war",
+                        into: "/usr/deploy/ROOT.war"
+            }
+        }
+    }
+}
+
+task docker_deploy {
+    docker_deploy.dependsOn docker_app_start
+    docker_deploy.dependsOn docker_upload_file_to_server
+    docker_deploy.dependsOn build
+    tasks.getByName('docker_app_start').mustRunAfter docker_upload_file_to_server
 }
