@@ -21,6 +21,13 @@ public class AdminAuthFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        String requestURI = httpRequest.getRequestURI();
+        if (requestURI.contains("/ghn-webhook")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpSession session = httpRequest.getSession(false);
 
         User user = (session != null) ? (User) session.getAttribute("user") : null;
