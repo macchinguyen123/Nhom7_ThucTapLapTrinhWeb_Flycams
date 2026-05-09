@@ -12,8 +12,9 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="${pageContext.request.contextPath}/js/admin/inventory-manage.js?v=<%= System.currentTimeMillis() %>" defer></script>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/admin/product-manage.css">
     <style>
         .modal {
@@ -156,114 +157,25 @@
             </select>
             <label class="ms-2">sản phẩm</label>
         </div>
-        <table id="tableTonKho" class="table table-striped table-bordered">
+        <div id="loadingSpinner" class="text-center my-3" style="display: none;">
+            <div class="spinner-border text-primary" role="status"></div>
+            <span class="ms-2">Đang tải dữ liệu kho hàng...</span>
+        </div>
+        <table id="inventoryTable" class="table table-striped table-bordered">
             <thead class="table-primary">
             <tr>
+                <th>STT</th>
                 <th>Mã SP</th>
-                <th>Tên SP</th>
                 <th>Ảnh</th>
-                <th>Danh Mục</th>
-                <th>Số Lượng Tồn</th>
+                <th>Tên SP</th>
+                <th>Tổng Nhập</th>
+                <th>Tổng Xuất</th>
+                <th>Tồn Kho</th>
                 <th>Trạng Thái</th>
                 <th>Thao Tác</th>
             </tr>
             </thead>
-            <tbody>
-            <c:choose>
-                <c:when test="${not empty products}">
-                    <c:forEach var="p" items="${products}">
-                        <tr class="${p.quantity <= 0 ? 'out-of-stock' : (p.quantity <= 10 ? 'low-stock' : '')}">
-                            <td>${p.id}</td>
-                            <td>${p.productName}</td>
-                            <td>
-                                <img src="${p.mainImage}" class="img-thumbnail"
-                                     style="width:60px;height:60px;object-fit:cover;" alt="${p.productName}">
-                            </td>
-                            <td>${p.categoryName}</td>
-                            <td class="fw-bold text-center ${p.quantity <= 0 ? 'text-danger' : (p.quantity <= 10 ? 'text-warning' : 'text-success')}">
-                                    ${p.quantity}
-                            </td>
-                            <td>
-                                <c:choose>
-                                    <c:when test="${p.quantity > 10}">
-                                        <span class="badge bg-success">Còn hàng</span>
-                                    </c:when>
-                                    <c:when test="${p.quantity > 0 && p.quantity <= 10}">
-                                        <span class="badge bg-warning text-dark">Sắp hết</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="badge bg-danger">Hết hàng</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td style="text-align:center;">
-                                <button class="btn btn-primary btn-sm btn-import"
-                                        data-id="${p.id}"
-                                        data-name="${p.productName}"
-                                        data-img="${p.mainImage}">
-                                    <i class="bi bi-box-arrow-in-down"></i> Nhập kho
-                                </button>
-                                <a href="${pageContext.request.contextPath}/admin/inventory-detail?id=${p.id}" class="btn btn-info btn-sm text-white">
-                                    <i class="bi bi-bar-chart-fill"></i> Thống kê
-                                </a>
-                            </td>
-                        </tr>
-                    </c:forEach>
-                </c:when>
-                <c:otherwise>
-                    <tr>
-                        <td>1</td>
-                        <td>Flycam DJI Mini 3 Pro</td>
-                        <td>
-                            <img src="https://example.com/dji.jpg" class="img-thumbnail"
-                                 style="width:60px;height:60px;object-fit:cover;" alt="Flycam DJI Mini 3 Pro" onerror="this.src='${pageContext.request.contextPath}/image/default.jpg'">
-                        </td>
-                        <td>Drone mini</td>
-                        <td class="fw-bold text-center text-success">45</td>
-                        <td><span class="badge bg-success">Còn hàng</span></td>
-                        <td style="text-align:center;">
-                            <button class="btn btn-primary btn-sm btn-import" data-id="1" data-name="Flycam DJI Mini 3 Pro" data-img="https://example.com/dji.jpg">
-                                <i class="bi bi-box-arrow-in-down"></i> Nhập kho
-                            </button>
-                            <a href="${pageContext.request.contextPath}/admin/inventory-detail?id=1" class="btn btn-info btn-sm text-white"><i class="bi bi-bar-chart-fill"></i> Thống kê</a>
-                        </td>
-                    </tr>
-                    <tr class="low-stock">
-                        <td>2</td>
-                        <td>Flycam Autel Evo Lite+</td>
-                        <td>
-                            <img src="https://example.com/autel.jpg" class="img-thumbnail"
-                                 style="width:60px;height:60px;object-fit:cover;" alt="Flycam Autel Evo Lite+" onerror="this.src='${pageContext.request.contextPath}/image/default.jpg'">
-                        </td>
-                        <td>Drone quay phim chuyên nghiệp</td>
-                        <td class="fw-bold text-center text-warning">5</td>
-                        <td><span class="badge bg-warning text-dark">Sắp hết</span></td>
-                        <td style="text-align:center;">
-                            <button class="btn btn-primary btn-sm btn-import" data-id="2" data-name="Flycam Autel Evo Lite+" data-img="https://example.com/autel.jpg">
-                                <i class="bi bi-box-arrow-in-down"></i> Nhập kho
-                            </button>
-                            <a href="${pageContext.request.contextPath}/admin/inventory-detail?id=2" class="btn btn-info btn-sm text-white"><i class="bi bi-bar-chart-fill"></i> Thống kê</a>
-                        </td>
-                    </tr>
-                    <tr class="out-of-stock">
-                        <td>3</td>
-                        <td>Flycam Xiaomi Fimi X8 SE</td>
-                        <td>
-                            <img src="https://example.com/xiaomi.jpg" class="img-thumbnail"
-                                 style="width:60px;height:60px;object-fit:cover;" alt="Flycam Xiaomi Fimi X8 SE" onerror="this.src='${pageContext.request.contextPath}/image/default.jpg'">
-                        </td>
-                        <td>Drone du lịch / vlog</td>
-                        <td class="fw-bold text-center text-danger">0</td>
-                        <td><span class="badge bg-danger">Hết hàng</span></td>
-                        <td style="text-align:center;">
-                            <button class="btn btn-primary btn-sm btn-import" data-id="3" data-name="Flycam Xiaomi Fimi X8 SE" data-img="https://example.com/xiaomi.jpg">
-                                <i class="bi bi-box-arrow-in-down"></i> Nhập kho
-                            </button>
-                            <a href="${pageContext.request.contextPath}/admin/inventory-detail?id=3" class="btn btn-info btn-sm text-white"><i class="bi bi-bar-chart-fill"></i> Thống kê</a>
-                        </td>
-                    </tr>
-                </c:otherwise>
-            </c:choose>
+            <tbody id="tableBody">
             </tbody>
         </table>
         <div class="d-flex justify-content-end align-items-center mt-3">
@@ -286,7 +198,7 @@
             <div class="modal-body">
                 <div class="row mb-3 align-items-center">
                     <div class="col-md-3 text-center">
-                        <img id="importProductImg" src="" class="img-fluid rounded border" alt="Product Image" style="max-height: 150px; display: none;" onerror="this.src='${pageContext.request.contextPath}/image/default.jpg'">
+                        <img id="importProductImg" src="" class="img-fluid rounded border" alt="Product Image" style="max-height: 150px; display: none;" onerror="this.style.display='none'; document.getElementById('importProductImgPlaceholder').style.display='flex';">
                         <div id="importProductImgPlaceholder" style="width: 100%; height: 120px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc; border-radius: 8px;">
                             <i class="bi bi-image text-muted fs-1"></i>
                         </div>
@@ -375,10 +287,7 @@
                     <div class="col-lg-8">
                         <div class="card shadow-sm mb-4">
                             <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                                <h5 class="card-title fw-bold mb-0"><i class="bi bi-list-check"></i> Danh Sách Sản Phẩm Nhập</h5>
-                                <button type="button" class="btn btn-success btn-sm" id="btnAddRow">
-                                    <i class="bi bi-plus-circle"></i> Thêm dòng
-                                </button>
+                                <h5 class="card-title fw-bold mb-0"><i class="bi bi-list-check"></i> Chọn Sản Phẩm Nhập</h5>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
@@ -390,7 +299,6 @@
                                                 <th style="width: 15%">Số lượng</th>
                                                 <th style="width: 20%">Đơn giá nhập (VNĐ)</th>
                                                 <th style="width: 20%">Thành tiền (VNĐ)</th>
-                                                <th style="width: 5%"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -411,16 +319,12 @@
                                                     <input type="number" class="form-control price-input" min="0" step="1000" placeholder="0" required>
                                                 </td>
                                                 <td class="align-middle fw-bold text-primary total-cell">0</td>
-                                                <td class="align-middle text-center">
-                                                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row"><i class="bi bi-trash"></i></button>
-                                                </td>
                                             </tr>
                                         </tbody>
                                         <tfoot class="table-light">
                                             <tr>
                                                 <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
                                                 <td class="fw-bold text-success fs-5" id="grandTotal">0</td>
-                                                <td></td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -440,45 +344,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const contextPath = '${pageContext.request.contextPath}';
-    var table = $('#tableTonKho').DataTable({
-        "paging": true,
-        "lengthChange": false,
-        "pageLength": 10,
-        "ordering": true,
-        "searching": true,
-        "info": false,
-        "dom": 't',
-        "columnDefs": [
-            {"orderable": false, "targets": [2, 6]}
-        ],
-        "language": {
-            "zeroRecords": "Không tìm thấy dữ liệu"
-        }
-    });
-    $('#searchInput').on('keyup', function () {
-        table.search(this.value).draw();
-    });
-    $('#rowsPerPage').on('change', function () {
-        table.page.len(parseInt($(this).val())).draw();
-        updatePageInfo();
-    });
-    $("#logoutBtn").on("click", function () {
-        $("#logoutModal").css("display", "flex");
-    });
-    $("#cancelLogout").on("click", function () {
-        $("#logoutModal").hide();
-    });
-    $('#prevPage').on('click', function () {
-        table.page('previous').draw('page');
-        updatePageInfo();
-    });
-    $('#nextPage').on('click', function () {
-        table.page('next').draw('page');
-        updatePageInfo();
-    });
     function updatePageInfo() {
-        var info = table.page.info();
-        $('#pageInfo').text((info.page + 1) + ' / ' + info.pages);
     }
     updatePageInfo();
     $(document).on('click', '.btn-import', function () {
@@ -499,56 +365,7 @@
         const modalNhapKho = new bootstrap.Modal(document.getElementById('modalNhapKho'));
         modalNhapKho.show();
     });
-    $('#btnSaveImport').on('click', function () {
-        const productId = $('#importProductId').val();
-        const quantity = parseInt($('#importQuantity').val());
-        const importPrice = parseFloat($('#importPrice').val());
-        const note = $('#importNote').val().trim();
-        if (isNaN(quantity) || quantity <= 0) {
-            Swal.fire('Lỗi!', 'Vui lòng nhập số lượng lớn hơn 0', 'warning');
-            return;
-        }
-        if (isNaN(importPrice) || importPrice < 0) {
-            Swal.fire('Lỗi!', 'Vui lòng nhập giá nhập hợp lệ (>= 0)', 'warning');
-            return;
-        }
-        const data = {
-            productId: productId,
-            quantity: quantity,
-            importPrice: importPrice,
-            note: note
-        };
-        Swal.fire({
-            title: 'Đang xử lý...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        $.ajax({
-            url: contextPath + '/admin/inventory-import-submit',
-            type: 'POST',
-            data: data,
-            success: function(response) {
-                if (response.status === 'success') {
-                    Swal.fire({
-                        title: 'Thành công!',
-                        text: 'Đã nhập kho thành công.',
-                        icon: 'success',
-                        confirmButtonColor: '#0d6efd'
-                    }).then(() => {
-                        $('#modalNhapKho').modal('hide');
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire('Lỗi!', response.message || 'Lỗi khi nhập kho', 'error');
-                }
-            },
-            error: function() {
-                Swal.fire('Lỗi!', 'Lỗi hệ thống khi gửi yêu cầu', 'error');
-            }
-        });
-    });
+    // Removed btnSaveImport since it is handled by inventory-manage.js
     document.querySelectorAll('.has-submenu .menu-item').forEach(item => {
         item.addEventListener('click', function (e) {
             e.preventDefault();
@@ -578,36 +395,46 @@
         const importDateEl = document.getElementById('importDate');
         if(importDateEl) importDateEl.value = now.toISOString().slice(0, 16);
         updateRowNumbers();
-        const btnAddRow = document.getElementById('btnAddRow');
-        if(btnAddRow) {
-            btnAddRow.addEventListener('click', function() {
-                const tbody = document.querySelector('#importTable tbody');
-                const newRow = document.createElement('tr');
-                newRow.className = 'product-row';
-                const selectHtml = document.querySelector('.product-select').innerHTML;
-                newRow.innerHTML = `
-                    <td class="align-middle text-center row-stt"></td>
-                    <td>
-                        <select class="form-select product-select" required>
-                            ${selectHtml}
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control quantity-input" min="1" value="1" required>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control price-input" min="0" step="1000" placeholder="0" required>
-                    </td>
-                    <td class="align-middle fw-bold text-primary total-cell">0</td>
-                    <td class="align-middle text-center">
-                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row"><i class="bi bi-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(newRow);
-                updateRowNumbers();
-                attachRowEvents(newRow);
+        fetch(contextPath + '/admin/api/inventory-manage?page=1&limit=1000', {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("HTTP " + response.status);
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json();
+                } else {
+                    throw new Error("API bị chặn, yêu cầu đăng nhập Admin!");
+                }
+            })
+            .then(result => {
+                if (result.status === 'success' && result.data && result.data.length > 0) {
+                    let html = '<option value="" disabled selected>-- Chọn sản phẩm --</option>';
+                    result.data.forEach(p => {
+                        html += '<option value="' + p.id + '">#' + p.id + ' - ' + p.productName + '</option>';
+                    });
+                    document.querySelectorAll('.product-select').forEach(sel => {
+                        sel.innerHTML = html;
+                    });
+                } else if (result.status === 'success' && (!result.data || result.data.length === 0)) {
+                    document.querySelectorAll('.product-select').forEach(sel => {
+                        sel.innerHTML = '<option disabled selected>-- Trống (Chưa có SP) --</option>';
+                    });
+                } else {
+                    document.querySelectorAll('.product-select').forEach(sel => {
+                        sel.innerHTML = '<option disabled selected>-- Lỗi API: ' + result.message + ' --</option>';
+                    });
+                }
+            })
+            .catch(error => {
+                document.querySelectorAll('.product-select').forEach(sel => {
+                    sel.innerHTML = '<option disabled selected>-- Lỗi tải: ' + error.message + ' --</option>';
+                });
             });
-        }
         document.querySelectorAll('.product-row').forEach(row => {
             attachRowEvents(row);
         });
@@ -649,14 +476,15 @@
                     const quantity = row.querySelector('.quantity-input').value;
                     const importPrice = row.querySelector('.price-input').value;
                     requests.push($.ajax({
-                        url: contextPath + '/admin/inventory-import-submit',
+                        url: contextPath + '/admin/api/inventory-import',
                         type: 'POST',
-                        data: {
-                            productId: productId,
-                            quantity: quantity,
-                            importPrice: importPrice,
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            productId: parseInt(productId),
+                            quantity: parseInt(quantity),
+                            importPrice: parseFloat(importPrice),
                             note: noteMulti
-                        }
+                        })
                     }));
                 });
                 Promise.all(requests).then(() => {
@@ -678,14 +506,8 @@
     function attachRowEvents(row) {
         const qtyInput = row.querySelector('.quantity-input');
         const priceInput = row.querySelector('.price-input');
-        const removeBtn = row.querySelector('.btn-remove-row');
         qtyInput.addEventListener('input', calculateTotal);
         priceInput.addEventListener('input', calculateTotal);
-        removeBtn.addEventListener('click', function() {
-            row.remove();
-            updateRowNumbers();
-            calculateGrandTotal();
-        });
     }
     function calculateTotal(e) {
         const row = e.target.closest('.product-row');
