@@ -47,26 +47,6 @@
     </div>
 </header>
 <div class="layout">
-    <aside class="sidebar">
-        <div class="user-info">
-            <img src="${pageContext.request.contextPath}/image/logoTCN.png" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
-            <h3>${sessionScope.user.fullName != null ? sessionScope.user.fullName : 'Admin'}</h3>
-        </div>
-        <ul class="menu">
-            <a href="${pageContext.request.contextPath}/admin/dashboard">
-                <li><i class="bi bi-speedometer2"></i> Tổng Quan</li>
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/product-management">
-                <li><i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm</li>
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/inventory-manage">
-                <li class="active"><i class="bi bi-boxes"></i> Quản Lý Kho Hàng</li>
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/category-manage">
-                <li><i class="bi bi-tags"></i> Quản Lý Danh Mục</li>
-            </a>
-        </ul>
-    </aside>
     <main class="main-content container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -178,39 +158,31 @@
                     </div>
                     <div class="card-body p-0">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                                <div>
-                                    <div class="fw-semibold text-success"><i class="bi bi-arrow-down-left"></i> Nhập hàng</div>
-                                    <small class="text-muted">20/04/2026 - Admin</small>
-                                </div>
-                                <span class="badge bg-success rounded-pill">+20</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                                <div>
-                                    <div class="fw-semibold text-danger"><i class="bi bi-arrow-up-right"></i> Bán ra (ĐH #1024)</div>
-                                    <small class="text-muted">18/04/2026 - Khách: Nguyễn Văn A</small>
-                                </div>
-                                <span class="badge bg-danger rounded-pill">-1</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                                <div>
-                                    <div class="fw-semibold text-danger"><i class="bi bi-arrow-up-right"></i> Bán ra (ĐH #1021)</div>
-                                    <small class="text-muted">15/04/2026 - Khách: Trần Thị B</small>
-                                </div>
-                                <span class="badge bg-danger rounded-pill">-2</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                                <div>
-                                    <div class="fw-semibold text-success"><i class="bi bi-arrow-down-left"></i> Nhập hàng</div>
-                                    <small class="text-muted">01/03/2026 - Admin</small>
-                                </div>
-                                <span class="badge bg-success rounded-pill">+50</span>
-                            </li>
+                            <c:if test="${empty importHistory and empty exportHistory}">
+                                <li class="list-group-item text-center text-muted py-4">Chưa có giao dịch nào.</li>
+                            </c:if>
+                            <c:forEach var="item" items="${importHistory}">
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <div class="fw-semibold text-success"><i class="bi bi-arrow-down-left"></i> Nhập kho</div>
+                                        <small class="text-muted"><fmt:formatDate value="${item.created_at}" pattern="dd/MM/yyyy HH:mm"/> - ${item.created_by}</small>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill">+${item.quantity}</span>
+                                </li>
+                            </c:forEach>
+                            <c:forEach var="item" items="${exportHistory}">
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <div class="fw-semibold text-danger"><i class="bi bi-arrow-up-right"></i> Xuất kho (Bán ra)</div>
+                                        <small class="text-muted"><fmt:formatDate value="${item.created_at}" pattern="dd/MM/yyyy HH:mm"/></small>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill">-${item.quantity}</span>
+                                </li>
+                            </c:forEach>
                         </ul>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <a href="#" class="text-decoration-none small">Xem tất cả <i class="bi bi-chevron-right"></i></a>
-                    </div>
+                        <div class="card-footer bg-white text-center">
+                            <a href="#" class="text-decoration-none small">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+                        </div>
                 </div>
             </div>
         </div>
@@ -218,39 +190,70 @@
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        const productId = '${product.id}';
         const ctx = document.getElementById('inventoryChart').getContext('2d');
-        const data = {
-            labels: ['Tháng 11', 'Tháng 12', 'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4'],
-            datasets: [
-                {label: 'Số lượng Nhập',data: [0, 50, 0, 30, 50, 20],backgroundColor: 'rgba(13, 110, 253, 0.2)',
-                    borderColor: 'rgba(13, 110, 253, 1)',borderWidth: 2,tension: 0.3,fill: true
-                },
-                {label: 'Số lượng Bán',data: [10, 25, 15, 20, 22, 13],backgroundColor: 'rgba(220, 53, 69, 0.2)',borderColor: 'rgba(220, 53, 69, 1)',borderWidth: 2,tension: 0.3,fill: true
+        fetch('${pageContext.request.contextPath}/admin/api/inventory-detail?productId=' + productId)
+            .then(res => res.json())
+            .then(result => {
+                if(result.status === 'success') {
+                    const data = result.data;
+                    const dates = [];
+                    const importDataArray = [];
+                    const exportDataArray = [];
+                    for (let i = 6; i >= 0; i--) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - i);
+                        const dateString = d.toISOString().split('T')[0]; // YYYY-MM-DD
+                        dates.push(dateString);
+                        importDataArray.push(0);
+                        exportDataArray.push(0);
+                    }
+                    if (data.importHistory) {
+                        data.importHistory.forEach(item => {
+                            if(!item.date) return;
+                            const dateStr = item.date.split(' ')[0];
+                            const index = dates.indexOf(dateStr);
+                            if (index !== -1) importDataArray[index] += item.quantity;
+                        });
+                    }
+                    if (data.exportHistory) {
+                        data.exportHistory.forEach(item => {
+                            if(!item.date) return;
+                            const dateStr = item.date.split(' ')[0];
+                            const index = dates.indexOf(dateStr);
+                            if (index !== -1) exportDataArray[index] += item.quantity;
+                        });
+                    }
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [
+                                {
+                                    label: 'Số lượng Nhập',
+                                    data: importDataArray,
+                                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                                    borderColor: '#28a745',
+                                    borderWidth: 2, tension: 0.3, fill: true
+                                },
+                                {
+                                    label: 'Số lượng Bán',
+                                    data: exportDataArray,
+                                    backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                                    borderColor: '#dc3545',
+                                    borderWidth: 2, tension: 0.3, fill: true
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+                            scales: { y: { beginAtZero: true, ticks: { stepSize: 5 } } },
+                            interaction: { mode: 'nearest', axis: 'x', intersect: false }
+                        }
+                    });
                 }
-            ]
-        };
-        const config = {
-            type: 'line',data: data,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',},
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,}},
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 10
-                        }}},
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                }}};
-        new Chart(ctx, config);
+            });
     });
 </script>
 </body>

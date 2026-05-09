@@ -116,6 +116,9 @@
             <a href="${pageContext.request.contextPath}/admin/product-management">
                 <li><i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm</li>
             </a>
+            <a href="${pageContext.request.contextPath}/admin/inventory-manage">
+                <li><i class="bi bi-boxes"></i> Quản Lý Kho Hàng</li>
+            </a>
             <a href="${pageContext.request.contextPath}/admin/category-manage">
                 <li><i class="bi bi-tags"></i> Quản Lý Danh Mục</li>
             </a>
