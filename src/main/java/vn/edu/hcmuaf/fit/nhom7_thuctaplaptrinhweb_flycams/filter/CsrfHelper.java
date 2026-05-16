@@ -23,8 +23,10 @@ public class CsrfHelper {
     };
 
     static boolean isBypassed(String path) {
+        String lowerPath = path.toLowerCase();
         for (String p : BYPASS_PATHS) {
-            if (path.equals(p) || path.startsWith(p + "/")) return true;
+            String lowerP = p.toLowerCase();
+            if (lowerPath.equals(lowerP) || lowerPath.startsWith(lowerP + "/")) return true;
         }
         return false;
     }

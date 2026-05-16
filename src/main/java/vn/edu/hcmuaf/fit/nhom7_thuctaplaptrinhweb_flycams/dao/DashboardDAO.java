@@ -538,4 +538,46 @@ public class DashboardDAO {
         }
         return result;
     }
+
+    public List<Map<String, Object>> getLowStockProducts() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sqlWithMinStock = """
+                    SELECT p.id, p.productName, p.quantity, p.min_stock, 
+                           (SELECT imageUrl FROM images WHERE product_id = p.id 
+                            ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) as imageUrl
+                    FROM products p
+                    WHERE p.quantity <= p.min_stock
+                    ORDER BY p.quantity ASC
+                """;
+        String sqlFallback = """
+                    SELECT p.id, p.productName, p.quantity, 10 as min_stock, 
+                           (SELECT imageUrl FROM images WHERE product_id = p.id 
+                            ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) as imageUrl
+                    FROM products p
+                    WHERE p.quantity <= 10
+                    ORDER BY p.quantity ASC
+                """;
+        try (Connection con = DBConnection.getConnection()) {
+            boolean hasMinStockColumn = false;
+            try (ResultSet rs = con.getMetaData().getColumns(null, null, "products", "min_stock")) {
+                if (rs.next()) hasMinStockColumn = true;
+            }
+            String sql = hasMinStockColumn ? sqlWithMinStock : sqlFallback;
+            try (PreparedStatement ps = con.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", rs.getInt("id"));
+                    map.put("productName", rs.getString("productName"));
+                    map.put("quantity", rs.getInt("quantity"));
+                    map.put("minStock", rs.getInt("min_stock"));
+                    map.put("imageUrl", rs.getString("imageUrl"));
+                    result.add(map);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

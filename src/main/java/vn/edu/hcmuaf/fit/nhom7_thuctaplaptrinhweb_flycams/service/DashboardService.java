@@ -107,4 +107,8 @@ public class DashboardService {
     public List<Map<String, Object>> getTopCustomersBySpending(String startDate, String endDate) {
         return dashboardDAO.getTopCustomersBySpending(startDate, endDate);
     }
+
+    public List<Map<String, Object>> getLowStockProducts() {
+        return dashboardDAO.getLowStockProducts();
+    }
 }

@@ -28,6 +28,7 @@
         <form id="paymentForm" action="${pageContext.request.contextPath}/PaymentServlet"
               method="post">
             <input type="hidden" name="paymentMethod" id="paymentMethod">
+            <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
             <div class="form-check mb-3">
                 <input class="form-check-input" type="radio" name="payment" value="COD" id="cod">
                 <label class="form-check-label" for="cod">

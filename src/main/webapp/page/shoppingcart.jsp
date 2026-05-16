@@ -112,6 +112,8 @@
 </div>
 <jsp:include page="/page/footer.jsp"/>
 <script>
+    const csrfToken = "${sessionScope.CSRF_TOKEN}";
+    const csrfHeader = "X-CSRF-Token";
     const chonTatCa = document.getElementById("chon_tat_ca");
     const nutXoaDaChon = document.querySelector(".nut_xoa_da_chon");
     const danhSach = document.getElementById("danh_sach_san_pham");
@@ -192,8 +194,11 @@
             // cập nhật lên server
             fetch("${pageContext.request.contextPath}/UpdateCartQuantity", {
                 method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                body: "productId=" + productId + "&quantity=" + soLuong
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    [csrfHeader]: csrfToken
+                },
+                body: "productId=" + productId + "&quantity=" + soLuong + "&_csrf=" + csrfToken
             }).then(res => {
                 if (res.ok) {
                     input.value = soLuong;
@@ -216,8 +221,11 @@
             const productId = sp.dataset.id;
             fetch("${pageContext.request.contextPath}/RemoveFromCart", {
                 method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                body: "productId=" + productId
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    [csrfHeader]: csrfToken
+                },
+                body: "productId=" + productId + "&_csrf=" + csrfToken
             })
                 .then(res => res.json())
                 .then(data => {
@@ -251,8 +259,11 @@
         const body = ids.map(id => "productIds[]=" + id).join("&");
         fetch("${pageContext.request.contextPath}/RemoveMultiFromCart", {
             method: "POST",
-            headers: {"Content-Type": "application/x-www-form-urlencoded"},
-            body: body
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                [csrfHeader]: csrfToken
+            },
+            body: body + "&_csrf=" + csrfToken
         })
             .then(res => res.json())
             .then(data => {
@@ -304,6 +315,11 @@
             form.appendChild(pid);
             form.appendChild(qty);
         });
+        const csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "_csrf";
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
         document.body.appendChild(form);
         form.submit();
     });

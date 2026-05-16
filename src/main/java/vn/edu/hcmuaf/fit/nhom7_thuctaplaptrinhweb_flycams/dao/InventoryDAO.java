@@ -137,12 +137,15 @@ public class InventoryDAO {
     }
     public List<Map<String, Object>> getInventoryList(int limit, int offset, String search) {
         List<Map<String, Object>> list = new java.util.ArrayList<>();
-        String sql = "SELECT p.id, p.productName as productName, c.categoryName as categoryName, i.imageUrl as imageUrl, " + "(SELECT COALESCE(SUM(quantity), 0) FROM inventory_import WHERE product_id = p.id) as totalImported, " +
-    "(SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN orders o ON oi.order_id = o.id WHERE oi.product_id = p.id AND o.status NOT IN ('Hủy', 'Yêu cầu trả hàng', 'Đã trả hàng')) as totalSold, " + "p.quantity as currentStock, p.status " +
-    "FROM products p " + "LEFT JOIN categories c ON p.category_id = c.id " +
-    "LEFT JOIN images i ON p.id = i.product_id AND i.imageType = 'Chính' " +
-    "WHERE p.productName LIKE ? OR CAST(p.id AS CHAR) LIKE ? " +
-    "ORDER BY p.id DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT p.id, p.productName as productName, c.categoryName as categoryName, " +
+                     "(SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) as imageUrl, " +
+                     "(SELECT COALESCE(SUM(quantity), 0) FROM inventory_import WHERE product_id = p.id) as totalImported, " + 
+                     "(SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN orders o ON oi.order_id = o.id WHERE oi.product_id = p.id AND o.status NOT IN ('Hủy', 'Yêu cầu trả hàng', 'Đã trả hàng')) as totalSold, " + 
+                     "p.quantity as currentStock, p.status " +
+                     "FROM products p " + 
+                     "LEFT JOIN categories c ON p.category_id = c.id " +
+                     "WHERE p.productName LIKE ? OR CAST(p.id AS CHAR) LIKE ? " +
+                     "ORDER BY p.id DESC LIMIT ? OFFSET ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String searchPattern = "%" + (search != null ? search : "") + "%";

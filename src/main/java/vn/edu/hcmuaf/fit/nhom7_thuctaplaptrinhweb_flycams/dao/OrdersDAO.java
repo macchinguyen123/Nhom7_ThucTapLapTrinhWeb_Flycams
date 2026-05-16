@@ -249,7 +249,7 @@ public class OrdersDAO {
                 item.setQuantity(rs.getInt("quantity"));
                 item.setPrice(rs.getDouble("price"));
 
-                Product product = new Product();
+                Product product = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
                 product.setId(rs.getInt("product_id"));
                 product.setProductName(rs.getString("productName"));
                 String imageUrl = rs.getString("imageUrl");
@@ -292,9 +292,8 @@ public class OrdersDAO {
         try (Connection con = DBConnection.getConnection();
              PreparedStatement psAlter = con.prepareStatement(alterSql)) {
             psAlter.executeUpdate();
-            System.out.println("Auto-patched orders status ENUM.");
         } catch (Exception e) {
-            System.out.println("Could not alter table (might already be altered or not enum): " + e.getMessage());
+            // Table might already be altered or not enum
         }
         String sql = """
                     UPDATE orders

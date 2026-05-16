@@ -6,6 +6,7 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ public class ProductDAO {
                         p.productName,
                         p.price,
                         p.finalPrice,
-                        i.imageUrl AS mainImage,
+                        (SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) AS mainImage,
                         COALESCE(AVG(r.rating), 0) AS avgRating,
                         COUNT(r.id) AS reviewCount
                     FROM products p
@@ -31,14 +32,11 @@ public class ProductDAO {
                             OR (pt.targetType = 'sản phẩm' AND p.id = pt.product_id)
                             OR (pt.targetType = 'danh mục' AND p.category_id = pt.category_id)
                         )
-                    LEFT JOIN images i
-                        ON p.id = i.product_id
-                        AND i.imageType = 'Chính'
                     LEFT JOIN reviews r
                         ON p.id = r.product_id
                     WHERE pt.promotion_id = ?
                     GROUP BY
-                        p.id, p.productName, p.price, p.finalPrice, i.imageUrl
+                        p.id, p.productName, p.price, p.finalPrice
                     ORDER BY p.productName ASC
                 """;
         try (Connection conn = DBConnection.getConnection();
@@ -70,12 +68,10 @@ public class ProductDAO {
         List<Product> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("""
                     SELECT p.*,
-                           i.imageUrl,
+                           (SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) AS imageUrl,
                            COALESCE(rv.avgRating, 0) AS avgRating,
                            COALESCE(rv.reviewCount, 0) AS reviewCount
                     FROM products p
-                    LEFT JOIN images i
-                      ON p.id = i.product_id AND i.imageType = 'Chính'
                     LEFT JOIN (
                         SELECT product_id,
                                AVG(rating) AS avgRating,
@@ -120,18 +116,22 @@ public class ProductDAO {
             }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product(
-                        rs.getInt("id"),
-                        rs.getInt("category_id"),
-                        rs.getString("brandName"),
-                        rs.getString("productName"),
-                        rs.getString("description"),
-                        rs.getString("parameter"),
-                        rs.getDouble("price"),
-                        rs.getDouble("finalPrice"),
-                        rs.getString("warranty"),
-                        rs.getInt("quantity"),
-                        rs.getString("status"));
+                Product p = new Product();
+                p.setId(rs.getInt("id"));
+                p.setCategoryId(rs.getInt("category_id"));
+                p.setBrandName(rs.getString("brandName"));
+                p.setProductName(rs.getString("productName"));
+                p.setDescription(rs.getString("description"));
+                p.setParameter(rs.getString("parameter"));
+                p.setPrice(rs.getDouble("price"));
+                p.setFinalPrice(rs.getDouble("finalPrice"));
+                p.setWarranty(rs.getString("warranty"));
+                p.setQuantity(rs.getInt("quantity"));
+                p.setStatus(rs.getString("status"));
+                try {
+                    p.setMinStock(rs.getInt("min_stock"));
+                } catch (SQLException ignored) {
+                }
                 p.setMainImage(rs.getString("imageUrl"));
                 p.setAvgRating(rs.getDouble("avgRating"));
                 p.setReviewCount(rs.getInt("reviewCount"));
@@ -158,12 +158,10 @@ public class ProductDAO {
                            p.price,
                            p.finalPrice,
                            p.brandName,
-                           i.imageUrl,
+                           (SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) AS imageUrl,
                            COALESCE(rv.avgRating, 0) AS avgRating,
                            COALESCE(rv.reviewCount, 0) AS reviewCount
                     FROM products p
-                    LEFT JOIN images i
-                        ON p.id = i.product_id AND i.imageType = 'Chính'
                     LEFT JOIN (
                         SELECT product_id,
                                AVG(rating) AS avgRating,
@@ -184,7 +182,7 @@ public class ProductDAO {
             sql.append(" AND p.finalPrice <= ?");
         }
         if (brands != null && !brands.isEmpty()) {
-            sql.append(" AND p.brand IN (");
+            sql.append(" AND p.brandName IN (");
             for (int i = 0; i < brands.size(); i++) {
                 sql.append("?");
                 if (i < brands.size() - 1)
@@ -244,18 +242,24 @@ public class ProductDAO {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Product p = new Product(
-                            rs.getInt("id"),
-                            rs.getInt("category_id"),
-                            rs.getString("brandName"),
-                            rs.getString("productName"),
-                            rs.getString("description"),
-                            rs.getString("parameter"),
-                            rs.getDouble("price"),
-                            rs.getDouble("finalPrice"),
-                            rs.getString("warranty"),
-                            rs.getInt("quantity"),
-                            rs.getString("status"));
+                    int minStock = 10;
+                    try {
+                        minStock = rs.getInt("min_stock");
+                    } catch (SQLException ignored) {
+                    }
+                    Product p = new Product();
+                    p.setId(rs.getInt("id"));
+                    p.setCategoryId(rs.getInt("category_id"));
+                    p.setBrandName(rs.getString("brandName"));
+                    p.setProductName(rs.getString("productName"));
+                    p.setDescription(rs.getString("description"));
+                    p.setParameter(rs.getString("parameter"));
+                    p.setPrice(rs.getDouble("price"));
+                    p.setFinalPrice(rs.getDouble("finalPrice"));
+                    p.setWarranty(rs.getString("warranty"));
+                    p.setQuantity(rs.getInt("quantity"));
+                    p.setStatus(rs.getString("status"));
+                    p.setMinStock(minStock);
                     p.setView(rs.getInt("view"));
                     p.setImages(imageDAO.getImagesByProduct(p.getId()));
                     return p;
@@ -297,10 +301,10 @@ public class ProductDAO {
     public List<Product> getRelatedProducts(int categoryId, int excludeProductId, int limit) {
         List<Product> list = new ArrayList<>();
         String sql = """
-                    SELECT p.*, i.imageUrl, COUNT(r.id) AS reviewCount,  IFNULL(AVG(r.rating), 0) AS avgRating
+                    SELECT p.*, 
+                           (SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) AS imageUrl,
+                           COUNT(r.id) AS reviewCount,  IFNULL(AVG(r.rating), 0) AS avgRating
                     FROM products p
-                    LEFT JOIN images i
-                      ON p.id = i.product_id AND i.imageType = 'Chính'
                     LEFT JOIN reviews r
                       ON p.id = r.product_id
                     WHERE p.category_id = ?
@@ -316,18 +320,22 @@ public class ProductDAO {
             ps.setInt(3, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product(
-                        rs.getInt("id"),
-                        rs.getInt("category_id"),
-                        rs.getString("brandName"),
-                        rs.getString("productName"),
-                        rs.getString("description"),
-                        rs.getString("parameter"),
-                        rs.getDouble("price"),
-                        rs.getDouble("finalPrice"),
-                        rs.getString("warranty"),
-                        rs.getInt("quantity"),
-                        rs.getString("status"));
+                Product p = new Product();
+                p.setId(rs.getInt("id"));
+                p.setCategoryId(rs.getInt("category_id"));
+                p.setBrandName(rs.getString("brandName"));
+                p.setProductName(rs.getString("productName"));
+                p.setDescription(rs.getString("description"));
+                p.setParameter(rs.getString("parameter"));
+                p.setPrice(rs.getDouble("price"));
+                p.setFinalPrice(rs.getDouble("finalPrice"));
+                p.setWarranty(rs.getString("warranty"));
+                p.setQuantity(rs.getInt("quantity"));
+                p.setStatus(rs.getString("status"));
+                try {
+                    p.setMinStock(rs.getInt("min_stock"));
+                } catch (SQLException ignored) {
+                }
                 String imageUrl = rs.getString("imageUrl");
                 p.setMainImage(imageUrl);
                 p.setAvgRating(rs.getDouble("avgRating"));
@@ -350,13 +358,11 @@ public class ProductDAO {
                            p.price,
                            p.finalPrice,
                            p.quantity,
+                           p.min_stock,
                            p.status,
-                           i.imageUrl AS mainImage
+                           (SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) AS mainImage
                     FROM products p
                     JOIN categories c ON p.category_id = c.id
-                    LEFT JOIN images i
-                        ON p.id = i.product_id
-                      AND i.imageType = 'Chính'
                 """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -370,6 +376,10 @@ public class ProductDAO {
                 p.setPrice(rs.getDouble("price"));
                 p.setFinalPrice(rs.getDouble("finalPrice"));
                 p.setQuantity(rs.getInt("quantity"));
+                try {
+                    p.setMinStock(rs.getInt("min_stock"));
+                } catch (SQLException ignored) {
+                }
                 p.setStatus(rs.getString("status"));
                 p.setMainImage(rs.getString("mainImage"));
                 list.add(p);

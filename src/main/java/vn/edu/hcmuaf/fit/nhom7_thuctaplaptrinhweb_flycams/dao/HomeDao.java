@@ -44,7 +44,7 @@ public class HomeDao {
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product();
+                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));
@@ -88,7 +88,7 @@ public class HomeDao {
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product();
+                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));
@@ -134,7 +134,7 @@ public class HomeDao {
             ps.setInt(2, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product();
+                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));
@@ -230,7 +230,7 @@ public class HomeDao {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                Product p = new Product();
+                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));

@@ -5,6 +5,8 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/header.css?v=3">
+<meta name="_csrf" content="${sessionScope.CSRF_TOKEN}">
+<meta name="_csrf_header" content="X-CSRF-Token">
 <c:set var="currentPage" value="${pageContext.request.requestURI}"/>
 <div class="header-bg">
     <div class="header-wrapper">
@@ -258,7 +260,6 @@
                     return res.json();
                 })
                 .then(function (data) {
-                    console.log('Received suggestions:', data);
                     displaySuggestions(data, keyword);
                 })
                 .catch(function (err) {
@@ -275,7 +276,6 @@
         const history = SearchHistory.get();
         const hasHistory = history.length > 0;
         const hasSuggestions = data && data.length > 0;
-        console.log('Display suggestions - hasHistory:', hasHistory, 'hasSuggestions:', hasSuggestions); // ✅ Debug
         if (!hasHistory && !hasSuggestions) {
             suggestList.innerHTML = '<div class="suggest-empty">Không tìm thấy kết quả</div>';
             suggestList.style.display = "block";
@@ -706,8 +706,11 @@
             scrollToBottomChat();
             fetch(contextPath + '/chat?action=send', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: new URLSearchParams({action: 'send', content: content})
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-Token': '${sessionScope.CSRF_TOKEN}'
+                },
+                body: new URLSearchParams({action: 'send', content: content, _csrf: '${sessionScope.CSRF_TOKEN}'})
             })
                 .then(res => res.json())
                 .then(data => {

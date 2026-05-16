@@ -101,6 +101,7 @@
                                 <textarea name="note" rows="5" class="form-control"
                                           placeholder="Nhập ghi chú của bạn..."></textarea>
             </div>
+            <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
             <button type="submit" class="btn btn-primary w-100 mt-3">Tiếp tục đến phương thức thanh
                 toán
             </button>

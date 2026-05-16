@@ -34,7 +34,6 @@ public class BlogReviewDAO extends DBConnection {
                 r.setBlogTitle(rs.getString("blog_title"));
                 list.add(r);
             }
-            System.out.println(">>> BlogReview loaded: " + list.size());
         } catch (Exception e) {
             e.printStackTrace();
         }

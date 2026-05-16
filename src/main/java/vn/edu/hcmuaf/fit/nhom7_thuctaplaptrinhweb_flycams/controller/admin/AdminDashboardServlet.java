@@ -32,6 +32,7 @@ public class AdminDashboardServlet extends HttpServlet {
         List<User> newUsers = dashboardService.getNewUsersLast7Days();
         request.setAttribute("newUsers", newUsers);
         request.setAttribute("recentOrders", dashboardService.getRecentOrders());
+        request.setAttribute("lowStockProducts", dashboardService.getLowStockProducts());
         Map<String, Double> revenue30Days = dashboardService.getRevenueLast30Days();
         request.setAttribute("revenueLabels", revenue30Days.keySet());
         request.setAttribute("revenueValues", revenue30Days.values());
