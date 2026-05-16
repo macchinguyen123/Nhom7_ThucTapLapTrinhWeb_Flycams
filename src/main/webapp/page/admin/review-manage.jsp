@@ -205,7 +205,235 @@
                     <th>Hành động</th>
                 </tr>
                 </thead>
+                <tbody>
+                <tr class="bad-review">
+                    <td>#RV102</td>
+                    <td class="fw-bold">Nguyễn Văn A</td>
+                    <td class="text-start">Flycam DJI Mini 3</td>
+                    <td class="text-start text-danger fw-semibold">Sản phẩm như rác rưởi, lừa đảo, thái độ phục vụ
+                        tồi!
+                    </td>
+                    <td>16/05/2026 08:30</td>
+                    <td><span class="badge bg-danger">Chờ xử lý</span></td>
+                    <td>
+                        <div class="d-flex gap-1 justify-content-center">
+                            <button class="btn btn-info btn-sm" title="Xem chi tiết"
+                                    onclick="viewReviewDetail('#RV102', 'Nguyễn Văn A', 'Sản phẩm như rác rưởi, lừa đảo, thái độ phục vụ tồi!', 'PENDING', '')">
+                                <i class="bi bi-eye text-white"></i>
+                            </button>
+                            <button class="btn btn-success btn-sm" title="Giữ nguyên (Không vi phạm)"
+                                    onclick="keepReview('#RV102')">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" title="Xóa bỏ (Vi phạm)"
+                                    onclick="deleteReview('#RV102')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#RV095</td>
+                    <td class="fw-bold">Trần Thị B</td>
+                    <td class="text-start">Mavic Air 2</td>
+                    <td class="text-start text-muted text-decoration-line-through">Shop bán hàng giả, cẩn thận mọi
+                        người.
+                    </td>
+                    <td>15/05/2026 14:20</td>
+                    <td><span class="badge bg-secondary">Đã xóa</span></td>
+                    <td>
+                        <div class="d-flex gap-1 justify-content-center">
+                            <button class="btn btn-info btn-sm" title="Xem chi tiết"
+                                    onclick="viewReviewDetail('#RV095', 'Trần Thị B', 'Shop bán hàng giả, cẩn thận mọi người.', 'DELETED', 'Admin (Hệ thống) đã xóa lúc 15/05/2026 15:00 - Lý do: Vu khống không có bằng chứng.')">
+                                <i class="bi bi-eye text-white"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
             </table>
+            <div class="d-flex justify-content-end align-items-center mt-3">
+                <button id="prevPage" class="btn btn-outline-primary btn-sm">Trước</button>
+                <span id="pageInfo" class="mx-2">Trang 1 / 1</span>
+                <button id="nextPage" class="btn btn-outline-primary btn-sm">Sau</button>
+            </div>
+        </div>
+        <div class="modal fade" id="reviewDetailModal" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title"><i class="bi bi-card-text"></i> Hồ Sơ Đánh Giá/Tin Nhắn Xấu</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted">Mã Phiếu</p>
+                                <h6 class="fw-bold fs-5" id="detail-id"></h6>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <p class="mb-1 text-muted">Trạng Thái</p>
+                                <h6 id="detail-status"></h6>
+                            </div>
+                        </div>
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white bg-opacity-10 text-danger fw-bold border-danger">
+                                Thông tin người gửi: <span id="detail-customer" class="fw-normal"></span>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1 fw-bold">Nội dung bị báo cáo/cảnh báo:</p>
+                                <div class="p-3 bg-light rounded text-danger fst-italic border" id="detail-content"
+                                     style="white-space: pre-wrap; font-size: 1.1rem;"></div>
+                            </div>
+                        </div>
+                        <div class="action-history-box" id="history-box" style="display: none;">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-clock-history"></i> Lịch sử quản trị
+                            </h6>
+                            <p id="detail-history" class="mb-0 text-dark"></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light" id="modal-actions"></div>
+                </div>
+            </div>
         </div>
     </main>
 </div>
+<script>
+    let reviewTable;
+    $(document).ready(function () {
+        reviewTable = $('#tableReviews').DataTable({
+            pageLength: 10,
+            ordering: false,
+            language: {
+                zeroRecords: "Không có dữ liệu đánh giá nào",
+                infoEmpty: "Không tìm thấy kết quả"
+            }
+        });
+        $('#searchInput').on('keyup', function () {
+            reviewTable.search(this.value).draw();
+        });
+        $('#statusFilter').on('change', function () {
+            reviewTable.column(5).search(this.value).draw();
+        });
+        $('#rowsPerPage').change(function () {
+            reviewTable.page.len($(this).val()).draw();
+        });
+        $('#prevPage').click(() => reviewTable.page('previous').draw('page'));
+        $('#nextPage').click(() => reviewTable.page('next').draw('page'));
+        $('#logoutBtn').click(function () {
+            $('#logoutModal').addClass('show');
+        });
+        $('#cancelLogout').click(function () {
+            $('#logoutModal').removeClass('show');
+        });
+        $('.has-submenu .menu-item').click(function () {
+            $(this).parent().toggleClass('active');
+        });
+        setInterval(checkNewBadReviews, 60000);
+    });
+
+    function viewReviewDetail(id, customer, content, status, history) {
+        $('#detail-id').text(id);
+        $('#detail-customer').text(customer);
+        $('#detail-content').text(content);
+        let statusHtml = '';
+        if (status === 'PENDING') statusHtml = '<span class="badge bg-danger fs-6">Chờ xử lý</span>';
+        else if (status === 'KEPT') statusHtml = '<span class="badge bg-success fs-6">Đã duyệt hiển thị</span>';
+        else statusHtml = '<span class="badge bg-secondary fs-6">Đã gỡ bỏ vĩnh viễn</span>';
+        $('#detail-status').html(statusHtml);
+        if (history && history.trim() !== '') {
+            $('#history-box').fadeIn();
+            $('#detail-history').html(history);
+        } else {
+            $('#history-box').hide();
+        }
+        let footerHtml = '<button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Đóng</button>';
+        if (status === 'PENDING') {
+            footerHtml = `
+                <button class="btn btn-outline-secondary me-auto" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-success px-4 shadow-sm" onclick="keepReview('\${id}')">
+                    <i class="bi bi-check-circle"></i> Bỏ qua cảnh báo (Giữ nguyên)
+                </button>
+                <button class="btn btn-danger px-4 shadow-sm" onclick="deleteReview('\${id}')">
+                    <i class="bi bi-trash"></i> Xóa bỏ hoàn toàn
+                </button>
+            `;
+        }
+        $('#modal-actions').html(footerHtml);
+
+        let modal = new bootstrap.Modal(document.getElementById('reviewDetailModal'));
+        modal.show();
+    }
+
+    function keepReview(id) {
+        Swal.fire({
+            title: 'Bỏ qua cảnh báo?',
+            text: "Đánh giá này không vi phạm và sẽ được giữ lại trên hệ thống hiển thị bình thường.",
+            icon: 'info',
+            input: 'text',
+            inputPlaceholder: 'Ghi chú thêm (không bắt buộc)...',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xác nhận giữ lại',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire('Thành công!', 'Hệ thống đã ghi nhận lịch sử xử lý (Giữ lại).', 'success')
+                    .then(() => location.reload());
+            }
+        });
+    }
+
+    function deleteReview(id) {
+        Swal.fire({
+            title: 'Chắc chắn xóa vi phạm?',
+            text: "Nội dung này vi phạm tiêu chuẩn và sẽ bị gỡ khỏi trang người dùng ngay lập tức!",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Nhập lý do xóa (Vd: Dùng từ ngữ thô tục, spam...)',
+            inputValidator: (value) => {
+                if (!value) return 'Bạn cần nhập lý do để lưu lịch sử hệ thống!'
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xóa ngay lập tức',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire('Đã xóa!', 'Nội dung đã bị xóa và lịch sử được ghi nhận.', 'success')
+                    .then(() => location.reload());
+            }
+        });
+    }
+
+    function showNewBadReviews() {
+        let count = $('#badReviewCount').text().trim();
+        if (count > 0) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'warning',
+                title: 'Có ' + count + ' đánh giá/tin nhắn tiêu cực mới cần xử lý!',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+            });
+        } else {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Hệ thống sạch, không có nội dung xấu!',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        }
+    }
+
+    function checkNewBadReviews() {
+    }
+</script>
+</body>
+</html>
