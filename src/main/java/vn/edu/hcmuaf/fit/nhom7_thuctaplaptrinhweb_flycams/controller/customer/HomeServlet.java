@@ -27,28 +27,49 @@ public class HomeServlet extends HttpServlet {
             CategoryService categoryService = new CategoryService();
             List<Banner> activeBanners = bannerService.getActiveBanners();
             request.setAttribute("banners", activeBanners);
-            // Lấy 5 sản phẩm bán chạy
             List<Product> bestSellerProducts = productService.getBestSellerProducts(5);
-            // 10 sản phẩm nổi bật theo lượt xem
-            List<Product> topReviewedProducts = productService.getTopViewedProducts(10);
+            if (bestSellerProducts.isEmpty()) {
+                bestSellerProducts = productService.getTopViewedProducts(5);
+            }
+            if (bestSellerProducts.isEmpty()) {
+                bestSellerProducts = productService.getRandomProducts(5);
+            }
             request.setAttribute("bestSellerProducts", bestSellerProducts);
-            request.setAttribute("formatter", new PriceFormatter());
-            request.setAttribute("topReviewedProducts", topReviewedProducts);
-            List<Product> quayPhim = productService.getProductsByCategory(1001, 8);
-            List<Product> mini = productService.getProductsByCategory(1004, 8);
-            // Lấy 8 bài viết mới nhất
+            List<Product> topViewedProducts = productService.getTopViewedProducts(10);
+            if (topViewedProducts.isEmpty()) {
+                topViewedProducts = productService.getRandomProducts(10);
+            }
+            request.setAttribute("topReviewedProducts", topViewedProducts);
+            List<Product> recommendedProducts = productService.getRecommendedProducts(10);
+            request.setAttribute("recommendedProducts", recommendedProducts);
+            List<Categories> categories = categoryService.getCategoriesForHeader();
+            request.setAttribute("headerCategories", categories);
+            int catCount = 0;
+            for (Categories cat : categories) {
+                List<Product> prods = productService.getProductsByCategory(cat.getId(), 8);
+                if (!prods.isEmpty()) {
+                    catCount++;
+                    if (catCount == 1) {
+                        request.setAttribute("cat1Name", cat.getCategoryName());
+                        request.setAttribute("cat1Id", cat.getId());
+                        request.setAttribute("quayPhim", prods);
+                    } else if (catCount == 2) {
+                        request.setAttribute("cat2Name", cat.getCategoryName());
+                        request.setAttribute("cat2Id", cat.getId());
+                        request.setAttribute("mini", prods);
+                        break;
+                    }
+                }
+            }
             List<Post> latestPosts = articleService.getLatestPosts(8);
+            request.setAttribute("latestPosts", latestPosts);
+            request.setAttribute("formatter", new PriceFormatter());
             HttpSession session = request.getSession(false);
             User user = session != null ? (User) session.getAttribute("user") : null;
             if (user != null) {
                 List<Integer> wishlistProductIds = wishlistService.getWishlistProductIds(user.getId());
                 request.setAttribute("wishlistProductIds", wishlistProductIds);
             }
-            List<Categories> headerCategories = categoryService.getCategoriesForHeader();
-            request.setAttribute("headerCategories", headerCategories);
-            request.setAttribute("latestPosts", latestPosts);
-            request.setAttribute("quayPhim", quayPhim);
-            request.setAttribute("mini", mini);
         } catch (Throwable t) {
             t.printStackTrace();
             request.setAttribute("error_trace", t.toString());
