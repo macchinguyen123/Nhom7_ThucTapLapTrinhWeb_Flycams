@@ -12,7 +12,7 @@ import java.io.IOException;
 @WebFilter(filterName = "UserAuthFilter", urlPatterns = {
     "/purchasehistory", "/personal", "/list-address", "/add-address", 
     "/edit-address", "/delete-address", "/update-profile", "/update-avatar", 
-    "/wishlist", "/Checkout", "/buy-now", "/buy-now-from-cart",
+    "/wishlist", "/CheckoutServlet", "/BuyNowServlet", "/BuyNowFromCart",
     "/change-password", "/check-current-password", "/submit-complaint", "/chat",
     "/ProfileServlet", "/UpdateProfileServlet", "/UpdateAvatar", "/rebuy", "/ReviewServlet"
 })

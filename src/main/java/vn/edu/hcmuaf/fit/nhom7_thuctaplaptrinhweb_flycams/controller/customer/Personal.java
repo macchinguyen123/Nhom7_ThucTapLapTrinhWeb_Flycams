@@ -115,7 +115,6 @@ public class Personal extends HttpServlet {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
                 boolean success = orderService.returnOrder(orderId, user.getId());
                 if (success) {
-                    System.out.println(" Order #" + orderId + " returned by user #" + user.getId());
                     response.sendRedirect(request.getContextPath() + "/personal?tab=orders&message=Y%C3%AAu%20c%E1%BA%A7u%20tr%E1%BA%A3%20h%C3%A0ng%20th%C3%A0nh%20c%C3%B4ng&status=success");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/personal?tab=orders&message=Kh%C3%B4ng%20th%E1%BB%83%20tr%E1%BA%A3%20h%C3%A0ng&status=error");
@@ -129,7 +128,6 @@ public class Personal extends HttpServlet {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
                 boolean success = orderService.undoReturnOrder(orderId, user.getId());
                 if (success) {
-                    System.out.println(" Return order #" + orderId + " undone by user #" + user.getId());
                     response.sendRedirect(request.getContextPath() + "/personal?tab=orders&message=Ho%C3%A0n%20t%C3%A1c%20tr%E1%BA%A3%20h%C3%A0ng%20th%C3%A0nh%20c%C3%B4ng&status=success");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/personal?tab=orders&message=Kh%C3%B4ng%20th%E1%BB%83%20ho%C3%A0n%20t%C3%A1c%20tr%E1%BA%A3%20h%C3%A0ng&status=error");

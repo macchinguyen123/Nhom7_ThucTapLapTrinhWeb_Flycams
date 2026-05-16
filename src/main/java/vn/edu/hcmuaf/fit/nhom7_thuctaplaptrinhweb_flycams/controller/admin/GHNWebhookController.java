@@ -45,7 +45,6 @@ public class GHNWebhookController extends HttpServlet {
             boolean updated = updateStatusFromGHN(ghnOrderCode, status);
 
             if (updated) {
-                System.out.println("Webhook: Cập nhật đơn " + ghnOrderCode + " thành " + status);
             }
 
             resp.setStatus(HttpServletResponse.SC_OK);

@@ -90,4 +90,39 @@ public class EmailSender {
             throw new RuntimeException("Lỗi gửi email đơn hàng", e);
         }
     }
+
+    public void sendLowStockAlert(vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Product p) {
+        Properties props = loadMailProperties();
+        String adminEmail = props.getProperty("mail.from");
+        String password = props.getProperty("mail.password");
+        
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(adminEmail, password);
+            }
+        });
+        
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(adminEmail));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(adminEmail));
+            message.setSubject("[CẢNH BÁO] Sản phẩm sắp hết hàng: " + p.getProductName());
+            
+            String htmlContent = "<h2>Cảnh báo hết hàng!</h2>" +
+                    "<p>Sản phẩm sau đây đã xuống dưới mức tồn kho tối thiểu:</p>" +
+                    "<ul>" +
+                    "<li><b>Mã sản phẩm:</b> #" + p.getId() + "</li>" +
+                    "<li><b>Tên sản phẩm:</b> " + p.getProductName() + "</li>" +
+                    "<li><b>Số lượng hiện tại:</b> <span style='color:red; font-weight:bold;'>" + p.getQuantity() + "</span></li>" +
+                    "<li><b>Mức tối thiểu:</b> " + p.getMinStock() + "</li>" +
+                    "</ul>" +
+                    "<p>Vui lòng kiểm tra và nhập thêm hàng.</p>";
+            
+            message.setContent(htmlContent, "text/html; charset=UTF-8");
+            Transport.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
 }

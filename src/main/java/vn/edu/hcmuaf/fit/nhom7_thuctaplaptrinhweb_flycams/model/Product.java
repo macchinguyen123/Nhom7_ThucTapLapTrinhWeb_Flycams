@@ -20,19 +20,11 @@ public class Product implements Serializable {
     private Integer reviewCount;
     private double avgRating;
     private int view; // Số lượt xem sản phẩm
+    private int minStock = 10;
     // Constructor không tham số – bắt buộc cho JavaBean
     public Product() {
     }
-    public double getAvgRating() {
-        return avgRating;
-    }
-    public void setAvgRating(double avgRating) {
-        this.avgRating = avgRating;
-    }
-    //constructor đầy đủ
-    public Product(int id, int categoryId, String brandName, String productName,
-                   String description, String parameter, double price,
-                   double finalPrice, String warranty, int quantity, String status) {
+    public Product(int id, int categoryId, String brandName, String productName, String description, String parameter, double price, double finalPrice, String warranty, int quantity, String status) {
         this.id = id;
         this.categoryId = categoryId;
         this.brandName = brandName;
@@ -44,6 +36,29 @@ public class Product implements Serializable {
         this.warranty = warranty;
         this.quantity = quantity;
         this.status = status;
+    }
+    public double getAvgRating() {
+        return avgRating;
+    }
+    public void setAvgRating(double avgRating) {
+        this.avgRating = avgRating;
+    }
+    //constructor đầy đủ
+    public Product(int id, int categoryId, String brandName, String productName,
+                   String description, String parameter, double price,
+                   double finalPrice, String warranty, int quantity, String status, int minStock) {
+        this.id = id;
+        this.categoryId = categoryId;
+        this.brandName = brandName;
+        this.productName = productName;
+        this.description = description;
+        this.parameter = parameter;
+        this.price = price;
+        this.finalPrice = finalPrice;
+        this.warranty = warranty;
+        this.quantity = quantity;
+        this.status = status;
+        this.minStock = minStock;
     }
     public int getId() {
         return id;
@@ -143,5 +158,11 @@ public class Product implements Serializable {
     }
     public void setView(int view) {
         this.view = view;
+    }
+    public int getMinStock() {
+        return minStock;
+    }
+    public void setMinStock(int minStock) {
+        this.minStock = minStock;
     }
 }

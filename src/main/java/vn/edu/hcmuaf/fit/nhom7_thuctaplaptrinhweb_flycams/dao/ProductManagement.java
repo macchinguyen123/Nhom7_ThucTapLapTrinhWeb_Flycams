@@ -10,8 +10,8 @@ public class ProductManagement {
         String sql = """
                     INSERT INTO products
                     (productName, brandName, category_id, price, finalPrice,
-                     quantity, status, description, parameter, warranty)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+                     quantity, status, description, parameter, warranty, min_stock)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -25,6 +25,7 @@ public class ProductManagement {
             ps.setString(8, p.getDescription());
             ps.setString(9, p.getParameter());
             ps.setString(10, p.getWarranty());
+            ps.setInt(11, p.getMinStock());
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -47,7 +48,8 @@ public class ProductManagement {
                         status = ?,
                         description = ?,
                         parameter = ?,
-                        warranty = ?
+                        warranty = ?,
+                        min_stock = ?
                     WHERE id = ?
                 """;
         try (Connection c = DBConnection.getConnection();
@@ -62,7 +64,8 @@ public class ProductManagement {
             ps.setString(8, p.getDescription());
             ps.setString(9, p.getParameter());
             ps.setString(10, p.getWarranty());
-            ps.setInt(11, p.getId());
+            ps.setInt(11, p.getMinStock());
+            ps.setInt(12, p.getId());
             ps.executeUpdate();
         }
     }

@@ -141,6 +141,7 @@
                     <form action="${pageContext.request.contextPath}/BuyNowServlet" method="post">
                         <input type="hidden" name="productId" value="${product.id}">
                         <input type="hidden" name="quantity" id="buyNowQuantity" value="1">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <button type="submit" class="btn-buy-now">Mua Ngay
                         </button>
                     </form>
@@ -372,6 +373,7 @@
         <form class="review-form" id="reviewForm"
               action="${pageContext.request.contextPath}/ReviewServlet" method="post">
             <input type="hidden" name="product_id" value="${product.id}">
+            <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
             <div class="rating-group">
                 <label>
                     <input type="radio" name="rating" value="1">
@@ -612,11 +614,13 @@
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-Token': '${sessionScope.CSRF_TOKEN}'
                     },
                     body: new URLSearchParams({
                         action: action,
-                        productId: productId
+                        productId: productId,
+                        _csrf: '${sessionScope.CSRF_TOKEN}'
                     })
                 })
                     .then(res => res.json())

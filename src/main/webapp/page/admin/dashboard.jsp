@@ -228,6 +228,73 @@
             </table>
         </div>
         <div class="card-panel">
+            <div class="panel-title text-danger">
+                <h6><i class="bi bi-exclamation-triangle-fill"></i> Cảnh báo hết hàng</h6>
+                <small style="color:#6b7280">Sản phẩm dưới mức tối thiểu</small>
+            </div>
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table id="lowStockTable" class="table table-striped table-hover align-middle">
+                    <thead class="table-danger" style="position: sticky; top: 0; z-index: 1;">
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Hiện có</th>
+                        <th>Mức tối thiểu</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="p" items="${lowStockProducts}">
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <c:set var="imgUrl" value="${p.imageUrl}" />
+                                <c:choose>
+                                    <c:when test="${not empty imgUrl}">
+                                        <c:set var="finalImg">
+                                            <c:choose>
+                                                <c:when test="${imgUrl.startsWith('http') || imgUrl.startsWith('/')}">
+                                                    ${imgUrl}
+                                                </c:when>
+                                                <c:otherwise>
+                                                    ${pageContext.request.contextPath}/${imgUrl}
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </c:set>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="finalImg" value="${pageContext.request.contextPath}/image/logoTCN.png" />
+                                    </c:otherwise>
+                                </c:choose>
+                                <img src="${finalImg}" 
+                                     alt="${p.productName}" 
+                                     onerror="this.src='${pageContext.request.contextPath}/image/logoTCN.png'; this.onerror=null;"
+                                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; background: #f8f9fa;">
+                                    <span class="text-truncate" style="max-width: 250px;">${p.productName}</span>
+                                </div>
+                            </td>
+                            <td class="fw-bold text-danger">${p.quantity}</td>
+                            <td>${p.minStock}</td>
+                            <td class="text-center">
+                                <a href="${pageContext.request.contextPath}/admin/inventory-manage?search=${p.productName}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-circle"></i> Nhập hàng
+                                </a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    <c:if test="${empty lowStockProducts}">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bi bi-check-circle text-success fs-2 d-block mb-2"></i>
+                                Không có cảnh báo nào
+                            </td>
+                        </tr>
+                    </c:if>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-panel">
             <div class="panel-title">
                 <h6>Trạng thái đơn hàng</h6>
                 <small style="color:#6b7280">Tổng quan</small>
@@ -352,6 +419,22 @@
             columnDefs: [
                 {orderable: false, targets: 2}
             ]
+        });
+        let lowStockTable = $('#lowStockTable').DataTable({
+            paging: true,
+            pageLength: 5,
+            lengthChange: false,
+            searching: true,
+            ordering: true,
+            info: false,
+            language: {
+                search: "Tìm kiếm:",
+                zeroRecords: "Không tìm thấy kết quả",
+                paginate: {
+                    previous: "Trước",
+                    next: "Sau"
+                }
+            }
         });
     });
 </script>

@@ -71,7 +71,7 @@ public class OrderItemsDAO {
                 item.setQuantity(rs.getInt("quantity"));
                 item.setPrice(rs.getDouble("price"));
 
-                Product product = new Product();
+                Product product = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
                 product.setId(rs.getInt("product_id"));
                 product.setProductName(rs.getString("productName"));
                 product.setMainImage(rs.getString("imageUrl"));
