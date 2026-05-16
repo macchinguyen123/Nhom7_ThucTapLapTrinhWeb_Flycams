@@ -47,6 +47,16 @@ public class ProductService {
         return homeDao.getProductsByCategory(categoryId, limit);
     }
 
+    //Lấy danh sách sản phẩm ngẫu nhiên
+    public List<Product> getRandomProducts(int limit) {
+        return homeDao.getRandomProducts(limit);
+    }
+
+    //Lấy danh sách sản phẩm gợi ý
+    public List<Product> getRecommendedProducts(int limit) {
+        return homeDao.getRecommendedProducts(limit);
+    }
+
     //Tăng số lượt xem sản phẩm
     public void incrementViewCount(int productId) {
         productDAO.incrementViewCount(productId);

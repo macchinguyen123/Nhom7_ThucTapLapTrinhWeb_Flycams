@@ -267,6 +267,65 @@
         </c:forEach>
     </div>
 </section>
+<c:if test="${not empty recommendedProducts}">
+    <section class="phan-san-pham-noi-bat">
+        <h2>GỢI Ý CHO BẠN</h2>
+        <div class="khung-san-pham">
+            <c:forEach var="p" items="${recommendedProducts}">
+                <div class="san-pham">
+                    <a class="link-chi-tiet"
+                       href="${pageContext.request.contextPath}/product-detail?id=${p.id}">
+                        <div class="khung-anh">
+                            <c:choose>
+                                <c:when test="${not empty p.mainImage}">
+                                    <img src="${p.mainImage}" alt="${p.productName}">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}/assets/no-image.png"
+                                         alt="No Image">
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <h3 class="ten-san-pham">${p.productName}</h3>
+                        <div class="gia">
+                            <b>${formatter.format(p.finalPrice)} VNĐ</b>
+                            <c:if test="${p.price > p.finalPrice}">
+                                <span class="gia-goc">${formatter.format(p.price)} VNĐ</span>
+                            </c:if>
+                        </div>
+                    </a>
+                    <c:set var="fullStarsR" value="${p.avgRating.intValue()}"/>
+                    <c:set var="hasHalfStarR" value="${p.avgRating - fullStarsR >= 0.5}"/>
+                    <div class="hang-danh-gia">
+                        <div class="danh-gia-sao">
+                            <c:forEach begin="1" end="${fullStarsR}"><i class="bi bi-star-fill"></i></c:forEach>
+                            <c:if test="${hasHalfStarR}"><i class="bi bi-star-half"></i></c:if>
+                            <c:forEach begin="1" end="${5 - fullStarsR - (hasHalfStarR ? 1 : 0)}"><i class="bi bi-star"></i></c:forEach>
+                        </div>
+                        <c:choose>
+                            <c:when test="${wishlistProductIds != null && wishlistProductIds.contains(p.id)}">
+                                <i class="bi bi-heart-fill tim-yeu-thich yeu-thich" data-product-id="${p.id}"></i>
+                            </c:when>
+                            <c:otherwise>
+                                <i class="bi bi-heart tim-yeu-thich" data-product-id="${p.id}"></i>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="so-danh-gia">
+                        (${empty p.reviewCount ? 0 : p.reviewCount} đánh giá)
+                    </div>
+                    <form action="${pageContext.request.contextPath}/add-cart" method="get">
+                        <input type="hidden" name="productId" value="${p.id}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="nut-mua-ngay">
+                            <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                        </button>
+                    </form>
+                </div>
+            </c:forEach>
+        </div>
+    </section>
+</c:if>
 <a href="${pageContext.request.contextPath}/page/payment-policy.jsp">
     <div class="banner">
         <img src="${pageContext.request.contextPath}/image/banner/hinh4.png" alt="Banner ưu đãi">
@@ -274,8 +333,8 @@
 </a>
 <section class="phan-san-pham-1">
     <div class="section-header">
-    <h2>DRONE QUAY PHIM</h2>
-        <button class="xem" onclick="location.href='${pageContext.request.contextPath}/Category?id=1001'">Xem Tất Cả »</button>
+    <h2>${not empty cat1Name ? cat1Name : 'DRONE QUAY PHIM'}</h2>
+        <button class="xem" onclick="location.href='${pageContext.request.contextPath}/Category?id=${not empty cat1Id ? cat1Id : 1001}'">Xem Tất Cả »</button>
     </div>
     <div class="khung-san-pham-1">
             <div class="poster">
@@ -348,8 +407,8 @@
 </section>
 <section class="phan-san-pham-1">
     <div class="section-header">
-    <h2>DRONE MINI</h2>
-        <button class="xem" onclick="location.href='${pageContext.request.contextPath}/Category?id=1004'">Xem Tất Cả »</button>
+    <h2>${not empty cat2Name ? cat2Name : 'DRONE MINI'}</h2>
+        <button class="xem" onclick="location.href='${pageContext.request.contextPath}/Category?id=${not empty cat2Id ? cat2Id : 1004}'">Xem Tất Cả »</button>
     </div>
     <div class="khung-san-pham-1">
             <div class="poster">

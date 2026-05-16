@@ -44,7 +44,7 @@ public class HomeDao {
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
+                Product p = new Product();
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));
@@ -88,7 +88,7 @@ public class HomeDao {
             ps.setInt(1, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
+                Product p = new Product();
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));
@@ -134,7 +134,7 @@ public class HomeDao {
             ps.setInt(2, limit);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
+                Product p = new Product();
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));
@@ -230,7 +230,7 @@ public class HomeDao {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                Product p = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
+                Product p = new Product();
                 p.setId(rs.getInt("id"));
                 p.setProductName(rs.getString("productName"));
                 p.setPrice(rs.getDouble("price"));
@@ -239,14 +239,85 @@ public class HomeDao {
                 p.setMainImage(rs.getString("imageUrl"));
                 p.setAvgRating(rs.getDouble("avgRating"));
                 p.setReviewCount(rs.getInt("reviewCount"));
-
                 list.add(p);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        return list;
+    }
+    public List<Product> getRandomProducts(int limit) {
+        List<Product> list = new ArrayList<>();
+        String sql = """
+                    SELECT p.id, p.productName, p.price, p.finalPrice,
+                           i.imageUrl, COALESCE(rv.avgRating, 0) AS avgRating,
+                           COALESCE(rv.reviewCount, 0) AS reviewCount
+                    FROM products p
+                    LEFT JOIN images i ON p.id = i.product_id AND i.imageType = 'Chính'
+                    LEFT JOIN (
+                        SELECT product_id, AVG(rating) AS avgRating, COUNT(*) AS reviewCount
+                        FROM reviews GROUP BY product_id
+                    ) rv ON p.id = rv.product_id
+                    WHERE p.status = 'active'
+                    ORDER BY RAND()
+                    LIMIT ?
+                """;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Product p = new Product();
+                p.setId(rs.getInt("id"));
+                p.setProductName(rs.getString("productName"));
+                p.setPrice(rs.getDouble("price"));
+                p.setFinalPrice(rs.getDouble("finalPrice"));
+                p.setMainImage(rs.getString("imageUrl"));
+                p.setAvgRating(rs.getDouble("avgRating"));
+                p.setReviewCount(rs.getInt("reviewCount"));
+                list.add(p);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
+    public List<Product> getRecommendedProducts(int limit) {
+        // Lấy các sản phẩm có đánh giá cao
+        List<Product> list = new ArrayList<>();
+        String sql = """
+                    SELECT p.id, p.productName, p.price, p.finalPrice,
+                           i.imageUrl, COALESCE(rv.avgRating, 0) AS avgRating,
+                           COALESCE(rv.reviewCount, 0) AS reviewCount
+                    FROM products p
+                    LEFT JOIN images i ON p.id = i.product_id AND i.imageType = 'Chính'
+                    LEFT JOIN (
+                        SELECT product_id, AVG(rating) AS avgRating, COUNT(*) AS reviewCount
+                        FROM reviews GROUP BY product_id
+                    ) rv ON p.id = rv.product_id
+                    WHERE p.status = 'active'
+                    ORDER BY rv.avgRating DESC, p.view DESC, RAND()
+                    LIMIT ?
+                """;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Product p = new Product();
+                p.setId(rs.getInt("id"));
+                p.setProductName(rs.getString("productName"));
+                p.setPrice(rs.getDouble("price"));
+                p.setFinalPrice(rs.getDouble("finalPrice"));
+                p.setMainImage(rs.getString("imageUrl"));
+                p.setAvgRating(rs.getDouble("avgRating"));
+                p.setReviewCount(rs.getInt("reviewCount"));
+                list.add(p);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
