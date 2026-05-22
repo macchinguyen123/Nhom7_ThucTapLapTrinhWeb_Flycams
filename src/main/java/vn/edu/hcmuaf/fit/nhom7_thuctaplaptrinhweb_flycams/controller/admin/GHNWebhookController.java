@@ -18,12 +18,11 @@ public class GHNWebhookController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        // GHN thường gửi Token trong Header "Token" hoặc thông qua cấu hình URL bí mật
 //        String ghnToken = req.getHeader("Token");
-//        String mySecret = "YOUR_GHN_WEBHOOK_TOKEN"; // Token bạn lấy từ dashboard GHN
+//        String mySecret = "YOUR_GHN_WEBHOOK_TOKEN";
 //
 //        if (ghnToken == null || !ghnToken.equals(mySecret)) {
-//            resp.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
+//            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
 //            return;
 //        }
 
@@ -37,10 +36,8 @@ public class GHNWebhookController extends HttpServlet {
 
         try {
             JsonObject json = JsonParser.parseString(sb.toString()).getAsJsonObject();
-            // Lấy mã đơn hàng và trạng thái
             String ghnOrderCode = json.get("OrderCode").getAsString();
             String status = json.get("Status").getAsString();
-            // Gọi DAO cập nhật trạng thái đơn hàng
             OrdersDAO ordersDAO = new OrdersDAO();
             boolean updated = updateStatusFromGHN(ghnOrderCode, status);
 
@@ -74,6 +71,7 @@ public class GHNWebhookController extends HttpServlet {
             default:
                 return false;
         }
-        return true;
+        OrdersDAO ordersDAO = new OrdersDAO();
+        return ordersDAO.updateStatusByShippingCode(ghnCode, myStatus);
     }
 }

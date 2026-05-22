@@ -189,6 +189,7 @@
     </main>
 </div>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     document.addEventListener("DOMContentLoaded", function() {
         const productId = '${product.id}';
         const ctx = document.getElementById('inventoryChart').getContext('2d');

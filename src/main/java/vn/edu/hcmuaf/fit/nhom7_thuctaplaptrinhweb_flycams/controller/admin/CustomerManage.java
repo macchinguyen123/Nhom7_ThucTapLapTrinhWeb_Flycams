@@ -5,9 +5,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.CustomerService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.ComplaintDAO;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.CsrfTokenUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,7 +20,9 @@ public class CustomerManage extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp)
                         throws ServletException, IOException {
-                String keyword = req.getParameter("keyword");
+            HttpSession session = req.getSession(true);
+            CsrfTokenUtil.getOrCreate(session);
+            String keyword = req.getParameter("keyword");
                 List<User> users;
                 if (keyword != null && !keyword.trim().isEmpty()) {
                         users = customerService.searchUsers(keyword.trim());

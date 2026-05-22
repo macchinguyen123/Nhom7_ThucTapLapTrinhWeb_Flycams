@@ -13,8 +13,8 @@ import java.nio.charset.StandardCharsets;
 
 @WebServlet(name = "GHNProxyServlet", value = "/ghn/*")
 public class GHNProxyServlet extends HttpServlet {
-    private static final String GHN_TOKEN = "bb67bb35-1796-11f1-b2c0-1ab1fd37f3b7";
-    private static final int GHN_SHOP_ID = 6302109;
+    private static final String GHN_TOKEN = "64eae663-1e9c-11f1-a973-aee5264794df";
+    private static final int GHN_SHOP_ID = 	199571;
     private static final int FROM_DISTRICT = 3695;
     private static final String GHN_BASE = "https://online-gateway.ghn.vn/shiip/public-api";
 

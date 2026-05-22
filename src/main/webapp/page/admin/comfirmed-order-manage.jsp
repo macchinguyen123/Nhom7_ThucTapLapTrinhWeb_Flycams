@@ -217,6 +217,7 @@
             </div>
             <div class="modal-body">
                 <form id="formDonHang">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="row g-3">
                         <div class="col-lg-6">
                             <div class="info-card">
@@ -355,6 +356,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     let currentOrderId = null;
     let currentUserId = null;
 
@@ -595,7 +597,9 @@
                 fetch('${pageContext.request.contextPath}/admin/order-action', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-Token': CSRF_TOKEN
+
                     },
                     body: params.toString()
                 })

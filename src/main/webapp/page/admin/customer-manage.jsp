@@ -176,6 +176,7 @@
                 </a>
                 <form action="${pageContext.request.contextPath}/admin/customer-manage" method="GET" class="d-flex"
                       role="search" style="max-width: 300px;">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="input-group">
                         <button type="submit" class="btn input-group-text bg-primary text-white">
                             <i class="bi bi-search"></i>
@@ -368,6 +369,7 @@
                     <h5 class="mb-4"><i class="bi bi-pencil-square"></i> Chỉnh Sửa Thông Tin</h5>
                     <form id="editCustomerForm" method="POST" enctype="multipart/form-data"
                           action="${pageContext.request.contextPath}/admin/update-customer">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <input type="hidden" name="id" value="${detailUser.id}">
                         <div class="form-section">
                             <div class="section-title">
@@ -643,6 +645,7 @@
     </div>
 </div>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     document.querySelectorAll('.has-submenu .menu-item').forEach(item => {
         item.addEventListener('click', function (e) {
             e.preventDefault();

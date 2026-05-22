@@ -144,6 +144,7 @@
                 <h5 class="card-title fw-bold text-secondary mb-3"><i class="bi bi-funnel-fill"></i> Bộ Lọc Dữ Liệu</h5>
                 <form action="${pageContext.request.contextPath}/admin/statistics" method="GET"
                       class="row gx-3 gy-2 align-items-center m-0">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="col-sm-auto">
                         <label class="fw-semibold text-secondary">Từ ngày:</label>
                         <input type="date" name="startDate" class="form-control mt-1" value="${startDate}" required>
@@ -415,6 +416,7 @@
     </main>
 </div>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     $(document).ready(function () {
         let table = $("#tableDonTrongNgay").DataTable({
             paging: true,

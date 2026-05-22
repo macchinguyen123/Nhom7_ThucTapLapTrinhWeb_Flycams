@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.*;
 
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.CsrfTokenUtil;
 
 import java.io.IOException;
 
@@ -19,6 +20,8 @@ public class AdminProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(true);
+        CsrfTokenUtil.getOrCreate(session);
         User admin = (User) request.getSession().getAttribute("user");
         User refreshedAdmin = authService.getUserByEmail(admin.getEmail());
         if (refreshedAdmin != null) {

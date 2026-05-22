@@ -339,6 +339,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
 <c:if test="${not empty revenueLabels and not empty revenueValues}">
     <script>
+        const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
         const revenueLabels = [
             <c:forEach var="d" items="${revenueLabels}" varStatus="s">
             "${d}"<c:if test="${!s.last}">, </c:if>

@@ -6,6 +6,7 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Product;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.DBConnection;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -249,7 +250,7 @@ public class OrdersDAO {
                 item.setQuantity(rs.getInt("quantity"));
                 item.setPrice(rs.getDouble("price"));
 
-                Product product = new Product(rs.getInt("product_id"), rs.getInt("category_id"), rs.getString("brandName"), rs.getString("productName"), rs.getString("description"), rs.getString("parameter"), rs.getDouble("price"), rs.getDouble("finalPrice"), rs.getString("warranty"), rs.getInt("quantity"), rs.getString("status"));
+                Product product = new Product();
                 product.setId(rs.getInt("product_id"));
                 product.setProductName(rs.getString("productName"));
                 String imageUrl = rs.getString("imageUrl");
@@ -292,8 +293,9 @@ public class OrdersDAO {
         try (Connection con = DBConnection.getConnection();
              PreparedStatement psAlter = con.prepareStatement(alterSql)) {
             psAlter.executeUpdate();
+            System.out.println("Auto-patched orders status ENUM.");
         } catch (Exception e) {
-            // Table might already be altered or not enum
+            System.out.println("Could not alter table (might already be altered or not enum): " + e.getMessage());
         }
         String sql = """
                     UPDATE orders
@@ -380,11 +382,13 @@ public class OrdersDAO {
         return false;
     }
     public boolean updateStatusByShippingCode(String shippingCode, String status) {
-        String sql = "UPDATE orders SET status = ? WHERE shippingCode = ?";
+        String sql = "UPDATE orders SET status = ?, completed_at = ? WHERE shipping_code = ?";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, status);
-            ps.setString(2, shippingCode);
+            ps.setDate(2, status.equals("Giao thành công")
+                    ? java.sql.Date.valueOf(LocalDate.now()) : null);
+            ps.setString(3, shippingCode);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

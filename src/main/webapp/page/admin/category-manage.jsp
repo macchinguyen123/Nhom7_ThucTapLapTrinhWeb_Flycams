@@ -127,6 +127,7 @@
             <h4 class="text-primary fw-bold"><i class="bi bi-tags"></i> Quản Lý Danh Mục</h4>
             <div class="d-flex align-items-center gap-2">
                 <form class="d-flex" role="search" style="max-width: 300px;">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="input-group">
                                     <span class="input-group-text bg-primary text-white">
                                         <i class="bi bi-search"></i>
@@ -221,9 +222,11 @@
             <div class="modal-body">
                 <form id="formDanhMuc" method="POST" enctype="multipart/form-data"
                       action="${pageContext.request.contextPath}/admin/category-manage">
+
                     <input type="hidden" name="action" id="formAction" value="add">
                     <input type="hidden" name="id" id="catId">
                     <input type="hidden" name="oldImage" id="oldImage">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Tên danh mục</label>
@@ -257,6 +260,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     let allowSaveOrder = false;
     $(document).ready(function () {
         var table = $('#tableDanhMuc').DataTable({

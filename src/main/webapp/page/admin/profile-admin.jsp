@@ -206,6 +206,7 @@
             <form id="profileForm"
                   action="${pageContext.request.contextPath}/admin/profile?action=update-info"
                   method="post" enctype="multipart/form-data">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <input type="file" name="avatar" id="avatarInput" accept="image/*" hidden>
                 <label>
                     <i class="bi bi-person me-1"> Họ tên</i>
@@ -244,6 +245,7 @@
             <form id="changePassForm"
                   action="${pageContext.request.contextPath}/admin/profile?action=change-password"
                   method="post">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <small class="password-hint">
                     <i class="bi bi-info-circle me-1"></i>
                     Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc
@@ -294,6 +296,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('.has-submenu .menu-item').forEach(item => {
             item.addEventListener('click', () => {

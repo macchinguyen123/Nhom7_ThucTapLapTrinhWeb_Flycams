@@ -299,6 +299,7 @@
     </main>
 </div>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     let reviewTable;
     $(document).ready(function () {
         reviewTable = $('#tableReviews').DataTable({
