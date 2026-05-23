@@ -13,6 +13,9 @@ public class Reviews implements Serializable {
 
     private String username;
     private String avatar;
+    private String status;
+    private String adminNote;
+    private String productName;
 
     public Reviews() {
     }
@@ -31,6 +34,30 @@ public class Reviews implements Serializable {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAdminNote() {
+        return adminNote;
+    }
+
+    public void setAdminNote(String adminNote) {
+        this.adminNote = adminNote;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public int getId() {

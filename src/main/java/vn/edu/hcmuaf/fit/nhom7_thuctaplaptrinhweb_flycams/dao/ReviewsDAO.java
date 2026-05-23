@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReviewsDAO {
-
     public boolean hasUserReviewedProduct(int userId, int productId) {
         String sql = "SELECT COUNT(*) > 0 FROM reviews WHERE user_id = ? AND product_id = ?";
 
@@ -35,7 +34,7 @@ public class ReviewsDAO {
         String sql = """
                     INSERT INTO reviews (user_id, product_id, rating, content)
                     VALUES (?, ?, ?, ?)
-                    ON DUPLICATE KEY UPDATE rating=?, content=?, createdAt=NOW()
+                    ON DUPLICATE KEY UPDATE rating=?, content=?, status='PENDING', createdAt=NOW()
                 """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -53,7 +52,7 @@ public class ReviewsDAO {
     }
 
     public double getAverageRating(int productId) {
-        String sql = "SELECT AVG(rating) FROM reviews WHERE product_id=?";
+        String sql = "SELECT AVG(rating) FROM reviews WHERE product_id=? AND (status IS NULL OR status <> 'DELETED')";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -68,7 +67,7 @@ public class ReviewsDAO {
     }
 
     public int countReviews(int productId) {
-        String sql = "SELECT COUNT(*) FROM reviews WHERE product_id=?";
+        String sql = "SELECT COUNT(*) FROM reviews WHERE product_id=? AND (status IS NULL OR status <> 'DELETED')";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -83,7 +82,7 @@ public class ReviewsDAO {
     }
 
     public int countByStar(int productId, int star) {
-        String sql = "SELECT COUNT(*) FROM reviews WHERE product_id=? AND rating=?";
+        String sql = "SELECT COUNT(*) FROM reviews WHERE product_id=? AND rating=? AND (status IS NULL OR status <> 'DELETED')";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -105,6 +104,7 @@ public class ReviewsDAO {
                     WHERE product_id=? 
                       AND content IS NOT NULL 
                       AND TRIM(content) <> ''
+                      AND (status IS NULL OR status <> 'DELETED')
                 """;
 
         try (Connection conn = DBConnection.getConnection();
@@ -119,6 +119,7 @@ public class ReviewsDAO {
         }
         return 0;
     }
+
     public List<Reviews> getReviewsByProductPaging(int productId, int page, int pageSize) {
         List<Reviews> list = new ArrayList<>();
         int offset = (page - 1) * pageSize;
@@ -127,7 +128,7 @@ public class ReviewsDAO {
                 SELECT r.*, u.username, u.avatar
                 FROM reviews r
                 JOIN users u ON r.user_id = u.id
-                WHERE r.product_id = ?
+                WHERE r.product_id = ? AND (r.status IS NULL OR r.status <> 'DELETED')
                 ORDER BY r.createdAt DESC
                 LIMIT ? OFFSET ?
                 """;
@@ -148,9 +149,10 @@ public class ReviewsDAO {
                 r.setRating(rs.getInt("rating"));
                 r.setContent(rs.getString("content"));
                 r.setCreatedAt(rs.getTimestamp("createdAt"));
-                // ====== USER INFO ======
                 r.setUsername(rs.getString("username"));
                 r.setAvatar(rs.getString("avatar"));
+                r.setStatus(rs.getString("status"));
+                r.setAdminNote(rs.getString("adminNote"));
                 list.add(r);
             }
         } catch (Exception e) {
@@ -159,5 +161,51 @@ public class ReviewsDAO {
         return list;
     }
 
+    public List<Reviews> getAllBadReviews() {
+        List<Reviews> list = new ArrayList<>();
+        String sql = """
+                SELECT r.*, u.username, u.avatar, p.productName
+                FROM reviews r
+                JOIN users u ON r.user_id = u.id
+                JOIN products p ON r.product_id = p.id
+                WHERE r.rating <= 3
+                ORDER BY r.createdAt DESC
+                """;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Reviews r = new Reviews();
+                r.setId(rs.getInt("id"));
+                r.setProductId(rs.getInt("product_id"));
+                r.setUserId(rs.getInt("user_id"));
+                r.setRating(rs.getInt("rating"));
+                r.setContent(rs.getString("content"));
+                r.setCreatedAt(rs.getTimestamp("createdAt"));
+                r.setUsername(rs.getString("username"));
+                r.setAvatar(rs.getString("avatar"));
+                r.setStatus(rs.getString("status"));
+                r.setAdminNote(rs.getString("adminNote"));
+                r.setProductName(rs.getString("productName"));
+                list.add(r);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
+    public boolean updateReviewStatus(int id, String status, String adminNote) {
+        String sql = "UPDATE reviews SET status = ?, adminNote = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, adminNote);
+            ps.setInt(3, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

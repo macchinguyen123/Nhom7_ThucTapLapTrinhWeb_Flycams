@@ -42,4 +42,10 @@ public class ReviewService {
     public List<Reviews> getReviewsByProductPaging(int productId, int page, int pageSize) {
         return reviewsDAO.getReviewsByProductPaging(productId, page, pageSize);
     }
+    public List<Reviews> getAllBadReviews() {
+        return reviewsDAO.getAllBadReviews();
+    }
+    public boolean updateReviewStatus(int id, String status, String adminNote) {
+        return reviewsDAO.updateReviewStatus(id, status, adminNote);
+    }
 }

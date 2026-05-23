@@ -206,50 +206,50 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr class="bad-review">
-                    <td>#RV102</td>
-                    <td class="fw-bold">Nguyễn Văn A</td>
-                    <td class="text-start">Flycam DJI Mini 3</td>
-                    <td class="text-start text-danger fw-semibold">Sản phẩm như rác rưởi, lừa đảo, thái độ phục vụ
-                        tồi!
-                    </td>
-                    <td>16/05/2026 08:30</td>
-                    <td><span class="badge bg-danger">Chờ xử lý</span></td>
-                    <td>
-                        <div class="d-flex gap-1 justify-content-center">
-                            <button class="btn btn-info btn-sm" title="Xem chi tiết"
-                                    onclick="viewReviewDetail('#RV102', 'Nguyễn Văn A', 'Sản phẩm như rác rưởi, lừa đảo, thái độ phục vụ tồi!', 'PENDING', '')">
-                                <i class="bi bi-eye text-white"></i>
-                            </button>
-                            <button class="btn btn-success btn-sm" title="Giữ nguyên (Không vi phạm)"
-                                    onclick="keepReview('#RV102')">
-                                <i class="bi bi-check-circle"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" title="Xóa bỏ (Vi phạm)"
-                                    onclick="deleteReview('#RV102')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>#RV095</td>
-                    <td class="fw-bold">Trần Thị B</td>
-                    <td class="text-start">Mavic Air 2</td>
-                    <td class="text-start text-muted text-decoration-line-through">Shop bán hàng giả, cẩn thận mọi
-                        người.
-                    </td>
-                    <td>15/05/2026 14:20</td>
-                    <td><span class="badge bg-secondary">Đã xóa</span></td>
-                    <td>
-                        <div class="d-flex gap-1 justify-content-center">
-                            <button class="btn btn-info btn-sm" title="Xem chi tiết"
-                                    onclick="viewReviewDetail('#RV095', 'Trần Thị B', 'Shop bán hàng giả, cẩn thận mọi người.', 'DELETED', 'Admin (Hệ thống) đã xóa lúc 15/05/2026 15:00 - Lý do: Vu khống không có bằng chứng.')">
-                                <i class="bi bi-eye text-white"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                <c:forEach var="r" items="${badReviews}">
+                    <tr class="${r.status == null || r.status == 'PENDING' ? 'bad-review' : ''}">
+                        <td>#RV${r.id}</td>
+                        <td class="fw-bold"><c:out value="${r.username}"/></td>
+                        <td class="text-start"><c:out value="${r.productName}"/></td>
+                        <td class="text-start ${r.status == 'DELETED' ? 'text-muted text-decoration-line-through' : 'text-danger fw-semibold'}">
+                            <c:out value="${r.content}"/>
+                        </td>
+                        <td>
+                            <fmt:formatDate value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                        </td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${r.status == 'KEPT'}">
+                                    <span class="badge bg-success">Đã giữ lại</span>
+                                </c:when>
+                                <c:when test="${r.status == 'DELETED'}">
+                                    <span class="badge bg-secondary">Đã xóa</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge bg-danger">Chờ xử lý</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1 justify-content-center">
+                                <button class="btn btn-info btn-sm" title="Xem chi tiết"
+                                        onclick="viewReviewDetail('${r.id}', '<c:out value="${fn:escapeXml(r.username)}"/>', '<c:out value="${fn:escapeXml(r.content)}"/>', '${r.status == null ? 'PENDING' : r.status}', '<c:out value="${fn:escapeXml(r.adminNote)}"/>')">
+                                    <i class="bi bi-eye text-white"></i>
+                                </button>
+                                <c:if test="${r.status == null || r.status == 'PENDING'}">
+                                    <button class="btn btn-success btn-sm" title="Giữ nguyên (Không vi phạm)"
+                                            onclick="keepReview('${r.id}')">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" title="Xóa bỏ (Vi phạm)"
+                                            onclick="deleteReview('${r.id}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </c:if>
+                            </div>
+                        </td>
+                    </tr>
+                </c:forEach>
                 </tbody>
             </table>
             <div class="d-flex justify-content-end align-items-center mt-3">
@@ -299,7 +299,6 @@
     </main>
 </div>
 <script>
-    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     let reviewTable;
     $(document).ready(function () {
         reviewTable = $('#tableReviews').DataTable({
@@ -380,8 +379,24 @@
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire('Thành công!', 'Hệ thống đã ghi nhận lịch sử xử lý (Giữ lại).', 'success')
-                    .then(() => location.reload());
+                let note = result.value || '';
+                $.ajax({
+                    url: '${pageContext.request.contextPath}/admin/review-manage',
+                    type: 'POST',
+                    data: {
+                        action: 'keep',
+                        id: id,
+                        adminNote: note
+                    },
+                    success: function (res) {
+                        Swal.fire('Thành công!', 'Đã phê duyệt giữ lại đánh giá.', 'success')
+                            .then(() => location.reload());
+                    },
+                    error: function (xhr) {
+                        let errMsg = xhr.responseJSON ? xhr.responseJSON.message : 'Có lỗi xảy ra!';
+                        Swal.fire('Lỗi!', errMsg, 'error');
+                    }
+                });
             }
         });
     }
@@ -403,8 +418,24 @@
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire('Đã xóa!', 'Nội dung đã bị xóa và lịch sử được ghi nhận.', 'success')
-                    .then(() => location.reload());
+                let reason = result.value;
+                $.ajax({
+                    url: '${pageContext.request.contextPath}/admin/review-manage',
+                    type: 'POST',
+                    data: {
+                        action: 'delete',
+                        id: id,
+                        adminNote: reason
+                    },
+                    success: function (res) {
+                        Swal.fire('Đã xóa!', 'Đánh giá đã bị ẩn khỏi trang bán hàng thành công.', 'success')
+                            .then(() => location.reload());
+                    },
+                    error: function (xhr) {
+                        let errMsg = xhr.responseJSON ? xhr.responseJSON.message : 'Có lỗi xảy ra!';
+                        Swal.fire('Lỗi!', errMsg, 'error');
+                    }
+                });
             }
         });
     }
