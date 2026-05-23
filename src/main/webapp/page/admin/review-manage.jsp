@@ -21,8 +21,32 @@
             display: none !important;
         }
 
-        .bad-review {
+        table#tableReviews > thead.table-dark th {
+            background-color: #0051c6 !important;
+            color: #ffffff !important;
+            border-color: #0047a3 !important;
+            vertical-align: middle;
+        }
+
+        table#tableReviews tbody tr {
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        table#tableReviews tbody tr:hover {
+            background-color: #f1f5f9 !important;
+        }
+
+        table#tableReviews tbody tr.bad-review {
             background-color: #fff3f3 !important;
+        }
+
+        table#tableReviews tbody tr.bad-review:hover {
+            background-color: #ffebeb !important;
+        }
+
+        #searchInput:focus, #statusFilter:focus, #rowsPerPage:focus {
+            border-color: #0051c6 !important;
+            box-shadow: 0 0 0 0.25rem rgba(0, 81, 198, 0.25) !important;
         }
 
         .status-processed {
@@ -309,6 +333,18 @@
                 infoEmpty: "Không tìm thấy kết quả"
             }
         });
+        reviewTable.on('draw', function () {
+            let pageInfo = reviewTable.page.info();
+            if (pageInfo.pages > 0) {
+                $('#pageInfo').text('Trang ' + (pageInfo.page + 1) + ' / ' + pageInfo.pages);
+            } else {
+                $('#pageInfo').text('Trang 1 / 1');
+            }
+        });
+        let initPageInfo = reviewTable.page.info();
+        if (initPageInfo.pages > 0) {
+            $('#pageInfo').text('Trang ' + (initPageInfo.page + 1) + ' / ' + initPageInfo.pages);
+        }
         $('#searchInput').on('keyup', function () {
             reviewTable.search(this.value).draw();
         });
@@ -329,11 +365,11 @@
         $('.has-submenu .menu-item').click(function () {
             $(this).parent().toggleClass('active');
         });
-        setInterval(checkNewBadReviews, 60000);
+        setInterval(checkNewBadReviews, 30000);
     });
 
     function viewReviewDetail(id, customer, content, status, history) {
-        $('#detail-id').text(id);
+        $('#detail-id').text('#RV' + id);
         $('#detail-customer').text(customer);
         $('#detail-content').text(content);
         let statusHtml = '';
@@ -351,10 +387,10 @@
         if (status === 'PENDING') {
             footerHtml = `
                 <button class="btn btn-outline-secondary me-auto" data-bs-dismiss="modal">Đóng</button>
-                <button class="btn btn-success px-4 shadow-sm" onclick="keepReview('\${id}')">
+                <button class="btn btn-success px-4 shadow-sm" onclick="keepReview('${id}')">
                     <i class="bi bi-check-circle"></i> Bỏ qua cảnh báo (Giữ nguyên)
                 </button>
-                <button class="btn btn-danger px-4 shadow-sm" onclick="deleteReview('\${id}')">
+                <button class="btn btn-danger px-4 shadow-sm" onclick="deleteReview('${id}')">
                     <i class="bi bi-trash"></i> Xóa bỏ hoàn toàn
                 </button>
             `;
@@ -441,7 +477,7 @@
     }
 
     function showNewBadReviews() {
-        let count = $('#badReviewCount').text().trim();
+        let count = parseInt($('#badReviewCount').text().trim()) || 0;
         if (count > 0) {
             Swal.fire({
                 toast: true,
@@ -465,6 +501,36 @@
     }
 
     function checkNewBadReviews() {
+        $.ajax({
+            url: '${pageContext.request.contextPath}/admin/review-manage',
+            type: 'GET',
+            data: { action: 'countPending' },
+            dataType: 'json',
+            success: function (res) {
+                if (res && typeof res.count !== 'undefined') {
+                    let badge = $('#badReviewCount');
+                    let oldCount = parseInt(badge.text().trim()) || 0;
+                    let newCount = res.count;
+                    badge.text(newCount);
+                    if (newCount > 0) {
+                        badge.removeClass('d-none').show();
+                        if (newCount > oldCount) {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'warning',
+                                title: 'Có thêm ' + (newCount - oldCount) + ' đánh giá tiêu cực mới cần xử lý!',
+                                showConfirmButton: false,
+                                timer: 5000,
+                                timerProgressBar: true
+                            });
+                        }
+                    } else {
+                        badge.hide();
+                    }
+                }
+            }
+        });
     }
 </script>
 </body>
