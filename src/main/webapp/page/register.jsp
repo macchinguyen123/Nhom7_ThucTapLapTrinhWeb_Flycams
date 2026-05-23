@@ -75,9 +75,13 @@
                 <label for="password">Mật khẩu</label>
                 <div class="password-wrapper">
                     <input type="password" id="password" name="password"
-                           placeholder="Nhập mật khẩu" required autocomplete="new-password" oninput="validateForm()">
+                           placeholder="Nhập mật khẩu" required autocomplete="new-password" oninput="validateForm(); updatePasswordStrength()">
                     <i class="bi bi-eye-slash password-toggle" id="togglePassword"></i>
                 </div>
+                <div class="strength-meter">
+                    <div id="strength-bar" class="strength-meter-fill"></div>
+                </div>
+                <p id="strength-text" class="strength-text"></p>
                 <p class="hint">Tối thiểu 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt</p>
                 <p class="error" id="password_error"></p>
                 <c:if test="${not empty passwordError}">
@@ -116,6 +120,40 @@
 </body>
 <script>
     let isFormSubmitted = false;
+    function updatePasswordStrength() {
+        const password = document.getElementById('password').value;
+        const bar = document.getElementById('strength-bar');
+        const text = document.getElementById('strength-text');
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[a-z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[\W_]/.test(password)) strength++;
+        bar.className = 'strength-meter-fill';
+        text.className = 'strength-text';
+        if (password.length === 0) {
+            text.textContent = '';
+            return;
+        }
+        if (strength <= 2) {
+            bar.classList.add('strength-weak');
+            text.textContent = 'Yếu';
+            text.classList.add('text-weak');
+        } else if (strength === 3) {
+            bar.classList.add('strength-medium');
+            text.textContent = 'Trung bình';
+            text.classList.add('text-medium');
+        } else if (strength === 4) {
+            bar.classList.add('strength-fair');
+            text.textContent = 'Khá';
+            text.classList.add('text-fair');
+        } else if (strength === 5) {
+            bar.classList.add('strength-strong');
+            text.textContent = 'Mạnh';
+            text.classList.add('text-strong');
+        }
+    }
     function validateForm() {
         const usernameInput = document.getElementById('local');
         const username = usernameInput.value;
@@ -196,11 +234,11 @@
         }
         if (password.length > 0 || isFormSubmitted) {
             if (password.length === 0) setError(passwordInput, 'password_error', "Mật khẩu không được để trống");
-            else if (password.length < 8) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 8 ký tự");
-            else if (!/[A-Z]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 chữ hoa");
-            else if (!/[a-z]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 chữ thường");
-            else if (!/\d/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 chữ số");
-            else if (!/[\W_]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu phải có ít nhất 1 ký tự đặc biệt");
+            else if (password.length < 8) setError(passwordInput, 'password_error', "Mật khẩu ít nhất 8 ký tự");
+            else if (!/[A-Z]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu thiếu chữ hoa");
+            else if (!/[a-z]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu thiếu chữ thường");
+            else if (!/\d/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu thiếu số");
+            else if (!/[\W_]/.test(password)) setError(passwordInput, 'password_error', "Mật khẩu thiếu ký đặc biệt");
             else clearError(passwordInput, 'password_error');
         } else {
             clearError(passwordInput, 'password_error');

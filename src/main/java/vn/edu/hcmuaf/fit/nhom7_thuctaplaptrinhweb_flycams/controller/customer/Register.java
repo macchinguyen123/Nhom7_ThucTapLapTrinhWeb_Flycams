@@ -50,12 +50,35 @@ public class Register extends HttpServlet {
             hasError = true;
         }
         if (!Validator.isValidUsername(username)) {
-            request.setAttribute("usernameError", "6-20 ký tự, không chứa ký tự đặc biệt");
+            if (Validator.isEmpty(username)) {
+                request.setAttribute("usernameError", "Không được để trống");
+            } else if (username.contains(" ")) {
+                request.setAttribute("usernameError", "Tên đăng nhập không được chứa khoảng trắng");
+            } else if (!username.matches("^[a-zA-Z0-9]*$")) {
+                request.setAttribute("usernameError", "Không được có ký tự đặc biệt");
+            } else if (username.length() < 6 || username.length() > 20) {
+                request.setAttribute("usernameError", "Cần 6-20 ký tự");
+            } else {
+                request.setAttribute("usernameError", "Tên đăng nhập không hợp lệ");
+            }
             hasError = true;
         }
         if (!Validator.isValidPassword(password)) {
-            request.setAttribute("passwordError",
-                    "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt");
+            if (Validator.isEmpty(password)) {
+                request.setAttribute("passwordError", "Mật khẩu không được để trống");
+            } else if (password.length() < 8) {
+                request.setAttribute("passwordError", "Mật khẩu ít nhất 8 ký tự");
+            } else if (!Validator.hasUpperCase(password)) {
+                request.setAttribute("passwordError", "Mật khẩu thiếu chữ hoa");
+            } else if (!Validator.hasLowerCase(password)) {
+                request.setAttribute("passwordError", "Mật khẩu thiếu chữ thường");
+            } else if (!Validator.hasDigit(password)) {
+                request.setAttribute("passwordError", "Mật khẩu thiếu số");
+            } else if (!Validator.hasSpecialChar(password)) {
+                request.setAttribute("passwordError", "Mật khẩu thiếu ký đặc biệt");
+            } else {
+                request.setAttribute("passwordError", "Mật khẩu không hợp lệ");
+            }
             hasError = true;
         }
         if (!password.equals(confirmPassword)) {
