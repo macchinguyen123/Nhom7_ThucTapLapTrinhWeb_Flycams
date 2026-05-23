@@ -44,6 +44,17 @@ public class ProductDetailServlet extends HttpServlet {
             return;
         }
         productService.incrementViewCount(id);
+        HttpSession sessionForRecent = request.getSession();
+        List<Product> recentProducts = (List<Product>) sessionForRecent.getAttribute("recentProducts");
+        if (recentProducts == null) {
+            recentProducts = new java.util.ArrayList<>();
+        }
+        recentProducts.removeIf(p -> p.getId() == product.getId());
+        recentProducts.add(0, product);
+        if (recentProducts.size() > 10) {
+            recentProducts = new java.util.ArrayList<>(recentProducts.subList(0, 10));
+        }
+        sessionForRecent.setAttribute("recentProducts", recentProducts);
 
         String categoryName = categoryService.getCategoryNameById(product.getCategoryId());
 

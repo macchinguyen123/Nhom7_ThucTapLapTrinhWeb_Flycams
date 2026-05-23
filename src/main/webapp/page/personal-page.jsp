@@ -37,7 +37,7 @@
                                     </span>
             </div>
             <input type="file" id="avatar-upload" accept="image/*" style="display: none !important;"
-                   onclick="this.value=''" onchange="previewAndSaveAvatar(this)">
+                   onclick="this.value=''">
             <p class="username">${user.username}</p>
         </div>
         <nav class="menu">
@@ -46,6 +46,7 @@
                 </li>
                 <li data-section="repass-section"><a href="#">Đổi mật khẩu</a></li>
                 <li data-section="orders-section"><a href="#">Đơn Mua</a></li>
+                <li data-section="recent-section"><a href="#">Sản Phẩm Đã Xem Gần Đây</a></li>
                 <li data-section="addresses-section"><a
                         href="${pageContext.request.contextPath}/ListAddressServlet">Địa Chỉ Nhận
                     Hàng</a></li>
@@ -65,6 +66,7 @@
             <h2>Hồ Sơ Của Tôi</h2>
             <p class="desc">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
             <form action="${pageContext.request.contextPath}/UpdateProfileServlet" method="post">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="fullName">Họ tên</label>
@@ -111,12 +113,56 @@
                 <button type="submit" class="btn btn-primary">Cập nhật</button>
             </form>
         </section>
+        <section id="recent-section" class="section">
+            <h2>Sản Phẩm Đã Xem Gần Đây</h2>
+            <p class="desc">Những sản phẩm bạn đã xem trong phiên này</p>
+
+            <c:choose>
+                <c:when test="${empty recentProducts}">
+                    <div class="recent-empty">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Bạn chưa xem sản phẩm nào.</span>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="recent-list">
+                        <c:forEach var="p" items="${recentProducts}">
+                            <a href="${pageContext.request.contextPath}/product-detail?id=${p.id}"
+                               class="recent-item">
+
+                                <div class="recent-item__left">
+                                    <img src="${p.mainImage}"
+                                         onerror="this.src='${pageContext.request.contextPath}/image/products/no-image.png'"
+                                         class="recent-item__img" alt="${p.productName}">
+                                    <div class="recent-item__info">
+                                        <div class="recent-item__name">${p.productName}</div>
+                                        <c:if test="${p.price > p.finalPrice}">
+                                            <div class="recent-item__original-price">
+                                                <fmt:formatNumber value="${p.price}" type="number"/> VNĐ
+                                            </div>
+                                        </c:if>
+                                    </div>
+                                </div>
+
+                                <div class="recent-item__right">
+                                    <div class="recent-item__price">
+                                        <fmt:formatNumber value="${p.finalPrice}" type="number"/> VNĐ
+                                    </div>
+                                </div>
+
+                            </a>
+                        </c:forEach>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </section>
         <section id="repass-section" class="section" style="max-width: 450px; margin: 0 auto;">
             <h2>Đổi Mật Khẩu</h2>
             <p class="desc">Vui lòng xác minh qua mã OTP để đảm bảo an toàn cho tài khoản của bạn
             </p>
             <form id="passwordForm" class="password-form" method="post"
                   action="SendOtpChangePassword">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="form-group">
                     <label for="currentPassword">Mật khẩu hiện tại</label>
                     <div style="position: relative;">
@@ -275,6 +321,7 @@
                                           action="${pageContext.request.contextPath}/personal"
                                           style="display:inline"
                                           onsubmit="return confirm('Bạn có chắc muốn huỷ đơn hàng #${o.id} ?');">
+                                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                                         <input type="hidden" name="action" value="cancelOrder">
                                         <input type="hidden" name="orderId" value="${o.id}">
                                         <button type="button" class="btn btn-danger btn-sm"
@@ -311,6 +358,7 @@
                  aria-labelledby="cancelModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <form method="post" action="${pageContext.request.contextPath}/personal">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <div class="modal-content">
                             <div class="modal-header bg-danger text-white">
                                 <h5 class="modal-title" id="cancelModalLabel">
@@ -356,6 +404,7 @@
                  aria-labelledby="returnModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <form method="post" action="${pageContext.request.contextPath}/personal">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <div class="modal-content">
                             <div class="modal-header bg-warning text-dark">
                                 <h5 class="modal-title" id="returnModalLabel">
@@ -393,6 +442,7 @@
                  aria-labelledby="undoReturnModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <form method="post" action="${pageContext.request.contextPath}/personal">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <div class="modal-content">
                             <div class="modal-header bg-secondary text-white">
                                 <h5 class="modal-title" id="undoReturnModalLabel">
@@ -429,6 +479,7 @@
                  aria-labelledby="receiveModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <form method="post" action="${pageContext.request.contextPath}/personal">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <div class="modal-content">
                             <div class="modal-header bg-success text-white">
                                 <h5 class="modal-title" id="receiveModalLabel">
@@ -593,6 +644,7 @@
                     <h2>Thêm địa chỉ</h2>
                     <form action="${pageContext.request.contextPath}/AddAddressServlet"
                           method="post">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <div class="form-group">
                             <label for="fullName">Họ tên</label>
                             <input type="text" name="fullName" id="fullName" required>
@@ -643,6 +695,7 @@
                     <h2>Sửa địa chỉ</h2>
                     <form action="${pageContext.request.contextPath}/EditAddressServlet"
                           method="post">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <input type="hidden" name="id" id="editId">
                         <div class="form-group">
                             <label for="editFullName">Họ tên</label>
@@ -797,6 +850,7 @@
                 });
                 const formData = new FormData();
                 formData.append("avatar", file);
+                formData.append("_csrf", "${sessionScope.CSRF_TOKEN}");
                 fetch("${pageContext.request.contextPath}/UpdateAvatar", {
                     method: "POST",
                     body: formData
@@ -1063,7 +1117,6 @@
         }, 3000);
     }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <c:if test="${not empty error}">
     <script>
         document.addEventListener("DOMContentLoaded", function () {
