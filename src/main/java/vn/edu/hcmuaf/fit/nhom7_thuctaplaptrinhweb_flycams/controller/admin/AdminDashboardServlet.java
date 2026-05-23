@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.DashboardService;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.CsrfTokenUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,6 +21,8 @@ public class AdminDashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(true);
+        CsrfTokenUtil.getOrCreate(session);
         request.setAttribute("totalUsers", dashboardService.getTotalUsers());
         request.setAttribute("totalProducts", dashboardService.getTotalProducts());
         request.setAttribute("totalOrders", dashboardService.getTotalOrders());

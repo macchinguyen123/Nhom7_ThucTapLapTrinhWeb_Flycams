@@ -147,6 +147,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="${pageContext.request.contextPath}/admin/complaints" method="post">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="modal-body">
                     <input type="hidden" name="action" value="updateStatus">
                     <input type="hidden" name="id" id="complaintId">
@@ -173,6 +174,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     $(document).ready(function () {
         var table = $('#complaintsTable').DataTable({
             "order": [],

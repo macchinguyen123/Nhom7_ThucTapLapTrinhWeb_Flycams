@@ -5,8 +5,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.ComplaintDAO;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Complaint;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.CsrfTokenUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,7 +17,8 @@ import java.util.List;
 public class ManageComplaintServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        ComplaintDAO dao = new ComplaintDAO();
+        HttpSession session = request.getSession(true);
+        CsrfTokenUtil.getOrCreate(session); ComplaintDAO dao = new ComplaintDAO();
         List<Complaint> complaints = dao.getAllComplaints();
         request.setAttribute("complaints", complaints);
         request.getRequestDispatcher("/page/admin/complaints-manage.jsp").forward(request, response);

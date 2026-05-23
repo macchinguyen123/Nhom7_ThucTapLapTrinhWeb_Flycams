@@ -215,6 +215,7 @@
 <div id="quickReplyMenu" class="list-group position-absolute" style="display:none; z-index: 1000; width: 300px;">
 </div>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     (function () {
         const logoutBtn = document.getElementById('logoutBtn');
         const logoutModal = document.getElementById('logoutModal');
@@ -365,7 +366,8 @@
 
         fetch(contextPath + '/admin/chat?action=resolve', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded'
+                'X-CSRF-Token': CSRF_TOKEN},
             body: new URLSearchParams({
                 conversationId: convId,
                 resolved: newResolved ? '1' : '0'
@@ -555,7 +557,8 @@
         scrollToBottom(body, true);
         fetch(contextPath + '/admin/chat?action=send', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'
+                'X-CSRF-Token': CSRF_TOKEN},
             body: new URLSearchParams({
                 conversationId: currentConvId,
                 participantId: currentParticipantId,

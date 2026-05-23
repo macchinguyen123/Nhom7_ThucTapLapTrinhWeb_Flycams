@@ -10,6 +10,7 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Categories;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Product;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Promotion;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.PromotionService;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.CsrfTokenUtil;
 
 import java.io.IOException;
 import java.sql.Date;
@@ -31,6 +32,8 @@ public class PromotionManageServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpSession session = req.getSession(true);
+        CsrfTokenUtil.getOrCreate(session);
         List<Promotion> promotions = promotionService.getAllPromotions();
         Map<Integer, String> scopeMap = new HashMap<>();
         for (Promotion p : promotions) {

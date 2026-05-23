@@ -126,6 +126,7 @@
         </div>
         <div class="toolbar-blog mb-3">
             <form class="search-box" role="search">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="input-group">
                                         <span class="input-group-text bg-primary text-white">
                                             <i class="bi bi-search"></i>
@@ -229,6 +230,7 @@
         <div class="modal-content">
             <form action="${pageContext.request.contextPath}/admin/promotion-manage" method="post"
                   id="formAddPromotion">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-plus-circle"></i> Thêm Khuyến Mãi
@@ -432,6 +434,7 @@
         <div class="modal-content">
             <form action="${pageContext.request.contextPath}/admin/promotion-manage" method="post"
                   id="formEditPromotion">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="id" id="edit-id">
                 <input type="hidden" name="productIds" id="edit-selected-products-hidden">
@@ -651,6 +654,7 @@
     });
 </script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     class ProductSelectionManager {
         constructor(prefix) {
             this.prefix = prefix;

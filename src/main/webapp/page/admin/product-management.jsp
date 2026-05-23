@@ -153,6 +153,7 @@
             <h4 class="text-primary fw-bold"><i class="bi bi-box-seam"></i> Quản Lý Sản Phẩm</h4>
             <div class="d-flex align-items-center gap-2">
                 <form class="d-flex" role="search" style="max-width: 300px;">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="input-group">
                                         <span class="input-group-text bg-primary text-white">
                                             <i class="bi bi-search"></i>
@@ -261,8 +262,9 @@
             </div>
             <div class="modal-body">
                 <form id="formSanPham" class="row g-3">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <input type="hidden" id="productId">
-                    <input type="hidden" id="formMode" value="add"> <!-- add | edit -->
+                    <input type="hidden" id="formMode" value="add">
                     <div class="col-md-6">
                         <label class="form-label">Mã sản phẩm</label>
                         <input type="text" class="form-control" id="maSP" placeholder="Mã tự động"
@@ -385,6 +387,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     var table = $('#tableSanPham').DataTable({
         "paging": true,
         "lengthChange": false,
@@ -502,7 +505,8 @@
         }
         fetch(contextPath + '/admin/product-toggle-status', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json',
+                "X-CSRF-Token": CSRF_TOKEN},
             body: JSON.stringify({id: productId, status: newStatus})
         })
             .then(res => res.json())

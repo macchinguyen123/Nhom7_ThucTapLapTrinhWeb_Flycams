@@ -123,6 +123,7 @@
                     <i class="bi bi-arrow-left"></i> Quay Lại
                 </a>
                 <form class="d-flex m-0" role="search" style="max-width: 300px;">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="input-group">
                         <span class="input-group-text bg-primary text-white border-primary">
                             <i class="bi bi-search"></i>
@@ -319,6 +320,7 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     let currentOrderId = null;
 
     function loadOrderDetail(orderId) {
@@ -410,7 +412,8 @@
         fetch('${pageContext.request.contextPath}/admin/order-action', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                "X-CSRF-Token": CSRF_TOKEN
             },
             body: params.toString()
         })

@@ -10,6 +10,7 @@ import java.io.IOException;
 public class InventoryPageServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
         request.getRequestDispatcher("/page/admin/inventory-manage.jsp").forward(request, response);
     }
 }

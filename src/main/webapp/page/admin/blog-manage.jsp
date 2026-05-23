@@ -173,6 +173,7 @@
         <div id="panelBlog">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <form class="d-flex" role="search" style="max-width: 300px;">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="input-group">
                                             <span class="input-group-text bg-primary text-white">
                                                 <i class="bi bi-search"></i>
@@ -193,6 +194,7 @@
                     <form id="addBlogForm"
                           action="${pageContext.request.contextPath}/admin/blog-manage"
                           method="post" onsubmit="return syncAddEditor()">
+                        <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                         <div class="modal-header">
                             <h5 class="modal-title"><i class="bi bi-plus-lg"></i> Thêm Bài Viết</h5>
                             <button type="button" class="btn-close"
@@ -397,6 +399,7 @@
                         <form id="editBlogForm"
                               action="${pageContext.request.contextPath}/admin/blog-manage"
                               method="post" onsubmit="return syncEditEditor()">
+                            <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                             <div class="modal-header">
                                 <h5 class="modal-title"><i class="bi bi-pencil"></i> Sửa bài viết</h5>
                                 <button type="button" class="btn-close"
@@ -625,6 +628,7 @@
 </body>
 <script>
     const baseUrl = "${pageContext.request.contextPath}";
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     $(document).ready(function () {
         blogTable = $('#tableBlog').DataTable({
             pageLength: 5,

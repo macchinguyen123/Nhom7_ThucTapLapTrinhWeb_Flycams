@@ -137,6 +137,7 @@
             <h4 class="text-primary fw-bold"><i class="bi bi-boxes"></i> Quản Lý Kho Hàng</h4>
             <div class="d-flex align-items-center gap-2">
                 <form class="d-flex" role="search" style="max-width: 300px;">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <div class="input-group">
                         <span class="input-group-text bg-primary text-white">
                             <i class="bi bi-search"></i>
@@ -213,6 +214,7 @@
                 </div>
                 <hr>
                 <form id="formNhapKho" class="row g-3">
+                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                     <input type="hidden" id="importProductId" name="productId">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Số lượng nhập <span class="text-danger">*</span></label>
@@ -267,6 +269,7 @@
                             </div>
                             <div class="card-body">
                                 <form id="infoForm">
+                                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">Người lập phiếu</label>
                                         <input type="text" class="form-control" value="${sessionScope.user.fullName != null ? sessionScope.user.fullName : 'Admin'}" disabled>
@@ -346,6 +349,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     const contextPath = '${pageContext.request.contextPath}';
     function updatePageInfo() {
     }

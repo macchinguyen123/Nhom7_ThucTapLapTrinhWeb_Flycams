@@ -115,8 +115,7 @@ task docker_upload_file_to_server {
         ssh.run {
             session(remotes.host) {
                 execute 'mkdir -p /usr/deploy', ignoreError: true
-                remove '/usr/deploy/ROOT.war'
-                remove '/usr/deploy/ROOT'
+                execute 'rm -rf /usr/deploy/ROOT.war /usr/deploy/ROOT', ignoreError: true
                 put from: "${project.projectDir}/build/libs/${rootProject.name}-${version}.war",
                         into: "/usr/deploy/ROOT.war"
             }

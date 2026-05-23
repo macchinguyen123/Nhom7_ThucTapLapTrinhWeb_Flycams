@@ -280,6 +280,7 @@
         <div class="modal-content">
             <form id="add-banner-form"
                   action="${pageContext.request.contextPath}/admin/banner-manage" method="post">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-lg"></i> Thêm Banner</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -342,6 +343,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="${pageContext.request.contextPath}/admin/banner-manage" method="post">
+                <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-pencil"></i> Sửa Banner</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -449,6 +451,7 @@
 
 <script>
     const baseUrl = "${pageContext.request.contextPath}";
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     let bannerTable;
 
     $(document).ready(function () {
