@@ -38,10 +38,14 @@
                     <p class="text-center text-muted">Giỏ hàng trống</p>
                 </c:if>
                 <c:forEach var="item" items="${cart.items}">
+                    <c:set var="stockError"
+                           value="${item.product.quantity <= 0 or item.quantity > item.product.quantity}"/>
                     <div class="khung_san_pham d-flex justify-content-between align-items-center
-            border rounded shadow-sm p-3 mb-3 bg-white" data-id="${item.product.id}">
+            border rounded shadow-sm p-3 mb-3 ${stockError ? 'bg-light' : 'bg-white'}" data-id="${item.product.id}"
+                         data-max-stock="${item.product.quantity}">
                         <div class="d-flex align-items-center gap-3">
-                            <input type="checkbox" class="chon_san_pham form-check-input me-3">
+                            <input type="checkbox"
+                                   class="chon_san_pham form-check-input me-3" ${stockError ? 'disabled' : ''}>
                             <a
                                     href="${pageContext.request.contextPath}/product-detail?id=${item.product.id}">
                                 <c:choose>
@@ -59,7 +63,15 @@
                                 <h6 class="ten_san_pham mb-1 fw-semibold text-truncate"
                                     style="max-width: 260px;">
                                         ${item.product.productName}
+                                    <c:if test="${stockError}">
+                                        <span class="badge bg-danger ms-2">Hết hàng</span>
+                                    </c:if>
                                 </h6>
+                                <c:if test="${stockError}">
+                                    <div class="text-danger small mt-1 fw-medium">Sản phẩm đã hết hàng, vui lòng xóa
+                                        khỏi giỏ hàng
+                                    </div>
+                                </c:if>
                                 <div class="gia_san_pham">
                                     <c:if test="${item.product.price > item.product.finalPrice}">
                                         <div
@@ -76,10 +88,15 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <button class="btn btn-outline-secondary btn-sm nut_giam">−</button>
+                            <button class="btn btn-outline-secondary btn-sm nut_giam" ${stockError ? 'disabled' : ''}>
+                                −
+                            </button>
                             <input type="text" class="form-control text-center o_so_luong mx-1"
-                                   value="${item.quantity}" style="width:50px;" readonly>
-                            <button class="btn btn-outline-secondary btn-sm nut_tang">+</button>
+                                   value="${stockError ? 0 : item.quantity}" style="width:50px;"
+                                   readonly ${stockError ? 'disabled' : ''}>
+                            <button class="btn btn-outline-secondary btn-sm nut_tang" ${stockError ? 'disabled' : ''}>
+                                +
+                            </button>
                             <button class="btn btn-outline-danger btn-sm nut_xoa_1"
                                     title="Xóa sản phẩm">
                                 <i class="bi bi-trash"></i>
@@ -156,14 +173,14 @@
     }
 
     chonTatCa.addEventListener("change", () => {
-        document.querySelectorAll(".chon_san_pham")
+        document.querySelectorAll(".chon_san_pham:not([disabled])")
             .forEach(cb => cb.checked = chonTatCa.checked);
         capNhatTongTien();
     });
     danhSach.addEventListener("change", e => {
         if (e.target.classList.contains("chon_san_pham")) {
-            const checkboxes = document.querySelectorAll(".chon_san_pham");
-            const checked = document.querySelectorAll(".chon_san_pham:checked");
+            const checkboxes = document.querySelectorAll(".chon_san_pham:not([disabled])");
+            const checked = document.querySelectorAll(".chon_san_pham:checked:not([disabled])");
             chonTatCa.checked = (checkboxes.length > 0 && checkboxes.length === checked.length);
             capNhatTongTien();
         }
@@ -176,7 +193,16 @@
             e.target.classList.contains("nut_giam")) {
             const input = sp.querySelector(".o_so_luong");
             let soLuong = parseInt(input.value);
+            const maxStock = parseInt(sp.dataset.maxStock) || 0;
             if (e.target.classList.contains("nut_tang")) {
+                if (soLuong >= maxStock) {
+                    if (typeof showNotification === 'function') {
+                        showNotification("Sản phẩm vượt quá số lượng tồn kho", "error");
+                    } else {
+                        alert("Sản phẩm vượt quá số lượng tồn kho");
+                    }
+                    return;
+                }
                 soLuong++;
             } else if (e.target.classList.contains("nut_giam")) {
                 if (soLuong > 1) {
