@@ -6,10 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Address;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.OrderItems;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Orders;
-import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.*;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AddressService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.OrderService;
@@ -92,6 +89,8 @@ public class Personal extends HttpServlet {
             request.setAttribute("activeTab", "addresses");
         }
         request.setAttribute("selectedOrder", selectedOrder);
+        List<Product> recentProducts = (List<Product>) session.getAttribute("recentProducts");
+        request.setAttribute("recentProducts", recentProducts);
         long totalTime = System.currentTimeMillis() - startTime;
         request.getRequestDispatcher("/page/personal-page.jsp").forward(request, response);
     }
