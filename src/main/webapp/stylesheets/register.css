@@ -244,8 +244,62 @@ a {
 }
 
 input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-    display: none;
+
+.strength-meter {
+    height: 4px;
+    background-color: #eee;
+    margin-top: 8px;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+.strength-meter-fill {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-text {
+    font-size: 12px;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.strength-weak {
+    width: 25%;
+    background-color: #dc3545;
+}
+
+.strength-medium {
+    width: 50%;
+    background-color: #fd7e14;
+}
+
+.strength-fair {
+    width: 75%;
+    background-color: #ffc107;
+}
+
+.strength-strong {
+    width: 100%;
+    background-color: #198754;
+}
+
+.text-weak {
+    color: #dc3545;
+}
+
+.text-medium {
+    color: #fd7e14;
+}
+
+.text-fair {
+    color: #ffc107;
+}
+
+.text-strong {
+    color: #198754;
 }
 
 .password-wrapper {

@@ -31,8 +31,20 @@ public class Validator {
     public static boolean isValidUsername(String username) {
         if (isEmpty(username))
             return false;
-        String usernameRegex = "^[a-zA-ZÀ-ỹ0-9 ]{6,20}$";
+        String usernameRegex = "^[a-zA-Z0-9]{6,20}$";
         return username.matches(usernameRegex);
+    }
+    public static boolean hasUpperCase(String password) {
+        return password.matches(".*[A-Z].*");
+    }
+    public static boolean hasLowerCase(String password) {
+        return password.matches(".*[a-z].*");
+    }
+    public static boolean hasDigit(String password) {
+        return password.matches(".*\\d.*");
+    }
+    public static boolean hasSpecialChar(String password) {
+        return password.matches(".*[\\W_].*");
     }
     public static boolean isValidMinLength(String input, int minLength) {
         if (isEmpty(input))
