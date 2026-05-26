@@ -6,6 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SkyDrone - Trang chủ</title>
+    <meta name="_csrf" content="${sessionScope.CSRF_TOKEN}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
           rel="stylesheet">
@@ -47,7 +48,7 @@
                 <c:choose>
                     <c:when test="${banner.type == 'video'}">
                         <c:set var="vUrl" value="${banner.videoUrl}"/>
-                        <a href="${not empty banner.link ? banner.link : '#'}">
+                        <a href="${not empty banner.link ? (fn:startsWith(banner.link, 'http') ? banner.link : pageContext.request.contextPath.concat(banner.link)) : '#'}">
                             <video autoplay loop muted playsinline>
                                 <source src="${not empty vUrl && fn:contains(vUrl, '://') ? vUrl : pageContext.request.contextPath.concat(not empty vUrl && fn:startsWith(vUrl, '/') ? '' : '/').concat(not empty vUrl ? vUrl : '')}"
                                         type="video/mp4">
@@ -56,7 +57,7 @@
                     </c:when>
                     <c:otherwise>
                         <c:set var="iUrl" value="${banner.imageUrl}"/>
-                        <a href="${not empty banner.link ? banner.link : '#'}">
+                        <a href="${not empty banner.link ? (fn:startsWith(banner.link, 'http') ? banner.link : pageContext.request.contextPath.concat(banner.link)) : '#'}">
                             <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}"
                                  alt="Banner ${banner.id}">
                         </a>
@@ -68,7 +69,7 @@
 <c:if test="${not empty banners && banners.size() > 1}">
     <div class="banner-wrapper">
         <c:forEach var="banner" items="${banners}" begin="1" end="3">
-            <a href="${not empty banner.link ? banner.link : '#'}">
+            <a href="${not empty banner.link ? (fn:startsWith(banner.link, 'http') ? banner.link : pageContext.request.contextPath.concat(banner.link)) : '#'}">
                 <div class="banner-item">
                     <c:choose>
                         <c:when test="${banner.type == 'image'}">
@@ -91,7 +92,7 @@
     <div class="banner-right slider-2">
         <div class="slider slider-2-inner">
             <c:forEach var="banner" items="${banners}" begin="4">
-                <a href="${not empty banner.link ? banner.link : '#'}" class="slider-2-link">
+                <a href="${not empty banner.link ? (fn:startsWith(banner.link, 'http') ? banner.link : pageContext.request.contextPath.concat(banner.link)) : '#'}">
                     <div class="slide">
                         <c:choose>
                             <c:when test="${banner.type == 'image'}">
@@ -524,6 +525,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.tim-yeu-thich').forEach(tim => {
         tim.addEventListener('click', function (e) {
             e.preventDefault();
@@ -536,15 +538,19 @@
                 console.error('productId is null');
                 return;
             }
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+
             fetch('${pageContext.request.contextPath}/wishlist', {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: new URLSearchParams({
                     action: action,
-                    productId: productId
+                    productId: productId,
+                    _csrf: csrfToken
                 })
             })
                 .then(res => res.json())
@@ -569,8 +575,107 @@
                 });
         });
     });
+    });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const slider2 = document.querySelector('.slider-2-inner');
+        const slides2 = document.querySelectorAll('.slider-2-inner .slide');
+        const dotsContainer2 = document.querySelector('.slider-2-dots');
+        const arrowLeft2 = document.querySelector('.slider-2-left');
+        const arrowRight2 = document.querySelector('.slider-2-right');
+        const slider2Container = document.querySelector('.slider-2');
+        if (!slider2 || !slides2.length) {
+            console.log('Slider 2 không tồn tại hoặc không có slide');
+            return;
+        }
+        if (slides2.length < 2) {
+            if (arrowLeft2) arrowLeft2.style.display = 'none';
+            if (arrowRight2) arrowRight2.style.display = 'none';
+            if (dotsContainer2) dotsContainer2.style.display = 'none';
+            return;
+        }
+        let index2 = 0;
+        let autoSlide2;
 
+        function createDots2() {
+            if (!dotsContainer2) return;
+            dotsContainer2.innerHTML = '';
+            slides2.forEach((_, i) => {
+                const dot = document.createElement('span');
+                dot.classList.add('dot2');
+                if (i === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => {
+                    goToSlide2(i);
+                    stopSlide2();
+                    startSlide2();
+                });
+                dotsContainer2.appendChild(dot);
+            });
+        }
+
+        function updateDots2() {
+            document.querySelectorAll('.dot2').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index2);
+            });
+        }
+
+        function goToSlide2(i) {
+            index2 = (i + slides2.length) % slides2.length;
+            console.log('DEBUG: index2=', index2);
+            const percentage = index2 * 100;
+            console.log('DEBUG: percentage=', percentage);
+            const transformValue = 'translateX(-' + percentage + '%)';
+            console.log('DEBUG: transformValue string=', transformValue);
+            if (slider2) {
+                slider2.style.transform = transformValue;
+                console.log('DEBUG: Element style.transform after set:', slider2.style.transform);
+            } else {
+                console.error('DEBUG: slider2 element is missing!');
+            }
+            updateDots2();
+        }
+
+        window.addEventListener('resize', () => {
+            goToSlide2(index2);
+        });
+        if (arrowLeft2) {
+            arrowLeft2.addEventListener('click', () => {
+                goToSlide2(index2 - 1);
+                stopSlide2();
+                startSlide2();
+            });
+        }
+        if (arrowRight2) {
+            arrowRight2.addEventListener('click', () => {
+                goToSlide2(index2 + 1);
+                stopSlide2();
+                startSlide2();
+            });
+        }
+
+        function startSlide2() {
+            stopSlide2();
+            autoSlide2 = setInterval(() => {
+                goToSlide2(index2 + 1);
+            }, 3000);
+        }
+
+        function stopSlide2() {
+            if (autoSlide2) {
+                clearInterval(autoSlide2);
+            }
+        }
+
+        if (slider2Container) {
+            slider2Container.addEventListener('mouseenter', stopSlide2);
+            slider2Container.addEventListener('mouseleave', startSlide2);
+        }
+        createDots2();
+        startSlide2();
+        console.log('Slider 2 đã khởi động với ' + slides2.length + ' slides');
+    });
+</script>
 <%
     String paymentError = (String) session.getAttribute("paymentError");
     if (paymentError != null) {

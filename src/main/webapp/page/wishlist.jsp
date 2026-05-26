@@ -7,6 +7,7 @@
 <head>
     <meta charset="UTF-8"/>
     <title>Danh sách yêu thích Flycam</title>
+    <meta name="_csrf" content="${sessionScope.CSRF_TOKEN}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
@@ -93,9 +94,11 @@
     </div>
 </div>
 <jsp:include page="/page/footer.jsp"/>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const contextPath = '${pageContext.request.contextPath}';
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
         // Xử lý nút xóa từng sản phẩm
         document.querySelectorAll('.nut_xoa').forEach(btn => {
             btn.addEventListener('click', e => {
@@ -108,9 +111,13 @@
                 const params = new URLSearchParams();
                 params.append("action", "remove");
                 params.append("productId", productId);
+                params.append("_csrf", csrfToken);
                 fetch(contextPath + '/wishlist', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
                     body: params.toString()
                 })
                     .then(res => res.json())
@@ -153,49 +160,59 @@
                     showNotification('Bạn chưa chọn sản phẩm nào', 'error');
                     return;
                 }
-                // Xác nhận trước khi xóa
-                if (!confirm(`Bạn có chắc muốn xóa ${checkedBoxes.length} sản phẩm đã chọn?`)) {
-                    return;
-                }
-                const productIds = [];
-                checkedBoxes.forEach(cb => {
-                    const productId = cb.closest('.khung_san_pham').getAttribute('data-product-id');
-                    if (productId) productIds.push(productId);
-                });
-                const params = new URLSearchParams();
-                params.append("action", "removeSelected");
-                params.append("productIds", productIds.join(","));
-                fetch(contextPath + '/wishlist', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-                    body: params.toString()
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            checkedBoxes.forEach((cb, index) => {
-                                const productBox = cb.closest('.khung_san_pham');
-                                productBox.style.transition = 'all 0.3s ease';
-                                productBox.style.transitionDelay = (index * 0.05) + 's';
-                                productBox.style.opacity = '0';
-                                productBox.style.transform = 'translateX(100px)';
-                            });
-                            setTimeout(() => {
-                                checkedBoxes.forEach(cb => {
-                                    cb.closest('.khung_san_pham')?.remove();
-                                });
-                                checkEmptyWishlist();
-                                if (chonTatCa) chonTatCa.checked = false;
-                            }, 300 + (checkedBoxes.length * 50));
-                            showNotification(`Đã xóa ${checkedBoxes.length} sản phẩm`, 'success');
-                        } else {
-                            showNotification('Xóa thất bại', 'error');
-                        }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        showNotification('Lỗi kết nối server', 'error');
+                Swal.fire({
+                    title: 'Xác nhận xóa',
+                    text: `Bạn có chắc muốn xóa ${checkedBoxes.length} sản phẩm đã chọn?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    const productIds = [];
+                    checkedBoxes.forEach(cb => {
+                        const productId = cb.closest('.khung_san_pham').getAttribute('data-product-id');
+                        if (productId) productIds.push(productId);
                     });
+                    const params = new URLSearchParams();
+                    params.append("action", "removeSelected");
+                    params.append("productIds", productIds.join(","));
+                    params.append("_csrf", csrfToken);
+                    fetch(contextPath + '/wishlist', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'},
+                        body: params.toString()
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                checkedBoxes.forEach((cb, index) => {
+                                    const productBox = cb.closest('.khung_san_pham');
+                                    productBox.style.transition = 'all 0.3s ease';
+                                    productBox.style.transitionDelay = (index * 0.05) + 's';
+                                    productBox.style.opacity = '0';
+                                    productBox.style.transform = 'translateX(100px)';
+                                });
+                                setTimeout(() => {
+                                    checkedBoxes.forEach(cb => {
+                                        cb.closest('.khung_san_pham')?.remove();
+                                    });
+                                    checkEmptyWishlist();
+                                    if (chonTatCa) chonTatCa.checked = false;
+                                }, 300 + (checkedBoxes.length * 50));
+                                showNotification(`Đã xóa ${checkedBoxes.length} sản phẩm`, 'success');
+                            } else {
+                                showNotification('Xóa thất bại', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            showNotification('Lỗi kết nối server', 'error');
+                        });
+                });
             });
         }
         // Xử lý form thêm vào giỏ hàng với hiệu ứng bay
