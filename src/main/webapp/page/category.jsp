@@ -110,6 +110,27 @@
                             </div>
                         </div>
                     </div>
+                    <hr class="my-2">
+                    <h6><i class="bi bi-star"></i> Lọc theo đánh giá</h6>
+                    <hr class="my-2">
+                    <div class="danh-sach-loc">
+                        <label>
+                            <input type="radio" name="min-rating" value="0" <c:if test="${empty param['min-rating'] || param['min-rating'] == '0'}">checked</c:if>>
+                            Tất cả
+                        </label>
+                        <label>
+                            <input type="radio" name="min-rating" value="5" <c:if test="${param['min-rating'] == '5'}">checked</c:if>>
+                            Từ 5 sao
+                        </label>
+                        <label>
+                            <input type="radio" name="min-rating" value="4" <c:if test="${param['min-rating'] == '4'}">checked</c:if>>
+                            Từ 4 sao trở lên
+                        </label>
+                        <label>
+                            <input type="radio" name="min-rating" value="3" <c:if test="${param['min-rating'] == '3'}">checked</c:if>>
+                            Từ 3 sao trở lên
+                        </label>
+                    </div>
                     <button type="submit" class="btn btn-sm btn-primary mt-2">Áp dụng</button>
                 </div>
             </div>
@@ -139,7 +160,7 @@
     </c:if>
     <div class="khung-san-pham">
         <c:forEach var="p" items="${products}">
-            <div class="san-pham">
+            <div class="san-pham main-product">
                 <a class="link-chi-tiet"
                    href="${pageContext.request.contextPath}/product-detail?id=${p.id}">
                     <div class="khung-anh">
@@ -202,12 +223,65 @@
             </div>
         </c:forEach>
     </div>
-    <div class="phan-trang text-center mt-4">
-        <button class="btn btn-outline-primary nut-truoc">« Trang trước</button>
-        <span class="so-trang-hien-tai mx-3">Trang <span id="trang-hien-tai">1</span> / <span
-                id="tong-trang"></span></span>
-        <button class="btn btn-outline-primary nut-sau">Trang sau »</button>
-    </div>
+    <c:if test="${empty products and not empty recommendedProducts}">
+        <h3 class="tieu-de-muc mt-5 mb-4 text-center">Gợi ý cho bạn</h3>
+        <div class="khung-san-pham">
+            <c:forEach var="p" items="${recommendedProducts}">
+                <div class="san-pham">
+                    <a class="link-chi-tiet" href="${pageContext.request.contextPath}/product-detail?id=${p.id}">
+                        <div class="khung-anh">
+                            <c:choose>
+                                <c:when test="${not empty p.mainImage}">
+                                    <img src="${p.mainImage}" alt="${p.productName}">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}/assets/no-image.png" alt="No Image">
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <h3 class="ten-san-pham">${p.productName}</h3>
+                        <div class="gia">
+                            <b>${formatter.format(p.finalPrice)} VNĐ</b>
+                            <c:if test="${p.price > p.finalPrice}">
+                                <span class="gia-goc">${formatter.format(p.price)} VNĐ</span>
+                            </c:if>
+                        </div>
+                    </a>
+                    <c:set var="fullStars" value="${p.avgRating.intValue()}"/>
+                    <c:set var="hasHalfStar" value="${p.avgRating - fullStars >= 0.5}"/>
+                    <div class="hang-danh-gia">
+                        <div class="danh-gia-sao">
+                            <c:forEach begin="1" end="${fullStars}">
+                                <i class="bi bi-star-fill text-warning"></i>
+                            </c:forEach>
+                            <c:if test="${hasHalfStar}">
+                                <i class="bi bi-star-half text-warning"></i>
+                            </c:if>
+                            <c:forEach begin="1" end="${5 - fullStars - (hasHalfStar ? 1 : 0)}">
+                                <i class="bi bi-star text-warning"></i>
+                            </c:forEach>
+                        </div>
+                    </div>
+                    <div class="so-danh-gia">(${empty p.reviewCount ? 0 : p.reviewCount} đánh giá)</div>
+                    <form action="${pageContext.request.contextPath}/add-cart" method="get">
+                        <input type="hidden" name="productId" value="${p.id}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="nut-mua-ngay">
+                            <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                        </button>
+                    </form>
+                </div>
+            </c:forEach>
+        </div>
+    </c:if>
+    <c:if test="${not empty products}">
+        <div class="phan-trang text-center mt-4">
+            <button class="btn btn-outline-primary nut-truoc">« Trang trước</button>
+            <span class="so-trang-hien-tai mx-3">Trang <span id="trang-hien-tai">1</span> / <span
+                    id="tong-trang"></span></span>
+            <button class="btn btn-outline-primary nut-sau">Trang sau »</button>
+        </div>
+    </c:if>
 </section>
 <jsp:include page="/page/footer.jsp"/>
 <script>
@@ -270,13 +344,18 @@
             console.log("🔹 Đã chọn:", btn.textContent.trim());
         });
     });
-    const sanPhams = document.querySelectorAll('.san-pham');
+    const sanPhams = document.querySelectorAll('.san-pham.main-product');
     const spMoiTrang = 20;
     let trangHienTai = 1;
-    const tongTrang = Math.ceil(sanPhams.length / spMoiTrang);
+    let tongTrang = 1;
+    if (sanPhams.length > 0) {
+        tongTrang = Math.ceil(sanPhams.length / spMoiTrang);
+    }
     const spanTrang = document.getElementById('trang-hien-tai');
     const spanTongTrang = document.getElementById('tong-trang');
-    spanTongTrang.textContent = tongTrang;
+    if (spanTongTrang) {
+        spanTongTrang.textContent = tongTrang;
+    }
 
     function hienThiTrang(trang) {
         sanPhams.forEach((sp, index) => {
