@@ -28,6 +28,15 @@
                     Danh Sách Sản Phẩm Đã Thích
                 </h3>
             </div>
+            <div class="wishlist-search-container">
+                <div class="wishlist-search-group">
+                    <span class="wishlist-search-icon">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="tim_kiem_wishlist" class="wishlist-search-input" 
+                           placeholder="Gõ tên flycam bạn thích vào đây để tìm nhanh nha...">
+                </div>
+            </div>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" id="chon_tat_ca">
@@ -361,6 +370,40 @@
                 </div>
             `;
             }
+        }
+        const timKiemWishlist = document.getElementById('tim_kiem_wishlist');
+        if (timKiemWishlist) {
+            timKiemWishlist.addEventListener('input', function () {
+                const keyword = this.value.trim().toLowerCase();
+                const items = document.querySelectorAll('#danh_sach_san_pham .khung_san_pham');
+                let matchCount = 0;
+                items.forEach(item => {
+                    const nameElement = item.querySelector('.ten_san_pham');
+                    if (nameElement) {
+                        const name = nameElement.textContent.toLowerCase();
+                        if (name.includes(keyword)) {
+                            item.style.setProperty('display', 'flex', 'important');
+                            matchCount++;
+                        } else {
+                            item.style.setProperty('display', 'none', 'important');
+                        }
+                    }
+                });
+                const emptyMsgId = 'wishlist_search_empty';
+                let emptyMsg = document.getElementById(emptyMsgId);
+                if (matchCount === 0 && items.length > 0) {
+                    if (!emptyMsg) {
+                        emptyMsg = document.createElement('div');
+                        emptyMsg.id = emptyMsgId;
+                        emptyMsg.innerHTML = '<i class="bi bi-search fs-2 d-block mb-2"></i>Không tìm thấy sản phẩm yêu thích nào phù hợp với từ khóa tìm kiếm.';
+                        document.getElementById('danh_sach_san_pham').appendChild(emptyMsg);
+                    }
+                } else {
+                    if (emptyMsg) {
+                        emptyMsg.remove();
+                    }
+                }
+            });
         }
     });
 </script>
