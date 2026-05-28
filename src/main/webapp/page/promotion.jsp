@@ -60,9 +60,11 @@
             <c:forEach var="p" items="${entry.value}">
                 <article class="the-san-pham">
                     <a href="${pageContext.request.contextPath}/product-detail?id=${p.id}">
-                        <img class="anh-san-pham"
-                             src="${empty p.mainImage ? '/assets/no-image.png' : p.mainImage}"
-                             alt="${p.productName}">
+                        <div class="anh-wrapper">
+                            <img class="anh-san-pham"
+                                 src="${empty p.mainImage ? '/assets/no-image.png' : p.mainImage}"
+                                 alt="${p.productName}">
+                        </div>
                     </a>
                     <div class="noi-dung-san-pham">
                         <h3 class="ten-san-pham">
@@ -124,6 +126,90 @@
 <jsp:include page="/page/footer.jsp"/>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+
+        document.querySelectorAll('.tim-yeu-thich').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const productId = btn.dataset.productId;
+                fetch('${pageContext.request.contextPath}/wishlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({
+                        action: 'toggle',
+                        productId: productId,
+                        _csrf: csrfToken
+                    })
+                })
+                    .then(res => {
+                        if (res.status === 401 || res.status === 403) {
+                            window.location.href = '${pageContext.request.contextPath}/page/login.jsp';
+                            return null;
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (!data) return;
+                        if (data.success) {
+                            const isActive = btn.classList.contains('bi-heart-fill');
+                            btn.classList.toggle('bi-heart', isActive);
+                            btn.classList.toggle('bi-heart-fill', !isActive);
+                            btn.classList.toggle('yeu-thich', !isActive);
+                            if (typeof showNotification === 'function') {
+                                showNotification(
+                                    !isActive ? 'Đã thêm vào danh sách yêu thích' : 'Đã xóa khỏi danh sách yêu thích',
+                                    'success'
+                                );
+                            }
+                        } else if (data.message === 'NOT_LOGIN') {
+                            window.location.href = '${pageContext.request.contextPath}/page/login.jsp';
+                        } else {
+                            if (typeof showNotification === 'function') {
+                                showNotification(data.message || 'Thao tác thất bại', 'error');
+                            }
+                        }
+                    })
+                    .catch(() => {
+                        if (typeof showNotification === 'function') {
+                            showNotification('Lỗi kết nối server', 'error');
+                        }
+                    });
+            });
+        });
+        const updateCountdowns = () => {
+            const now = new Date().getTime();
+            document.querySelectorAll('.promotion-wrapper').forEach(wrapper => {
+                const endTimeStr = wrapper.getAttribute('data-end-time');
+                if (!endTimeStr) return;
+                const endTime = new Date(endTimeStr).getTime() + 86399000;
+                const distance = endTime - now;
+                if (distance < 0) {
+                    wrapper.style.display = 'none';
+                } else {
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    let timeString = 'Còn ';
+                    if (days > 0) timeString += days + ' ngày ';
+                    timeString +=
+                        (hours < 10 ? '0' : '') + hours + ':' +
+                        (minutes < 10 ? '0' : '') + minutes + ':' +
+                        (seconds < 10 ? '0' : '') + seconds;
+                    const countdownEl = wrapper.querySelector('.promotion-countdown');
+                    if (countdownEl) {
+                        countdownEl.innerHTML = '<i class="bi bi-clock-history"></i> ' + timeString;
+                    }
+                }
+            });
+        };
+        updateCountdowns();
+        setInterval(updateCountdowns, 1000);
+
         document.querySelectorAll('.nut-mua-ngay').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -136,98 +222,12 @@
                 if (typeof globallyHandleAddToCart === 'function') {
                     globallyHandleAddToCart(productId, quantity, productImg, btn);
                 } else {
-                    console.error('globallyHandleAddToCart not defined');
                     form.submit();
                 }
             });
         });
     });
 </script>
-<script>
-    document.querySelectorAll('.tim-yeu-thich').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const productId = btn.dataset.productId;
-            fetch('${pageContext.request.contextPath}/wishlist', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'action=toggle&productId=' + productId
-            })
-                .then(res => {
-                    if (res.status === 401) {
-                        if (confirm('Bạn cần đăng nhập để sử dụng tính năng này. Chuyển đến trang đăng nhập?')) {
-                            window.location.href = '${pageContext.request.contextPath}/page/login.jsp';
-                        }
-                        return null;
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    if (!data) return;
-                    if (data.success) {
-                        const isActive = btn.classList.contains('bi-heart-fill');
-                        btn.classList.toggle('bi-heart', isActive);
-                        btn.classList.toggle('bi-heart-fill', !isActive);
-                        btn.classList.toggle('yeu-thich', !isActive);
-                        if (typeof showNotification === 'function') {
-                            if (!isActive) {
-                                showNotification('Đã thêm vào danh sách yêu thích', 'success');
-                            } else {
-                                showNotification('Đã xóa khỏi danh sách yêu thích', 'success');
-                            }
-                        }
-                    } else {
-                        if (typeof showNotification === 'function') {
-                            showNotification(data.message || 'Thao tác thất bại', 'error');
-                        } else {
-                            alert(data.message || 'Thao tác thất bại');
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                    if (typeof showNotification === 'function') {
-                        showNotification('Lỗi kết nối server', 'error');
-                    }
-                });
-        });
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-        const updateCountdowns = () => {
-            const now = new Date().getTime();
-            document.querySelectorAll('.promotion-wrapper').forEach(wrapper => {
-                const endTimeStr = wrapper.getAttribute('data-end-time');
-                if (!endTimeStr) return;
-                const endTime = new Date(endTimeStr).getTime() + 86399000;
-                const distance = endTime - now;
-                if (distance < 0) {
-                    wrapper.style.display = 'none'; // Hết thời gian thì ẩn
-                } else {
-                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    let timeString = 'Còn ';
-                    if (days > 0) {
-                        timeString += days + ' ngày ';
-                    }
-                    timeString += 
-                        (hours < 10 ? '0' : '') + hours + ':' + 
-                        (minutes < 10 ? '0' : '') + minutes + ':' + 
-                        (seconds < 10 ? '0' : '') + seconds;
-                    const countdownEl = wrapper.querySelector('.promotion-countdown');
-                    if (countdownEl) {
-                        countdownEl.innerHTML = '<i class="bi bi-clock-history"></i> ' + timeString;
-                    }
-                }
-            });
-        };
-        updateCountdowns();
-        setInterval(updateCountdowns, 1000);
-    });
-</script>
+
 </body>
 </html>
