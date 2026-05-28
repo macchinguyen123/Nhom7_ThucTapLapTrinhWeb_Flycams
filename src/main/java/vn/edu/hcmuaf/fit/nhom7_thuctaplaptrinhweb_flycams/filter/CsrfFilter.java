@@ -28,10 +28,8 @@ public class CsrfFilter implements Filter {
 
         //get thì tạo token nếu sesion đang tồn tại
         if (method.equals("GET")) {
-            HttpSession session = req.getSession(false);
-            if (session != null) {
-                CsrfTokenUtil.getOrCreate(session);
-            }
+            HttpSession session = req.getSession(true);
+            CsrfTokenUtil.getOrCreate(session);
             chain.doFilter(req, resp);
             return;
         }
