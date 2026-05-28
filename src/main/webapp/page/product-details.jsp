@@ -14,11 +14,29 @@
           rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
           rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/product-details.css?v=<%= System.currentTimeMillis() %>">
-</head>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/product-details.css?v=<%= System.currentTimeMillis() %>"></head>
 
 <body>
 <jsp:include page="/page/header-common.jsp"/>
+<div class="breadcrumb-wrapper">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="${pageContext.request.contextPath}/home">
+                    <i class="bi bi-house-door-fill"></i> Trang chủ
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="${pageContext.request.contextPath}/Category?id=${product.categoryId}">
+                    ${categoryName}
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                ${product.productName}
+            </li>
+        </ol>
+    </nav>
+</div>
 <div class="main-wrapper">
     <div class="container bg-white mt-4 p-4 rounded shadow-sm">
         <div class="row">
@@ -432,6 +450,10 @@
         <img class="image-modal-content" id="modalImg">
     </div>
 </div>
+<button id="scrollTopBtn" title="Quay lại đầu trang">
+    <i class="bi bi-chevron-up"></i>
+</button>
+
 <jsp:include page="/page/footer.jsp"/>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -615,7 +637,8 @@
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRF-Token': '${sessionScope.CSRF_TOKEN}'
+                        'X-CSRF-Token': '${sessionScope.CSRF_TOKEN}',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: new URLSearchParams({
                         action: action,
@@ -717,10 +740,10 @@
         function updateQuantityValues() {
             quantityHidden.value = qtyInput.value;
             buyNowQuantity.value = qtyInput.value;
-            if (displayPriceEl && unitPrice > 0) {
-                const total = unitPrice * parseInt(qtyInput.value);
-                displayPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' VNĐ';
-            }
+            // if (displayPriceEl && unitPrice > 0) {
+            //     const total = unitPrice * parseInt(qtyInput.value);
+            //     displayPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + ' VNĐ';
+            // }
         }
         if (qtyInput) {
             qtyInput.addEventListener('input', function() {
@@ -832,11 +855,14 @@
             const params = new URLSearchParams({
                 product_id: productId,
                 rating: rating,
-                content: content
+                content: content,
+                _csrf: '${sessionScope.CSRF_TOKEN}'
             });
             fetch(contextPath + '/ReviewServlet', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                headers: {'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: params
             })
                 .then(res => res.json())
@@ -865,6 +891,20 @@
                 });
         });
     }
+</script>
+
+<script>
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollTopBtn.style.display = 'flex';
+        } else {
+            scrollTopBtn.style.display = 'none';
+        }
+    });
+    scrollTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 </script>
 </body>
 
