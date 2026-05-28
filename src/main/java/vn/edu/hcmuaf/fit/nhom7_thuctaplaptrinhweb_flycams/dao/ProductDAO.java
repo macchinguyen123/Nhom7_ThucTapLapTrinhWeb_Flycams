@@ -151,7 +151,8 @@ public class ProductDAO {
             Double minPrice,
             Double maxPrice,
             List<String> brands,
-            String sortBy
+            String sortBy,
+            Integer minRating
     ) {
         List<Product> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("""
@@ -192,6 +193,9 @@ public class ProductDAO {
             }
             sql.append(")");
         }
+        if (minRating != null) {
+            sql.append(" AND COALESCE(rv.avgRating, 0) >= ? ");
+        }
         if ("low-high".equals(sortBy)) {
             sql.append(" ORDER BY p.finalPrice ASC");
         } else if ("high-low".equals(sortBy)) {
@@ -216,6 +220,9 @@ public class ProductDAO {
                 for (String brand : brands) {
                     ps.setString(paramIndex++, brand);
                 }
+            }
+            if (minRating != null) {
+                ps.setInt(paramIndex++, minRating);
             }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {

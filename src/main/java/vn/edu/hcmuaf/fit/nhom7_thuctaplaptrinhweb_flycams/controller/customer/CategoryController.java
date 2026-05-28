@@ -93,13 +93,22 @@ public class CategoryController extends HttpServlet {
             sortBy = "low-high";
         else if ("desc".equals(sortParam))
             sortBy = "high-low";
-        List<Product> products = productService.searchProductsInCategory(
-                categoryId,
-                keyword,
-                minPrice,
-                maxPrice,
-                brandList,
-                sortBy);
+        String minRatingStr = request.getParameter("min-rating");
+        Integer minRating = null;
+        if (minRatingStr != null && !minRatingStr.isEmpty()) {
+            try {
+                minRating = Integer.parseInt(minRatingStr);
+                if (minRating == 0) minRating = null;
+            } catch (Exception e) {}
+        }
+        List<Product> products = productService.searchProductsInCategory(categoryId, keyword, minPrice, maxPrice, brandList, sortBy, minRating);
+        if (products == null || products.isEmpty()) {
+            List<Product> recommendedProducts = productService.searchProducts("",priceFilter, minPrice, maxPrice, brandList, sortBy, minRating);
+            if (recommendedProducts != null && recommendedProducts.size() > 12) {
+                recommendedProducts = recommendedProducts.subList(0, 12);
+            }
+            request.setAttribute("recommendedProducts", recommendedProducts);
+        }
 
         if (user != null) {
             List<Integer> wishlistProductIds = wishlistService.getWishlistProductIds(user.getId());

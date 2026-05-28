@@ -25,10 +25,8 @@ public class ProductService {
     }
 
     //Tìm kiếm sản phẩm trong một danh mục cụ thể, lọc giá, thương hiệu và sắp xếp
-    public List<Product> searchProductsInCategory(int categoryId, String keyword, Double minPrice,
-                                                  Double maxPrice, List<String> brandList, String sortBy) {
-        List<Product> products = productDAO.searchProductsInCategory(categoryId, keyword, minPrice, maxPrice,
-                brandList, sortBy);
+    public List<Product> searchProductsInCategory(int categoryId, String keyword, Double minPrice, Double maxPrice, List<String> brandList, String sortBy, Integer minRating) {
+        List<Product> products = productDAO.searchProductsInCategory(categoryId, keyword, minPrice, maxPrice, brandList, sortBy, minRating);
         return products;
     }
 
