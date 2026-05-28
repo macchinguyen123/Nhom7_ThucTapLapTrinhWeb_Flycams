@@ -76,13 +76,31 @@ public class Searching extends HttpServlet {
         String[] brandArr = request.getParameterValues("chon-thuong-hieu");
         List<String> brandList = (brandArr != null) ? Arrays.asList(brandArr) : null;
         String sortBy = request.getParameter("sort");
+        String minRatingStr = request.getParameter("min-rating");
+        Integer minRating = null;
+        if (minRatingStr != null && !minRatingStr.isEmpty()) {
+            try {
+                minRating = Integer.parseInt(minRatingStr);
+                if (minRating == 0) minRating = null;
+            } catch (Exception e) {
+            }
+        }
         List<Product> results = productService.searchProducts(
                 keyword,
                 priceFilter,
                 minPrice,
                 maxPrice,
                 brandList,
-                sortBy);
+                sortBy,
+                minRating);
+        if (results == null || results.isEmpty()) {
+            // Lấy gợi ý dựa trên bộ lọc hiện tại
+            List<Product> recommendedProducts = productService.searchProducts("", priceFilter, minPrice, maxPrice, brandList, sortBy, minRating);
+            if (recommendedProducts != null && recommendedProducts.size() > 12) {
+                recommendedProducts = recommendedProducts.subList(0, 12);
+            }
+            request.setAttribute("recommendedProducts", recommendedProducts);
+        }
         if (user != null) {
             List<Integer> wishlistProductIds = wishlistService.getWishlistProductIds(user.getId());
             request.setAttribute("wishlistProductIds", wishlistProductIds);

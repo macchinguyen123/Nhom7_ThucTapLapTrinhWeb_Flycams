@@ -60,11 +60,7 @@ public class ProductDAO {
         return list;
     }
 
-    public List<Product> searchProducts(String keyword,
-                                        String priceFilter, Double minPrice,
-                                        Double maxPrice,
-                                        List<String> brands,
-                                        String sortBy) {
+    public List<Product> searchProducts(String keyword, String priceFilter, Double minPrice, Double maxPrice, List<String> brands, String sortBy, Integer minRating) {
         List<Product> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("""
                     SELECT p.*,
@@ -93,6 +89,9 @@ public class ProductDAO {
             sql.append(brands.stream().map(b -> "?").collect(Collectors.joining(",")));
             sql.append(") ");
         }
+        if (minRating != null) {
+            sql.append(" AND COALESCE(rv.avgRating, 0) >= ? ");
+        }
         if ("low-high".equals(sortBy))
             sql.append(" ORDER BY p.finalPrice ASC ");
         else if ("high-low".equals(sortBy))
@@ -113,6 +112,9 @@ public class ProductDAO {
                 for (String b : brands) {
                     ps.setString(idx++, b);
                 }
+            }
+            if (minRating != null) {
+                ps.setInt(idx++, minRating);
             }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
