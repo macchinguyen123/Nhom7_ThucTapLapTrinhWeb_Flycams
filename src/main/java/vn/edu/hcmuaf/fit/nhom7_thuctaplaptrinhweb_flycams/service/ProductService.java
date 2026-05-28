@@ -68,9 +68,8 @@ public class ProductService {
     }
 
     //Tìm kiếm sản phẩm toàn hệ thống
-    public List<Product> searchProducts(String keyword, String priceFilter, Double minPrice,
-                                        Double maxPrice, List<String> brandList, String sortBy) {
-        return productDAO.searchProducts(keyword, priceFilter, minPrice, maxPrice, brandList, sortBy);
+    public List<Product> searchProducts(String keyword, String priceFilter, Double minPrice, Double maxPrice, List<String> brandList, String sortBy, Integer minRating) {
+        return productDAO.searchProducts(keyword, priceFilter, minPrice, maxPrice, brandList, sortBy, minRating);
     }
 
     //Gợi ý sản phẩm khi người dùng nhập từ khóa
