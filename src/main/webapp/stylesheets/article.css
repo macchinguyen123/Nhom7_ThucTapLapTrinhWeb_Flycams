@@ -386,4 +386,16 @@ a {
     color: inherit;
     display: contents;
 }
-
+#reading-progress-bar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 0%;
+    height: 4px !important;
+    background: linear-gradient(90deg, #0051c6, #00aaff) !important;
+    z-index: 999999 !important;
+    transition: width 0.1s ease-out !important;
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 6px rgba(0, 170, 255, 0.5);
+    pointer-events: none;
+}
