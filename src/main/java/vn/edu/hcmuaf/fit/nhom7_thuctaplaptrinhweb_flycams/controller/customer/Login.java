@@ -10,6 +10,7 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.cart.Carts;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.CartService;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.LoginAttemptService;
 
 import java.io.IOException;
 
@@ -47,14 +48,30 @@ public class Login extends HttpServlet {
             return;
         }
 
-        AuthService authService = new AuthService();
-        User user = authService.login(input, password);
-        if (user == null) {
-            String msg = "Thông tin đăng nhập chưa hợp lệ";
-            request.setAttribute("error", msg);
+        if (LoginAttemptService.isLocked(input)) {
+            long remainingMillis = LoginAttemptService.getRemainingLockTime(input);
+            long remainingMinutes = (remainingMillis / 1000) / 60;
+            long remainingSeconds = (remainingMillis / 1000) % 60;
+            String errorMsg = String.format("Tài khoản của bạn tạm thời bị khóa do nhập sai mật khẩu quá 5 lần. Vui lòng thử lại sau %d phút %d giây.", remainingMinutes, remainingSeconds);
+            request.setAttribute("error", errorMsg);
             request.getRequestDispatcher("/page/login.jsp").forward(request, response);
             return;
         }
+        AuthService authService = new AuthService();
+        User user = authService.login(input, password);
+        if (user == null) {
+           LoginAttemptService.failAttempt(input);
+            if (LoginAttemptService.isLocked(input)) {
+                String msg = "Tài khoản của bạn đã bị khóa tạm thời trong 5 phút do nhập sai mật khẩu quá 5 lần.";
+                request.setAttribute("error", msg);
+            } else {
+                String msg = "Thông tin đăng nhập chưa hợp lệ";
+                request.setAttribute("error", msg);
+            }
+            request.getRequestDispatcher("/page/login.jsp").forward(request, response);
+            return;
+        }
+        LoginAttemptService.successAttempt(input);
         if (!user.isStatus()) {
             String reason = user.getLockReason() != null ? user.getLockReason() : "Vi phạm chính sách.";
             request.setAttribute("lockedError", "Tài khoản bạn đã bị khoá");

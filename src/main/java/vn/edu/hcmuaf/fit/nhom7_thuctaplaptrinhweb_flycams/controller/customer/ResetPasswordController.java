@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.LoginAttemptService;
 
 import java.io.IOException;
 
@@ -50,6 +51,7 @@ public class ResetPasswordController extends HttpServlet {
         if (email != null) {
             boolean updated = authService.resetPassword(email, password);
             if (updated) {
+                LoginAttemptService.successAttempt(email);
                 response.sendRedirect(request.getContextPath() + "/page/login.jsp?resetSuccess=1");
             } else {
                 request.setAttribute("error", "Có lỗi xảy ra khi cập nhật mật khẩu hoặc không tìm thấy tài khoản!");
