@@ -140,29 +140,31 @@
         return amount.toLocaleString("vi-VN") + " VNĐ";
     }
 
+    function layGia(el) {
+        if (!el) return 0;
+        let text = el.textContent.trim();
+        text = text.replace(/VNĐ/g, '').trim();
+        text = text.replace(/\./g, '').replace(/,\d+$/, '').trim();
+        return parseInt(text) || 0;
+    }
+
     function capNhatTongTien() {
         let tong = 0;
         let tongGoc = 0;
         document.querySelectorAll(".khung_san_pham").forEach(sp => {
             const check = sp.querySelector(".chon_san_pham");
             if (check && check.checked) {
-                const giaHienTai = parseInt(
-                    sp.querySelector(".gia_hien_tai").textContent.replace(/[^\d]/g, "")
-                );
+                const giaHienTai = layGia(sp.querySelector(".gia_hien_tai"));
                 const giaGocEl = sp.querySelector(".gia_goc");
-                let giaGoc = giaHienTai;
-                if (giaGocEl) {
-                    giaGoc = parseInt(giaGocEl.textContent.replace(/[^\d]/g, ""));
-                }
-                const soLuong = parseInt(sp.querySelector(".o_so_luong").value);
+                const giaGoc = giaGocEl ? layGia(giaGocEl) : giaHienTai;
+                const soLuong = parseInt(sp.querySelector(".o_so_luong").value) || 1;
                 tong += giaHienTai * soLuong;
                 tongGoc += giaGoc * soLuong;
             }
         });
         const tienGiam = tongGoc - tong;
         document.querySelector(".so_tien").textContent = dinhDangTien(tongGoc);
-        document.querySelector(".tong_cong").textContent =
-            "Tổng cộng: " + dinhDangTien(tong);
+        document.querySelector(".tong_cong").textContent = "Tổng cộng: " + dinhDangTien(tong);
         const giamBox = document.querySelector(".so_tien_giam");
         if (tienGiam > 0) {
             giamBox.style.display = "flex";

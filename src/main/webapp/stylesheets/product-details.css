@@ -1227,3 +1227,66 @@ a {
     max-width: 100%;
   }
 }
+
+#scrollTopBtn {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    z-index: 9999 !important;
+    width: 45px !important;
+    height: 45px !important;
+    border-radius: 50% !important;
+    background: #0d6efd !important;
+    color: white !important;
+    border: none !important;
+    font-size: 1.2rem !important;
+    cursor: pointer !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    transition: opacity 0.3s, transform 0.3s !important;
+}
+
+#scrollTopBtn:hover {
+    background: #0b5ed7 !important;
+    transform: translateY(-3px) !important;
+}
+.breadcrumb-wrapper {
+    width: 80%;
+    margin: 12px auto 0;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.breadcrumb-item a {
+    color: #0051c6;
+    text-decoration: none;
+    display: inline;
+}
+
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: #666;
+    /* Cắt tên dài */
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: #999;
+    font-size: 1rem;
+}
