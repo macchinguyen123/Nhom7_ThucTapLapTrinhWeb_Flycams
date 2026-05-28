@@ -26,6 +26,9 @@
             <span class="view-count">
                 <i class="bi bi-eye"></i> ${post.view} lượt xem
             </span>
+            <span class="read-time ms-2" id="readTimeSpan" style="opacity: 0.95;">
+                <i class="bi bi-clock"></i> Thời gian đọc ước tính: -- phút
+            </span>
         </div>
         <h1 class="article-title">${post.title}</h1>
     </header>
@@ -131,5 +134,42 @@
 </article>
 <jsp:include page="/page/footer.jsp"/>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function initReadingEstimationAndProgress() {
+        const articleTextElement = document.querySelector('.article-text');
+        if (articleTextElement) {
+            const text = (articleTextElement.textContent || '').trim();
+            const words = text.split(/\s+/).filter(w => w.length > 0).length;
+            const readTime = Math.max(Math.ceil(words / 200), 1);
+            const readTimeSpan = document.getElementById('readTimeSpan');
+            if (readTimeSpan) {
+                readTimeSpan.innerHTML = `<i class="bi bi-clock"></i> Thời gian đọc ước tính: ${readTime} phút`;
+            }
+        }
+        if (!document.getElementById('reading-progress-bar')) {
+            const bar = document.createElement('div');
+            bar.id = 'reading-progress-bar';
+            document.body.appendChild(bar);
+            const article = document.querySelector('.article-container');
+            window.addEventListener('scroll', () => {
+                const articleTop = article ? article.offsetTop : 0;
+                const articleHeight = article ? article.offsetHeight : document.body.scrollHeight;
+                const scrollTop = window.scrollY;
+                const windowHeight = window.innerHeight;
+                const start = articleTop;
+                const end = articleTop + articleHeight - windowHeight;
+                const progress = end > start
+                    ? Math.min(Math.max((scrollTop - start) / (end - start) * 100, 0), 100)
+                    : 0;
+                bar.style.width = progress + '%';
+            });
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initReadingEstimationAndProgress);
+    } else {
+        initReadingEstimationAndProgress();
+    }
+</script>
 </body>
 </html>
