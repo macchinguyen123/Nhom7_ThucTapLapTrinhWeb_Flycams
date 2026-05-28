@@ -43,7 +43,7 @@ body {
 .mo-ta-chuong-trinh {
     color: white;
     font-size: 1rem;
-    background: #0051c6;
+    background: transparent;
     display: inline-block;
     padding: 3px;
     border-radius: 20px;
@@ -76,20 +76,6 @@ body {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 }
 
-.the-san-pham::before {
-    content: "SALE";
-    position: absolute;
-    top: 12px;
-    left: -38px;
-    background: #dc2626;
-    color: #fff;
-    padding: 4px 38px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    transform: rotate(-45deg);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    z-index: 10;
-}
 
 .the-san-pham:hover .anh-san-pham {
     transform: scale(1.08);
@@ -225,3 +211,28 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+.anh-san-pham {
+    width: 100% !important;
+    height: 200px !important;
+    object-fit: contain !important;
+    padding: 8px !important;
+    background-color: #ffffff !important;
+}
+
+.anh-wrapper {
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 12px 12px 0 0;
+    overflow: visible;
+    height: 200px;
+}
+.promotion-wrapper .khung-tieu-de {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 16px !important;
+    padding: 20px 30px !important;
+    margin-bottom: 30px !important;
+    backdrop-filter: blur(4px) !important;
+}
+
