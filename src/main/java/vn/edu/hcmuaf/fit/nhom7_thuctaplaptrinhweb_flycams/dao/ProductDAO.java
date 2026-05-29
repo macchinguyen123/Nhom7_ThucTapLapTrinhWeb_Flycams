@@ -360,19 +360,20 @@ public class ProductDAO {
     public List<Product> getAllProductsForAdmin() {
         List<Product> list = new ArrayList<>();
         String sql = """
-                    SELECT p.id,
-                           p.productName,
-                           p.brandName,
-                           c.categoryName AS categoryName,
-                           p.price,
-                           p.finalPrice,
-                           p.quantity,
-                           p.min_stock,
-                           p.status,
-                           (SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) AS mainImage
-                    FROM products p
-                    JOIN categories c ON p.category_id = c.id
-                """;
+            SELECT p.id,
+                   p.productName,
+                   p.brandName,
+                   c.categoryName AS categoryName,
+                   p.price,
+                   p.finalPrice,
+                   p.view,
+                   p.quantity,
+                   p.min_stock,
+                   p.status,
+                   (SELECT imageUrl FROM images WHERE product_id = p.id ORDER BY (CASE WHEN imageType = 'Chính' THEN 1 WHEN imageType = 'Phụ' THEN 2 ELSE 3 END) ASC, id ASC LIMIT 1) AS mainImage
+            FROM products p
+            JOIN categories c ON p.category_id = c.id
+        """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -384,6 +385,7 @@ public class ProductDAO {
                 p.setCategoryName(rs.getString("categoryName"));
                 p.setPrice(rs.getDouble("price"));
                 p.setFinalPrice(rs.getDouble("finalPrice"));
+                p.setView(rs.getInt("view"));
                 p.setQuantity(rs.getInt("quantity"));
                 try {
                     p.setMinStock(rs.getInt("min_stock"));

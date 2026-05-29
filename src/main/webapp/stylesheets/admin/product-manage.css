@@ -346,3 +346,98 @@ table#tableSanPham > thead.table-primary th {
     min-height: 250px;
     pointer-events: auto;
 }
+
+.filter-card {
+    background: #fff;
+    border: 1px solid #e0e7ef;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 4px rgba(13, 110, 253, 0.06);
+}
+
+.filter-card .form-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.filter-card .form-select,
+.filter-card .form-control {
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    height: 34px;
+    padding: 0 10px;
+    background-color: #f8f9fa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-card .form-select:focus,
+.filter-card .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+    background-color: #fff;
+}
+
+.filter-card .btn-outline-secondary {
+    font-size: 13px;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border-color: #dee2e6;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+}
+
+.filter-card .btn-outline-secondary:hover {
+    background: #f1f3f5;
+    color: #343a40;
+}
+
+#filterTags {
+    min-height: 22px;
+}
+
+#filterTags .badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: #e7f0ff;
+    color: #0d6efd;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#filterTags .badge a {
+    color: #0d6efd;
+    text-decoration: none;
+    font-size: 15px;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+
+#filterTags .badge a:hover {
+    opacity: 1;
+}
+
+#filterResultCount {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+.price-range-sep {
+    font-size: 14px;
+    color: #adb5bd;
+    line-height: 34px;
+}
