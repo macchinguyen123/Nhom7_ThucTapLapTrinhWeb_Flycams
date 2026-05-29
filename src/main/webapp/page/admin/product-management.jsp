@@ -176,6 +176,60 @@
             </select>
             <label class="ms-2">sản phẩm</label>
         </div>
+        <div class="filter-card">
+            <div class="d-flex flex-wrap gap-3 align-items-end">
+
+                <div>
+                    <label class="form-label mb-1 small text-muted">Danh mục</label>
+                    <select id="fCategory" class="form-select form-select-sm" style="min-width:170px;">
+                        <option value="">Tất cả danh mục</option>
+                        <option value="Drone quay phim chuyên nghiệp">Drone quay phim chuyên nghiệp</option>
+                        <option value="Drone Du Lịch , Vlog">Drone du lịch / vlog</option>
+                        <option value="Drone Thể Thao Tốc Độ Cao">Drone thể thao tốc độ cao</option>
+                        <option value="Drone nông nghiệp">Drone nông nghiệp</option>
+                        <option value="Drone Giám Sát, An Ninh">Drone giám sát / an ninh</option>
+                        <option value="Drone Mini Cở Nhỏ">Drone mini / cỡ nhỏ</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label mb-1 small text-muted">Trạng thái</label>
+                    <select id="fStatus" class="form-select form-select-sm" style="min-width:130px;">
+                        <option value="">Tất cả</option>
+                        <option value="Đang KD">Đang KD</option>
+                        <option value="Ẩn">Ẩn</option>
+                        <option value="Hết hàng">Hết hàng</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label mb-1 small text-muted">Khoảng giá (VNĐ)</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" id="fPriceMin" class="form-control form-control-sm"
+                               placeholder="Từ" min="0" step="100000" style="width:110px;">
+                        <span class="text-muted">—</span>
+                        <input type="number" id="fPriceMax" class="form-control form-control-sm"
+                               placeholder="Đến" min="0" step="100000" style="width:110px;">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label mb-1 small text-muted">Sắp xếp theo</label>
+                    <select id="fSort" class="form-select form-select-sm" style="min-width:160px;">
+                        <option value="">Mặc định</option>
+                        <option value="price_asc">Giá tăng dần</option>
+                        <option value="price_desc">Giá giảm dần</option>
+                        <option value="view_desc">Lượt xem nhiều nhất</option>
+                        <option value="name_asc">Tên A → Z</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-outline-secondary btn-sm" id="btnResetFilter">
+                    <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                </button>
+            </div>
+            <div id="filterTags" class="d-flex flex-wrap gap-2 mt-2"></div>
+        </div>
         <table id="tableSanPham" class="table table-striped table-bordered">
             <thead class="table-primary">
             <tr>
@@ -185,6 +239,7 @@
                 <th>Ảnh</th>
                 <th>Giá Gốc</th>
                 <th>Giá KM</th>
+                <th>Lượt Xem</th>
                 <th>Trạng Thái</th>
                 <th>Thao Tác</th>
             </tr>
@@ -205,6 +260,7 @@
                     <td>
                         <fmt:formatNumber value="${p.finalPrice}" pattern="#,##0 VNĐ"/>
                     </td>
+                    <td>${p.view}</td>
                     <td>
                         <c:choose>
                             <c:when test="${p.status == 'active'}">
@@ -234,13 +290,6 @@
                     </td>
                 </tr>
             </c:forEach>
-            <c:if test="${empty products}">
-                <tr>
-                    <td colspan="8" class="text-center text-muted">
-                        Chưa có sản phẩm
-                    </td>
-                </tr>
-            </c:if>
             </tbody>
         </table>
         <div class="d-flex justify-content-end align-items-center mt-3">
@@ -387,19 +436,22 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    const contextPath = '${pageContext.request.contextPath}';
     const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     var table = $('#tableSanPham').DataTable({
-        "paging": true,
-        "lengthChange": false,
-        "pageLength": 10,
-        "ordering": true,
-        "searching": true,
-        "info": false,
-        "dom": 't',
-        "columnDefs": [
-            {"orderable": false, "targets": [3, 7]}
-        ], "language": {
-            "zeroRecords": "Không tìm thấy dữ liệu"
+        paging: true,
+        lengthChange: false,
+        pageLength: 10,
+        ordering: true,
+        searching: true,
+        info: false,
+        dom: 't',
+        columnDefs: [
+            { orderable: false, targets: [3, 8] }
+        ],
+        language: {
+            emptyTable: "Chưa có sản phẩm",
+            zeroRecords: "Không tìm thấy dữ liệu"
         }
     });
     $('#searchInput').on('keyup', function () {
@@ -449,7 +501,7 @@
     function validateProductForm() {
         const ten    = $('#tenSP').val().trim();
         const gia    = parseFloat($('#giaGoc').val());
-        const giaKM  = $('#giaKM').val();
+        const giaKMStr   = $('#giaKM').val().trim();
         const soLuong = $('#soLuong').val().trim();
         const thuongHieu = $('#thuongHieu').val().trim();
         const baoHanh = $('#baoHanh').val().trim();
@@ -479,9 +531,14 @@
             showToast('Giá gốc phải > 0!', 'warning');
             return false;
         }
-        if (giaKM !== '' && (isNaN(parseFloat(giaKM)) || parseFloat(giaKM) <= 0)) {
-            showToast('Giá khuyến mãi phải lớn hơn 0!', 'warning');
-            return false;
+        if (giaKMStr !== '') {
+            const giaKMNum = parseFloat(giaKMStr);
+            if (isNaN(giaKMNum) || giaKMNum <= 0) {
+                showToast('Giá khuyến mãi phải lớn hơn 0!', 'warning'); return false;
+            }
+            if (giaKMNum >= giaNum) {
+                showToast('Giá khuyến mãi phải nhỏ hơn giá gốc!', 'warning'); return false;
+            }
         }
         if (!baoHanh) {
             showToast('Vui lòng nhập thông tin bảo hành!', 'warning'); return false;
@@ -495,7 +552,7 @@
     updatePageInfo();
     $(document).on('click', '.btn-toggle', function () {
         const row = $(this).closest('tr');
-        const statusCell = row.find('td:eq(6)');
+        const statusCell = row.find('td:eq(7)');
         const productId = $(this).data('id');
         let newStatus;
         if (statusCell.text().trim() === "Đang KD") {
@@ -614,9 +671,6 @@
                 modalSanPham.show();
             });
     });
-</script>
-<script>
-    const contextPath = '${pageContext.request.contextPath}';
 </script>
 <script>
     function updatePreview(url, previewEl) {
@@ -952,8 +1006,54 @@
 
         img.src = url;
     });
-</script>
+    function applyAdvancedFilters() {
+        const cat      = $('#fCategory').val().trim();
+        const status   = $('#fStatus').val().trim();
+        const priceMin = parseFloat($('#fPriceMin').val()) || 0;
+        const priceMax = parseFloat($('#fPriceMax').val()) || Infinity;
+        const sort     = $('#fSort').val();
 
+        $.fn.dataTable.ext.search = [];
+
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            const rowCat = data[2].trim();
+            const rowStatus = data[7].trim();
+            const rowPrice = parseFloat(data[4].replace(/[^0-9]/g, '')) || 0;
+            if (cat    && rowCat !== cat)       return false;
+            if (status && rowStatus !== status) return false;
+            if (rowPrice < priceMin)            return false;
+            if (rowPrice > priceMax)            return false;
+            return true;
+        });
+
+        if      (sort === 'price_asc')  table.order([4, 'asc']);
+        else if (sort === 'price_desc') table.order([4, 'desc']);
+        else if (sort === 'view_desc')  table.order([6, 'desc']);
+        else if (sort === 'name_asc')   table.order([1, 'asc']);
+        else                            table.order([0, 'asc']);
+
+        table.draw();
+        const shown = table.rows({ search: 'applied' }).count();
+        const total = table.rows().count();
+        $('#filterResultCount').text(`Hiển thị ${shown} / ${total} sản phẩm`);
+        updatePageInfo();
+    }
+
+    window.clearFilter = function(id) {
+        $('#' + id).val('');
+        applyAdvancedFilters();
+        return false;
+    };
+
+    $('#btnResetFilter').on('click', function () {
+        $('#fCategory, #fStatus, #fSort').val('');
+        $('#fPriceMin, #fPriceMax').val('');
+        applyAdvancedFilters();
+    });
+
+    $('#fCategory, #fStatus, #fSort').on('change', applyAdvancedFilters);
+    $('#fPriceMin, #fPriceMax').on('change', applyAdvancedFilters);
+</script>
 </body>
 
 </html>
