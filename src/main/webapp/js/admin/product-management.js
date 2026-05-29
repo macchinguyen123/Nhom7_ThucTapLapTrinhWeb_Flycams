@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     icon: "error",
                     confirmButtonText: "OK"
                 });
-                console.error(err);
+                (function(){})(err);
             });
     });
 });

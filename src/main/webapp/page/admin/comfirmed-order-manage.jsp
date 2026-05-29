@@ -445,7 +445,7 @@
                 modal.show();
             })
             .catch(err => {
-                console.error(err);
+                (function(){})(err);
                 alert("Lỗi tải chi tiết đơn hàng");
             });
     }
@@ -554,7 +554,7 @@
                 }
             })
             .catch(err => {
-                console.error(err);
+                (function(){})(err);
                 Swal.fire("Lỗi", "Lỗi hệ thống", "error");
             });
     });
@@ -619,7 +619,7 @@
                         }
                     })
                     .catch(err => {
-                        console.error(err);
+                        (function(){})(err);
                         Swal.fire("Lỗi", "Lỗi kết nối server", "error");
                     });
             }

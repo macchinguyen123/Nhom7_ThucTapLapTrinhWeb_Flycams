@@ -26,6 +26,7 @@ import java.util.Map;
 
 @WebServlet(name = "AdminChatController", value = {"/admin/chat-manage", "/admin/chat"})
 public class AdminChatController extends HttpServlet {
+    public static final java.util.Map<Integer, Long> adminTypingMap = new java.util.concurrent.ConcurrentHashMap<>();
     private ChatDAO chatDAO = new ChatDAO();
     private Gson gson = new GsonBuilder()
             .registerTypeAdapter(Timestamp.class, (com.google.gson.JsonSerializer<Timestamp>) (src, typeOfSrc, context) ->
@@ -45,6 +46,9 @@ public class AdminChatController extends HttpServlet {
         String action = req.getParameter("action");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+        resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        resp.setHeader("Pragma", "no-cache");
+        resp.setDateHeader("Expires", 0);
         if ("list".equals(action)) {
             List<Conversation> list = chatDAO.getAdminConversations();
             resp.getWriter().write(gson.toJson(list));
@@ -132,6 +136,10 @@ public class AdminChatController extends HttpServlet {
             int resolved = Integer.parseInt(req.getParameter("resolved"));
             boolean success = chatDAO.setResolved(convId, resolved == 1);
             result.put("success", success);
+        } else if ("typingSignal".equals(action)) {
+            int convId = Integer.parseInt(req.getParameter("conversationId"));
+            adminTypingMap.put(convId, System.currentTimeMillis());
+            result.put("success", true);
         }
         resp.getWriter().write(gson.toJson(result));
     }
