@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('error', result.message || 'Lỗi khi tải dữ liệu kho hàng.');
             }
         } catch (error) {
-            console.error('Error fetching inventory:', error);
+            (function(){})('Error fetching inventory:', error);
             showToast('error', 'Không thể kết nối đến máy chủ.');
             if (tableBody) {
                 tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(result.message || 'Có lỗi xảy ra từ server.');
             }
         } catch (error) {
-            console.error('Import Error:', error);
+            (function(){})('Import Error:', error);
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'error',

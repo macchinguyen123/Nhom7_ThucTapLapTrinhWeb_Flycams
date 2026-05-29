@@ -290,7 +290,7 @@
                         .then(r => r.json())
                         .then(json => {
                             if (json.code !== 200) {
-                                console.error("GHN API failed:", json);
+                                (function(){})("GHN API failed:", json);
                                 return;
                             }
                             json.data.forEach(p => {
@@ -306,7 +306,7 @@
                                     if (matched) provinceSelect.value = matched.value;
                                 }
                             } catch (e) {
-                                console.error("Error pre-selecting province:", e);
+                                (function(){})("Error pre-selecting province:", e);
                             }
                             provinceSelect.addEventListener("change", function () {
                                 districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
@@ -333,11 +333,11 @@
                                                     savedDistrict = "";
                                                 }
                                             } catch (e) {
-                                                console.error("Error pre-selecting district:", e);
+                                                (function(){})("Error pre-selecting district:", e);
                                             }
                                             updateHiddenAddress();
                                         })
-                                        .catch(err => console.error("GHN District error:", err));
+                                        .catch(err => (function(){})("GHN District error:", err));
                                 } else {
                                     updateHiddenAddress();
                                 }
@@ -347,7 +347,7 @@
                                     provinceSelect.dispatchEvent(new Event("change"));
                                 }
                             } catch (e) {
-                                console.error("Error dispatching change on province:", e);
+                                (function(){})("Error dispatching change on province:", e);
                             }
                             districtSelect.addEventListener("change", updateHiddenAddress);
 
@@ -357,7 +357,7 @@
                                 }
                             }
                         })
-                        .catch(err => console.error("Error fetching provinces:", err));
+                        .catch(err => (function(){})("Error fetching provinces:", err));
                 }
             });
         </script>
@@ -1018,7 +1018,7 @@
                     })
                     .catch(err => {
                         showToast('Có lỗi xảy ra khi cập nhật.', 'error');
-                        console.error(err);
+                        (function(){})(err);
                     });
             });
         }

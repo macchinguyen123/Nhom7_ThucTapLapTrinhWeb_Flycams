@@ -953,14 +953,14 @@
                     descriptionEditor = editor;
                     window.descriptionEditor = editor;
                 })
-                .catch(err => console.error('moTa editor error:', err));
+                .catch(err => (function(){})('moTa editor error:', err));
 
             ClassicEditor.create(document.querySelector('#thongSo'), editorConfig)
                 .then(editor => {
                     parameterEditor = editor;
                     window.parameterEditor = editor;
                 })
-                .catch(err => console.error('thongSo editor error:', err));
+                .catch(err => (function(){})('thongSo editor error:', err));
 
             editorsReady = true;
         }

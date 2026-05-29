@@ -11,9 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         const params = new URLSearchParams(new FormData(form));
-        console.log("SEND:");
+        (function(){})("SEND:");
         for (let [k, v] of params.entries()) {
-            console.log(k, v);
+            (function(){})(k, v);
         }
         fetch(form.action, {
             method: "POST",
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 location.reload();
             })
             .catch(err => {
-                console.error("REVIEW ERROR:", err);
+                (function(){})("REVIEW ERROR:", err);
             });
     });
 });

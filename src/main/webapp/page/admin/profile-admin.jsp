@@ -380,7 +380,7 @@
                     throw new Error('Lỗi khi lưu ảnh');
                 }
             }).catch(error => {
-                console.error('Error:', error);
+                (function(){})('Error:', error);
                 if (processingNotification) processingNotification.style.display = "none";
                 Swal.fire({
                     icon: 'error',

@@ -295,9 +295,9 @@
             const productId = this.getAttribute('data-product-id');
             const isLiked = this.classList.contains('yeu-thich');
             const action = isLiked ? 'remove' : 'add';
-            console.log('SEND:', action, productId);
+            (function(){})('SEND:', action, productId);
             if (!productId) {
-                console.error('productId is null');
+                (function(){})('productId is null');
                 return;
             }
             fetch('${pageContext.request.contextPath}/wishlist', {
@@ -341,7 +341,7 @@
         btn.addEventListener('click', () => {
             nutSapXep.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            console.log("🔹 Đã chọn:", btn.textContent.trim());
+            (function(){})("🔹 Đã chọn:", btn.textContent.trim());
         });
     });
     const sanPhams = document.querySelectorAll('.san-pham.main-product');
