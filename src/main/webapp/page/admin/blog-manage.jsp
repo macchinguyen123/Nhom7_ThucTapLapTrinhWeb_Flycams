@@ -896,7 +896,7 @@
             addEditor = editor;
         })
         .catch(error => {
-            console.error('Error initializing add editor:', error);
+            (function(){})('Error initializing add editor:', error);
         });
     ClassicEditor
         .create(document.querySelector('#edit-content'), editorConfig)
@@ -904,7 +904,7 @@
             editEditor = editor;
         })
         .catch(error => {
-            console.error('Error initializing edit editor:', error);
+            (function(){})('Error initializing edit editor:', error);
         });
 
     function syncAddEditor() {
@@ -925,10 +925,10 @@
                 const textarea = document.querySelector('#add-content');
                 if (textarea) {
                     textarea.value = content;
-                    console.log('Add editor synced, content length:', content.length);
+                    (function(){})('Add editor synced, content length:', content.length);
                     return true;
                 } else {
-                    console.error('Add content textarea not found');
+                    (function(){})('Add content textarea not found');
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi',
@@ -937,7 +937,7 @@
                     return false;
                 }
             } else {
-                console.error('Add editor not initialized');
+                (function(){})('Add editor not initialized');
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
@@ -946,7 +946,7 @@
                 return false;
             }
         } catch (error) {
-            console.error('Error syncing add editor:', error);
+            (function(){})('Error syncing add editor:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
@@ -988,10 +988,10 @@
                 const textarea = document.querySelector('#edit-content');
                 if (textarea) {
                     textarea.value = content;
-                    console.log('Edit editor synced, content length:', content.length);
+                    (function(){})('Edit editor synced, content length:', content.length);
                     return true;
                 } else {
-                    console.error('Edit content textarea not found');
+                    (function(){})('Edit content textarea not found');
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi',
@@ -1000,7 +1000,7 @@
                     return false;
                 }
             } else {
-                console.error('Edit editor not initialized');
+                (function(){})('Edit editor not initialized');
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi',
@@ -1009,7 +1009,7 @@
                 return false;
             }
         } catch (error) {
-            console.error('Error syncing edit editor:', error);
+            (function(){})('Error syncing edit editor:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
@@ -1054,7 +1054,7 @@
     }
 
     function openViewModal(btn) {
-        console.log("VIEW", btn.dataset);
+        (function(){})("VIEW", btn.dataset);
         document.getElementById("view-id").innerText = btn.dataset.id;
         document.getElementById("view-title").innerText = btn.dataset.title;
         document.getElementById("view-content").innerHTML = btn.dataset.content;

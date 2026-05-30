@@ -146,7 +146,7 @@
                         }
                     })
                     .catch(err => {
-                        console.error(err);
+                        (function(){})(err);
                         showNotification('Lỗi kết nối server', 'error');
                     });
             });
@@ -218,7 +218,7 @@
                             }
                         })
                         .catch(err => {
-                            console.error(err);
+                            (function(){})(err);
                             showNotification('Lỗi kết nối server', 'error');
                         });
                 });
@@ -305,7 +305,7 @@
                         }
                     })
                     .catch(err => {
-                        console.error(err);
+                        (function(){})(err);
                         showNotification('Lỗi kết nối server', 'error');
                     });
             });

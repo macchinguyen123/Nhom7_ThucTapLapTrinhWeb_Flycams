@@ -190,7 +190,7 @@
             }
         })
         .catch(err => {
-            console.error("Lỗi load tỉnh GHN:", err);
+            (function(){})("Lỗi load tỉnh GHN:", err);
             provinceSelect.innerHTML = '<option value="">-- Không tải được tỉnh --</option>';
         });
 
@@ -219,7 +219,7 @@
                 });
                 districtSelect.disabled = false;
             })
-            .catch(err => console.error("Lỗi load quận GHN:", err));
+            .catch(err => (function(){})("Lỗi load quận GHN:", err));
     });
 
     // ─── Chọn Quận → load Phường GHN ─────────────────────────────────────────
@@ -246,7 +246,7 @@
                 });
                 wardSelect.disabled = false;
             })
-            .catch(err => console.error("Lỗi load phường GHN:", err));
+            .catch(err => (function(){})("Lỗi load phường GHN:", err));
     });
 
     function findOptionByText(selectEl, text) {
@@ -296,7 +296,7 @@
                 }
             })
             .catch(err => {
-                console.error("Lỗi tính phí ship:", err);
+                (function(){})("Lỗi tính phí ship:", err);
                 shippingFeeDisplay.textContent = "Lỗi";
                 shippingFeeInput.value = 0;
             });

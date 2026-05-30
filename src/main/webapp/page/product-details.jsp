@@ -478,7 +478,7 @@
         if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
             alert('Messenger chỉ khả dụng trên thiết bị di động. Bạn có thể copy link để chia sẻ: ' + productUrl);
             navigator.clipboard.writeText(productUrl).then(() => {
-                console.log('Link đã được copy!');
+                (function(){})('Link đã được copy!');
             });
         } else {
             window.location.href = messengerUrl;
@@ -509,7 +509,7 @@
         if (!productImg) {
             productImg = document.querySelector('.main-image-wrapper img');
         }
-        console.log('addToCartClick:', productId, quantity, productImg);
+        (function(){})('addToCartClick:', productId, quantity, productImg);
         if (typeof globallyHandleAddToCart === 'function') {
             if (productImg) {
                 globallyHandleAddToCart(productId, quantity, productImg, btn);
@@ -518,7 +518,7 @@
                 globallyHandleAddToCart(productId, quantity, null, btn);
             }
         } else {
-            console.error('globallyHandleAddToCart not defined');
+            (function(){})('globallyHandleAddToCart not defined');
             alert('Lỗi: Dữ liệu chưa tải xong. Vui lòng thử lại sau 1 giây.');
         }
     };
@@ -627,9 +627,9 @@
                 const productId = this.getAttribute('data-product-id');
                 const isLiked = this.classList.contains('yeu-thich');
                 const action = isLiked ? 'remove' : 'add';
-                console.log('SEND:', action, productId);
+                (function(){})('SEND:', action, productId);
                 if (!productId) {
-                    console.error('productId is null');
+                    (function(){})('productId is null');
                     return;
                 }
                 fetch(contextPath + '/wishlist', {
@@ -667,7 +667,7 @@
                         }
                     })
                     .catch(err => {
-                        console.error('Error:', err);
+                        (function(){})('Error:', err);
                         showNotification('Lỗi kết nối server', 'error');
                     });
             });
@@ -806,7 +806,7 @@
             if (typeof globallyHandleAddToCart === 'function') {
                 globallyHandleAddToCart(productId, quantity, productImg, btn);
             } else {
-                console.error('globallyHandleAddToCart not defined');
+                (function(){})('globallyHandleAddToCart not defined');
                 form.submit();
             }
         });
@@ -886,7 +886,7 @@
                     }
                 })
                 .catch(err => {
-                    console.error('Error:', err);
+                    (function(){})('Error:', err);
                     showNotification('Lỗi kết nối server', 'error');
                 });
         });
