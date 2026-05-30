@@ -384,11 +384,13 @@ a {
 
 
 table#customerTable > thead,
+table#topSellingTable > thead,
 table#orderTable > thead {
     background-color: #0051c6 !important;
 }
 
 table#customerTable > thead th,
+table#topSellingTable > thead th,
 table#orderTable > thead th {
     background-color: #0051c6 !important;
     color: #fff !important;

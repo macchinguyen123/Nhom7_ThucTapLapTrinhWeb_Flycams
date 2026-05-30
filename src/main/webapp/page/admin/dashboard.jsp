@@ -166,10 +166,22 @@
                     <div class="value">
                         <fmt:formatNumber value="${monthlyRevenue}" type="number"/> VNĐ
                     </div>
-                    <small>
+                    <small class="d-block">
                         Mục tiêu:
                         <fmt:formatNumber value="${monthlyTarget}" type="number"/> VNĐ
                     </small>
+                    <c:choose>
+                        <c:when test="${revenueGrowthRate >= 0}">
+                            <small class="d-block mt-1" style="color: #4ade80; font-weight: 600;">
+                                <i class="bi bi-arrow-up-short"></i> +<fmt:formatNumber value="${revenueGrowthRate}" maxFractionDigits="1"/>% so với tháng trước
+                            </small>
+                        </c:when>
+                        <c:otherwise>
+                            <small class="d-block mt-1" style="color: #f87171; font-weight: 600;">
+                                <i class="bi bi-arrow-down-short"></i> <fmt:formatNumber value="${revenueGrowthRate}" maxFractionDigits="1"/>% so với tháng trước
+                            </small>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </div>
@@ -180,52 +192,91 @@
             </div>
             <canvas id="salesChart" height="100"></canvas>
         </div>
-        <div class="card-panel">
-            <div class="panel-title">
-                <h6>Khách hàng mới</h6>
-                <small style="color:#6b7280">7 ngày gần nhất</small>
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card-panel h-100 mb-0">
+                    <div class="panel-title">
+                        <h6>Khách hàng mới</h6>
+                        <small style="color:#6b7280">7 ngày gần nhất</small>
+                    </div>
+                    <table id="customerTable" class="table table-striped table-hover align-middle">
+                        <thead class="table-primary">
+                        <tr>
+                            <th>Tên</th>
+                            <th>Điện thoại</th>
+                            <th>Ngày đăng ký</th>
+                        </tr>
+                        </thead>
+                        <jsp:useBean id="now" class="java.util.Date"/>
+                        <tbody>
+                        <c:forEach var="u" items="${newUsers}">
+                            <tr>
+                                <td>${u.fullName}</td>
+                                <td>${u.phoneNumber}</td>
+                                <td>
+                                    <c:set var="days"
+                                           value="${Math.floor((now.time - u.createdAt.time) / (1000*60*60*24))}"/>
+                                    <c:set var="days" value="${days < 0 ? 0 : days}"/>
+                                    <c:choose>
+                                        <c:when test="${days == 0}">
+                                            Hôm nay
+                                        </c:when>
+                                        <c:when test="${days == 1}">
+                                            Hôm qua
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${days} ngày trước
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="${empty newUsers}">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    Không có khách hàng mới
+                                </td>
+                            </tr>
+                        </c:if>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <table id="customerTable" class="table table-striped table-hover align-middle">
-                <thead class="table-primary">
-                <tr>
-                    <th>Tên</th>
-                    <th>Điện thoại</th>
-                    <th>Ngày đăng ký</th>
-                </tr>
-                </thead>
-                <jsp:useBean id="now" class="java.util.Date"/>
-                <tbody>
-                <c:forEach var="u" items="${newUsers}">
-                    <tr>
-                        <td>${u.fullName}</td>
-                        <td>${u.phoneNumber}</td>
-                        <td>
-                            <c:set var="days"
-                                   value="${Math.floor((now.time - u.createdAt.time) / (1000*60*60*24))}"/>
-                            <c:set var="days" value="${days < 0 ? 0 : days}"/>
-                            <c:choose>
-                                <c:when test="${days == 0}">
-                                    Hôm nay
-                                </c:when>
-                                <c:when test="${days == 1}">
-                                    Hôm qua
-                                </c:when>
-                                <c:otherwise>
-                                    ${days} ngày trước
-                                </c:otherwise>
-                            </c:choose>
-                        </td>
-                    </tr>
-                </c:forEach>
-                <c:if test="${empty newUsers}">
-                    <tr>
-                        <td colspan="3" class="text-center text-muted">
-                            Không có khách hàng mới
-                        </td>
-                    </tr>
-                </c:if>
-                </tbody>
-            </table>
+            <div class="col-lg-6 mb-4">
+                <div class="card-panel h-100 mb-0">
+                    <div class="panel-title">
+                        <h6>Top 5 Sản phẩm bán chạy nhất</h6>
+                        <small style="color:#6b7280">30 ngày gần nhất</small>
+                    </div>
+                    <table id="topSellingTable" class="table table-striped table-hover align-middle">
+                        <thead class="table-primary">
+                        <tr>
+                            <th>Tên sản phẩm</th>
+                            <th class="text-center">Đã bán</th>
+                            <th class="text-end">Doanh thu</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="p" items="${topSellingProducts}">
+                            <tr>
+                                <td>${p.productName}</td>
+                                <td class="text-center fw-bold">${p.totalSold}</td>
+                                <td class="text-end text-success fw-semibold">
+                                    <fmt:formatNumber value="${p.totalRevenue}" type="number"/> VNĐ
+                                </td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="${empty topSellingProducts}">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    Chưa có sản phẩm bán chạy
+                                </td>
+                            </tr>
+                        </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         <div class="card-panel">
             <div class="panel-title text-danger">
@@ -401,6 +452,22 @@
             columnDefs: [
                 {orderable: false, targets: []}
             ]
+        });
+        let topSellingTable = $('#topSellingTable').DataTable({
+            paging: true,
+            pageLength: 5,
+            lengthChange: false,
+            searching: true,
+            ordering: true,
+            info: false,
+            language: {
+                search: "Tìm kiếm:",
+                zeroRecords: "Không tìm thấy kết quả",
+                paginate: {
+                    previous: "Trước",
+                    next: "Sau"
+                }
+            }
         });
         let orderTable = $('#orderTable').DataTable({
             paging: true,
