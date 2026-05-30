@@ -133,18 +133,31 @@
                 </form>
             </div>
         </div>
-        <div class="d-flex justify-content-start align-items-center mb-2">
-            <label class="me-2">Hiển thị</label>
-            <select id="rowsPerPage" class="form-select d-inline-block" style="width:80px;">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="20">20</option>
-            </select>
-            <label class="ms-2">đơn hàng</label>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex align-items-center gap-2">
+                <button id="batchConfirmBtn" class="btn btn-success btn-sm" disabled>
+                    <i class="bi bi-check-all"></i> Xác nhận đã chọn
+                </button>
+                <button id="batchCancelBtn" class="btn btn-danger btn-sm" disabled>
+                    <i class="bi bi-x-circle"></i> Từ chối đã chọn
+                </button>
+            </div>
+            <div class="d-flex justify-content-end align-items-center">
+                <label class="me-2">Hiển thị</label>
+                <select id="rowsPerPage" class="form-select d-inline-block" style="width:80px;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                </select>
+                <label class="ms-2">đơn hàng</label>
+            </div>
         </div>
         <table id="tableDonHang" class="table table-striped table-bordered align-middle">
             <thead class="table-primary">
             <tr>
+                <th class="text-center" style="width: 40px;">
+                    <input type="checkbox" class="form-check-input" id="selectAll">
+                </th>
                 <th>Mã Hóa Đơn</th>
                 <th>Tên Khách Hàng</th>
                 <th>Số Điện Thoại</th>
@@ -157,6 +170,9 @@
             <tbody>
             <c:forEach items="${orders}" var="o">
                 <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input order-checkbox" value="${o.id}">
+                    </td>
                     <td>${o.id}</td>
                     <td>${o.customerName}</td>
                     <td>${o.phoneNumber}</td>
@@ -467,12 +483,115 @@
             lengthChange: false,
             searching: true,
             pageLength: 10,
-            order: [[0, "desc"]],
+            order: [[1, "desc"]],
+            columnDefs: [
+                { orderable: false, targets: 0 }
+            ],
             language: {
                 zeroRecords: "Không tìm thấy kết quả",
                 paginate: {previous: "Trước", next: "Sau"}
             },
             dom: 't',
+        });
+        $("#selectAll").on("change", function() {
+            $(".order-checkbox").prop("checked", this.checked);
+            updateBatchButtons();
+        });
+        $(document).on("change", ".order-checkbox", function() {
+            let total = $(".order-checkbox").length;
+            let checked = $(".order-checkbox:checked").length;
+            $("#selectAll").prop("checked", total === checked && total > 0);
+            updateBatchButtons();
+        });
+        function updateBatchButtons() {
+            let checkedCount = $(".order-checkbox:checked").length;
+            $("#batchConfirmBtn, #batchCancelBtn").prop("disabled", checkedCount === 0);
+        }
+        function handleBatchAction(action, note) {
+            let ids = [];
+            $(".order-checkbox:checked").each(function() {
+                ids.push($(this).val());
+            });
+            if (ids.length === 0) return;
+            const params = new URLSearchParams();
+            params.append('ids', ids.join(','));
+            params.append('action', action);
+            if (note) params.append('note', note);
+            Swal.fire({
+                title: "Đang xử lý...",
+                text: "Vui lòng chờ trong giây lát",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            fetch('${pageContext.request.contextPath}/admin/order-action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    "X-CSRF-Token": CSRF_TOKEN
+                },
+                body: params.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    Swal.fire({
+                        title: "Thành công!",
+                        text: "Đã xử lý các đơn hàng được chọn",
+                        icon: "success",
+                        confirmButtonColor: "#0d6efd"
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire("Thất bại!", "Có lỗi xảy ra", "error");
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                Swal.fire("Lỗi kết nối!", "Không thể kết nối đến server", "error");
+            });
+        }
+        $("#batchConfirmBtn").on("click", function() {
+            Swal.fire({
+                title: "Xác nhận hàng loạt?",
+                text: "Bạn có chắc chắn muốn xác nhận các đơn hàng đã chọn?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Xác nhận",
+                cancelButtonText: "Hủy",
+                confirmButtonColor: "#198754",
+                cancelButtonColor: "#6c757d"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    handleBatchAction("batch-confirm");
+                }
+            });
+        });
+        $("#batchCancelBtn").on("click", function() {
+            Swal.fire({
+                title: "Từ chối hàng loạt?",
+                text: "Vui lòng nhập lý do từ chối chung cho các đơn hàng này:",
+                input: "textarea",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Từ chối",
+                cancelButtonText: "Hủy",
+                confirmButtonColor: "#dc3545",
+                cancelButtonColor: "#6c757d",
+                preConfirm: (noteValue) => {
+                    if (!noteValue || noteValue.trim().length === 0) {
+                        Swal.showValidationMessage('Bạn cần nhập lý do từ chối!');
+                    }
+                    return noteValue;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    handleBatchAction("batch-cancel", result.value.trim());
+                }
+            });
         });
 
         function updatePageInfo() {
@@ -501,6 +620,8 @@
         });
         table.on('draw', function () {
             updatePageInfo();
+            $("#selectAll").prop("checked", false);
+            updateBatchButtons();
         });
         $("#confirmBtn").on("click", function () {
             if (!currentOrderId) {
