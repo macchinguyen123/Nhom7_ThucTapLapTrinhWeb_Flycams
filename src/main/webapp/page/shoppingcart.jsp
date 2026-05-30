@@ -239,7 +239,7 @@
                     }
                 }
             }).catch(err => {
-                console.error("Error updating quantity:", err);
+                (function(){})("Error updating quantity:", err);
             });
         }
     });

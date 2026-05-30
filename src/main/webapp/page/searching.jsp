@@ -351,9 +351,9 @@
             const productId = this.getAttribute('data-product-id');
             const isLiked = this.classList.contains('yeu-thich');
             const action = isLiked ? 'remove' : 'add';
-            console.log('Action:', action, 'Product ID:', productId);
+            (function(){})('Action:', action, 'Product ID:', productId);
             if (!productId) {
-                console.error('productId is null');
+                (function(){})('productId is null');
                 return;
             }
             fetch('${pageContext.request.contextPath}/wishlist', {
@@ -378,7 +378,7 @@
                     return res.json();
                 })
                 .then(data => {
-                    console.log('Response:', data);
+                    (function(){})('Response:', data);
                     if (data.success) {
                         if (isLiked) {
                             this.classList.remove('bi-heart-fill', 'yeu-thich');
@@ -399,7 +399,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    (function(){})('Error:', error);
                     alert('Không thể kết nối đến server');
                 });
         });
@@ -495,7 +495,7 @@
                 const productCard = btn.closest('.san-pham');
                 const productImg = productCard.querySelector('.khung-anh img');
                 if (!productImg) {
-                    console.error('Không tìm thấy ảnh sản phẩm');
+                    (function(){})('Không tìm thấy ảnh sản phẩm');
                     return;
                 }
                 const flyingImg = productImg.cloneNode(true);
@@ -571,13 +571,13 @@
                             else updateCartBadge();
                             // Hiệu ứng rung NHẸ NHÀNG cho NÚT giỏ hàng
                             if (cartButton) {
-                                console.log('Applying shake to button');
+                                (function(){})('Applying shake to button');
                                 cartButton.classList.add('cart-shaking');
                                 setTimeout(() => {
                                     cartButton.classList.remove('cart-shaking');
                                 }, 500);
                             } else if (cartIcon) {
-                                console.log('Applying shake to icon only');
+                                (function(){})('Applying shake to icon only');
                                 cartIcon.classList.add('cart-shaking');
                                 setTimeout(() => {
                                     cartIcon.classList.remove('cart-shaking');
@@ -588,7 +588,7 @@
                         }
                     })
                     .catch(err => {
-                        console.error(err);
+                        (function(){})(err);
                         showNotification('Lỗi kết nối server', 'error');
                     });
             });

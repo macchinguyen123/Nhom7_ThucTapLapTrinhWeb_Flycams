@@ -389,7 +389,7 @@
                 modal.show();
             })
             .catch(err => {
-                console.error(err);
+                (function(){})(err);
                 alert("Lỗi tải chi tiết đơn hàng");
             });
     }
@@ -450,7 +450,7 @@
             })
             .catch(err => {
                 Swal.close();
-                console.error("Error:", err);
+                (function(){})("Error:", err);
                 Swal.fire({
                     title: "Lỗi kết nối!",
                     text: "Không thể kết nối đến server",

@@ -516,7 +516,7 @@
                 if (typeof globallyHandleAddToCart === 'function') {
                     globallyHandleAddToCart(productId, quantity, productImg, btn);
                 } else {
-                    console.error('globallyHandleAddToCart function not found');
+                    (function(){})('globallyHandleAddToCart function not found');
                     form.submit();
                 }
             });
@@ -533,9 +533,9 @@
             const productId = this.getAttribute('data-product-id');
             const isLiked = this.classList.contains('yeu-thich');
             const action = isLiked ? 'remove' : 'add';
-            console.log('SEND:', action, productId);
+            (function(){})('SEND:', action, productId);
             if (!productId) {
-                console.error('productId is null');
+                (function(){})('productId is null');
                 return;
             }
             const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
@@ -571,7 +571,7 @@
                     }
                 })
                 .catch(err => {
-                    console.error('Error:', err);
+                    (function(){})('Error:', err);
                 });
         });
     });
@@ -586,7 +586,7 @@
         const arrowRight2 = document.querySelector('.slider-2-right');
         const slider2Container = document.querySelector('.slider-2');
         if (!slider2 || !slides2.length) {
-            console.log('Slider 2 không tồn tại hoặc không có slide');
+            (function(){})('Slider 2 không tồn tại hoặc không có slide');
             return;
         }
         if (slides2.length < 2) {
@@ -622,16 +622,16 @@
 
         function goToSlide2(i) {
             index2 = (i + slides2.length) % slides2.length;
-            console.log('DEBUG: index2=', index2);
+            (function(){})('DEBUG: index2=', index2);
             const percentage = index2 * 100;
-            console.log('DEBUG: percentage=', percentage);
+            (function(){})('DEBUG: percentage=', percentage);
             const transformValue = 'translateX(-' + percentage + '%)';
-            console.log('DEBUG: transformValue string=', transformValue);
+            (function(){})('DEBUG: transformValue string=', transformValue);
             if (slider2) {
                 slider2.style.transform = transformValue;
-                console.log('DEBUG: Element style.transform after set:', slider2.style.transform);
+                (function(){})('DEBUG: Element style.transform after set:', slider2.style.transform);
             } else {
-                console.error('DEBUG: slider2 element is missing!');
+                (function(){})('DEBUG: slider2 element is missing!');
             }
             updateDots2();
         }
@@ -673,7 +673,7 @@
         }
         createDots2();
         startSlide2();
-        console.log('Slider 2 đã khởi động với ' + slides2.length + ' slides');
+        (function(){})('Slider 2 đã khởi động với ' + slides2.length + ' slides');
     });
 </script>
 <%
@@ -703,7 +703,7 @@
         const arrowRight2 = document.querySelector('.slider-2-right');
         const slider2Container = document.querySelector('.slider-2');
         if (!slider2 || !slides2.length) {
-            console.log('Slider 2 không tồn tại hoặc không có slide');
+            (function(){})('Slider 2 không tồn tại hoặc không có slide');
             return;
         }
         if (slides2.length < 2) {
@@ -739,16 +739,16 @@
 
         function goToSlide2(i) {
             index2 = (i + slides2.length) % slides2.length;
-            console.log('DEBUG: index2=', index2);
+            (function(){})('DEBUG: index2=', index2);
             const percentage = index2 * 100;
-            console.log('DEBUG: percentage=', percentage);
+            (function(){})('DEBUG: percentage=', percentage);
             const transformValue = 'translateX(-' + percentage + '%)';
-            console.log('DEBUG: transformValue string=', transformValue);
+            (function(){})('DEBUG: transformValue string=', transformValue);
             if (slider2) {
                 slider2.style.transform = transformValue;
-                console.log('DEBUG: Element style.transform after set:', slider2.style.transform);
+                (function(){})('DEBUG: Element style.transform after set:', slider2.style.transform);
             } else {
-                console.error('DEBUG: slider2 element is missing!');
+                (function(){})('DEBUG: slider2 element is missing!');
             }
             updateDots2();
         }
@@ -790,7 +790,7 @@
         }
         createDots2();
         startSlide2();
-        console.log('Slider 2 đã khởi động với ' + slides2.length + ' slides');
+        (function(){})('Slider 2 đã khởi động với ' + slides2.length + ' slides');
     });
 </script>
 </body>

@@ -159,7 +159,7 @@
             try {
                 localStorage.setItem(this.storageKey, JSON.stringify(history));
             } catch (e) {
-                console.error('Không thể lưu lịch sử tìm kiếm', e);
+                (function(){})('Không thể lưu lịch sử tìm kiếm', e);
             }
         },
         add: function (keyword) {
@@ -263,7 +263,7 @@
                     displaySuggestions(data, keyword);
                 })
                 .catch(function (err) {
-                    console.error('Lỗi khi tìm kiếm:', err);
+                    (function(){})('Lỗi khi tìm kiếm:', err);
                     suggestList.innerHTML = '<div class="suggest-empty">Không thể tải gợi ý</div>';
                     suggestList.style.display = "block";
                 });
@@ -407,7 +407,7 @@
             const regex = new RegExp("(" + escapedKeyword + ")", "gi");
             return escapeHtml(text).replace(regex, "<strong>$1</strong>");
         } catch (e) {
-            console.error("Highlight error:", e);
+            (function(){})("Highlight error:", e);
             return escapeHtml(text);
         }
     }
@@ -571,7 +571,7 @@
                 }
             })
             .catch(err => {
-                console.error('Add cart error:', err);
+                (function(){})('Add cart error:', err);
                 showNotification('Lỗi kết nối server', 'error');
             });
     }
@@ -614,8 +614,12 @@
         <div class="chat-body" id="chatBody">
         </div>
         <c:if test="${not empty user}">
-            <div class="chat-footer">
-                <input type="text" id="chatInput" placeholder="Nhập tin nhắn...">
+            <div id="adminTypingIndicator" style="display: none; padding: 5px 15px; font-size: 12px; color: #6c757d; font-style: italic; border-top: 1px solid #eee; background: #fafafa;">
+                <div class="spinner-grow spinner-grow-sm text-secondary me-1" role="status" style="width: 0.8rem; height: 0.8rem;"></div>
+                Admin đang gõ...
+            </div>
+            <div class="chat-footer" style="display: flex; align-items: center; padding: 10px; border-top: 1px solid #eee;">
+                <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." style="flex: 1;">
                 <button id="sendChat">
                     <i class="bi bi-send-fill"></i>
                 </button>
@@ -664,33 +668,61 @@
                 chatBody.scrollTop = chatBody.scrollHeight;
             });
         }
-
+        window.sendQuickMessage = function(text) {
+            chatInput.value = text;
+            sendMessage();
+        };
         function loadChatHistory() {
             if (!userLoggedIn) return;
-            fetch(contextPath + '/chat?action=history')
+            fetch(contextPath + '/chat?action=history&_t=' + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
                         renderMessages(data.messages);
                         updateUnreadCount();
+                        const ind = document.getElementById('adminTypingIndicator');
+                        if (ind) {
+                            ind.style.display = data.adminTyping ? 'block' : 'none';
+                        }
                     }
                 })
-                .catch(err => console.error('Chat error:', err));
+                .catch(err => (function(){})('Chat error:', err));
         }
 
         function renderMessages(messages) {
             chatBody.innerHTML = '';
             if (!messages || messages.length === 0) {
-                chatBody.innerHTML = '<div class="text-center p-3 text-muted"><p>Chào bạn! SkyDrone có thể giúp gì cho bạn?</p></div>';
+                chatBody.innerHTML = '<div class="text-center p-3 text-muted"><p>Chào bạn! SkyDrone có thể giúp gì cho bạn?</p></div>' +
+                    '<div class="quick-replies-container text-center mt-3">' +
+                    '<button class="btn btn-sm btn-outline-primary m-1 rounded-pill" onclick="sendQuickMessage(\'Tư vấn giúp tôi sản phẩm mới nhất\')">Tư vấn sản phẩm mới</button>' +
+                    '<button class="btn btn-sm btn-outline-primary m-1 rounded-pill" onclick="sendQuickMessage(\'Phí giao hàng là bao nhiêu?\')">Phí giao hàng?</button>' +
+                    '<button class="btn btn-sm btn-outline-primary m-1 rounded-pill" onclick="sendQuickMessage(\'Chính sách bảo hành thế nào?\')">Chính sách bảo hành?</button>' +
+                    '</div>';
                 return;
             }
-            messages.forEach(m => {
+            let lastUserMsgIndex = -1;
+            for (let i = messages.length - 1; i >= 0; i--) {
+                if (messages[i].sendUserId == '${user.id}') {
+                    lastUserMsgIndex = i;
+                    break;
+                }
+            }
+            messages.forEach((m, index) => {
                 const isUser = m.sendUserId == '${user.id}';
                 const div = document.createElement('div');
                 div.className = 'message ' + (isUser ? 'user' : 'admin');
                 div.innerHTML = '<span class="msg-text">' + m.content + '</span>' +
                     '<span class="msg-time">' + formatChatTime(m.sendTime) + '</span>';
                 chatBody.appendChild(div);
+                if (index === lastUserMsgIndex && m.status === 'READ') {
+                    const readReceipt = document.createElement('div');
+                    readReceipt.className = 'read-receipt text-end text-muted';
+                    readReceipt.style.fontSize = '11px';
+                    readReceipt.style.marginTop = '-5px';
+                    readReceipt.style.marginBottom = '10px';
+                    readReceipt.innerHTML = '<i class="bi bi-check2-all text-primary"></i> Đã xem';
+                    chatBody.appendChild(readReceipt);
+                }
             });
             scrollToBottomChat();
         }
@@ -731,7 +763,7 @@
 
         function updateUnreadCount() {
             if (!userLoggedIn) return;
-            fetch(contextPath + '/chat?action=unread-count')
+            fetch(contextPath + '/chat?action=unread-count&_t=' + new Date().getTime())
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.count > 0) {

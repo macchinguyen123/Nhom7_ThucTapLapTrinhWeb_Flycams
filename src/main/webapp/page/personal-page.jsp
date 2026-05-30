@@ -812,7 +812,7 @@
             avatarUpload.addEventListener("change", function () {
                 const file = this.files[0];
                 if (!file) return;
-                console.log("File selected:", file.name);
+                (function(){})("File selected:", file.name);
                 if (!file.type.startsWith('image/')) {
                     Swal.fire({icon: 'error', title: 'Lỗi', text: 'Vui lòng chọn tập tin hình ảnh.'});
                     return;
@@ -820,7 +820,7 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     const result = e.target.result;
-                    console.log("FileReader done, updating UI...");
+                    (function(){})("FileReader done, updating UI...");
                     const img = document.getElementById("sidebar-avatar-img");
                     if (img) {
                         img.src = result;
@@ -860,7 +860,7 @@
                         throw new Error(text || "Mã lỗi " + res.status);
                     });
                 }).then(newFileName => {
-                    console.log("Server saved successfully:", newFileName);
+                    (function(){})("Server saved successfully:", newFileName);
                     const timestamp = new Date().getTime();
                     const finalSrc = "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + timestamp;
                     document.querySelectorAll(".avatar-img").forEach(img => {
@@ -874,7 +874,7 @@
                         showConfirmButton: false
                     });
                 }).catch(err => {
-                    console.error("Lỗi upload avatar:", err);
+                    (function(){})("Lỗi upload avatar:", err);
                     Swal.fire({
                         icon: "error",
                         title: "Lỗi lưu ảnh!",
@@ -1050,7 +1050,7 @@
                 document.querySelector(".otp-group").style.display = "none";
                 document.getElementById("sendOtpBtn").style.display = "inline-block";
                 document.getElementById("confirmChangeBtn").style.display = "none";
-                console.error("Lỗi gửi OTP:", error);
+                (function(){})("Lỗi gửi OTP:", error);
                 Swal.fire({icon: 'error', title: 'Lỗi', text: 'Không thể gửi mã OTP. Vui lòng thử lại sau.'});
             });
     });
@@ -1236,14 +1236,14 @@
                                                     editWardSelect.disabled = false;
                                                 }
                                             })
-                                            .catch(err => console.error(err));
+                                            .catch(err => (function(){})(err));
                                     }
                                 }
                             })
-                            .catch(err => console.error(err));
+                            .catch(err => (function(){})(err));
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => (function(){})(err));
         } else {
             editProvinceSelect.value = province;
             editProvinceSelect.dispatchEvent(new Event('change'));
@@ -1287,7 +1287,7 @@
                     editDistrictSelect.disabled = false;
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => (function(){})(err));
     });
 
     editDistrictSelect.addEventListener("change", function () {
@@ -1312,7 +1312,7 @@
                     editWardSelect.disabled = false;
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => (function(){})(err));
     });
 
     editWardSelect.addEventListener("change", function () {
@@ -1378,7 +1378,7 @@
                         provinceSelect.appendChild(opt);
                     });
                 })
-                .catch(err => console.error(err));
+                .catch(err => (function(){})(err));
         }
     });
     provinceSelect.addEventListener("change", function () {
@@ -1406,7 +1406,7 @@
                     districtSelect.disabled = false;
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => (function(){})(err));
     });
 
     districtSelect.addEventListener("change", function () {
@@ -1432,7 +1432,7 @@
                     wardSelect.disabled = false;
                 }
             })
-            .catch(err => console.error(err));
+            .catch(err => (function(){})(err));
     });
 
     wardSelect.addEventListener("change", function () {
@@ -1444,14 +1444,14 @@
     function previewAndSaveAvatar(input) {
         const file = input.files[0];
         if (!file) return;
-        console.log("GOD MODE: File selected", file.name);
+        (function(){})("GOD MODE: File selected", file.name);
         if (!file.type.startsWith('image/')) {
             alert("Vui lòng chọn file hình ảnh!");
             return;
         }
         const reader = new FileReader();
         reader.onload = function (e) {
-            console.log("GOD MODE: Previewing image...");
+            (function(){})("GOD MODE: Previewing image...");
             const result = e.target.result;
             const img = document.getElementById("sidebar-avatar-img");
             if (img) {
@@ -1476,7 +1476,7 @@
             if (res.ok) return res.text();
             throw new Error("Server error " + res.status);
         }).then(newFileName => {
-            console.log("GOD MODE: Saved to server", newFileName);
+            (function(){})("GOD MODE: Saved to server", newFileName);
             const ts = new Date().getTime();
             const finalSrc = "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + ts;
             document.querySelectorAll(".avatar-img").forEach(i => i.src = finalSrc);
@@ -1490,7 +1490,7 @@
                 });
             }
         }).catch(err => {
-            console.error("GOD MODE ERROR:", err);
+            (function(){})("GOD MODE ERROR:", err);
             if (window.Swal) {
                 Swal.fire({icon: 'error', title: 'Lỗi lưu ảnh', text: err.message});
             }
@@ -1581,7 +1581,7 @@
                         }
                     })
                     .catch(err => {
-                        console.error("Lỗi kiểm tra mật khẩu:", err);
+                        (function(){})("Lỗi kiểm tra mật khẩu:", err);
                         feedback.style.display = "none";
                     });
             }, 500);

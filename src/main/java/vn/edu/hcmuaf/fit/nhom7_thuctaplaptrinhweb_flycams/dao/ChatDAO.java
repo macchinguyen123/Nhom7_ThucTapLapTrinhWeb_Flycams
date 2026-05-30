@@ -83,15 +83,15 @@ public class ChatDAO {
 
     public List<Conversation> getAdminConversations() {
         List<Conversation> list = new ArrayList<>();
-        String sql = "SELECT c.id, c.participantId, c.resolved, u.fullName, u.avatar, " +
+        String sql = "SELECT c.id, c.participantId, u.fullName, u.avatar, " +
                 "(SELECT content FROM messages WHERE conversationId = c.id ORDER BY id DESC LIMIT 1) as lastMsg, " +
                 "(SELECT sendTime FROM messages WHERE conversationId = c.id ORDER BY id DESC LIMIT 1) as lastTime, " +
                 "(SELECT sendUserId FROM messages WHERE conversationId = c.id ORDER BY id DESC LIMIT 1) as lastSenderId, " +
                 "(SELECT COUNT(*) FROM messages WHERE conversationId = c.id AND status = 'SENT' AND sendUserId = c.participantId) as unreadCount " +
                 "FROM conversations c " +
                 "JOIN users u ON c.participantId = u.id " +
-                "WHERE u.roleId != 1 AND EXISTS (SELECT 1 FROM messages WHERE conversationId = c.id) " +
-                "ORDER BY (SELECT MAX(id) FROM messages WHERE conversationId = c.id) DESC";
+                "WHERE EXISTS (SELECT 1 FROM messages WHERE conversationId = c.id) " +
+                "ORDER BY lastTime DESC, c.id DESC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
@@ -106,7 +106,7 @@ public class ChatDAO {
                 Timestamp t = rs.getTimestamp("lastTime");
                 c.setLastMessageTime(t != null ? String.valueOf(t.getTime()) : "");
                 c.setHasUnread(rs.getInt("unreadCount") > 0);
-                c.setResolved(rs.getInt("resolved") == 1);
+                c.setResolved(false); 
                 list.add(c);
             }
         } catch (SQLException e) {
