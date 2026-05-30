@@ -166,7 +166,8 @@
             </thead>
             <tbody>
             <c:forEach var="p" items="${promotions}">
-                <tr>
+                <tr data-start="<fmt:formatDate value="${p.startDate}" pattern="yyyy-MM-dd'T'HH:mm:ss"/>"
+                    data-end="<fmt:formatDate value="${p.endDate}" pattern="yyyy-MM-dd'T'HH:mm:ss"/>">
                     <td>${p.id}</td>
                     <td>${p.name}</td>
                     <td>
@@ -189,8 +190,10 @@
                         <fmt:formatDate value="${p.endDate}" pattern="yyyy-MM-dd"/>
                     </td>
                     <td>
-                        <span class="admin-countdown badge bg-secondary" data-end-time="<fmt:formatDate value="${p.endDate}" pattern="yyyy-MM-dd'T'HH:mm:ss"/>">
-                            Đang tải...
+                       <span class="admin-countdown badge"
+                             data-start-time="<fmt:formatDate value="${p.startDate}" pattern="yyyy-MM-dd'T'HH:mm:ss"/>"
+                             data-end-time="<fmt:formatDate value="${p.endDate}" pattern="yyyy-MM-dd'T'HH:mm:ss"/>">
+                               Đang tải...
                         </span>
                     </td>
                     <td>
@@ -1071,6 +1074,11 @@
                 idInput.name = 'id';
                 idInput.value = promotionId;
                 form.appendChild(idInput);
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_csrf';
+                csrfInput.value = CSRF_TOKEN;
+                form.appendChild(csrfInput);
                 document.body.appendChild(form);
                 form.submit();
             }
@@ -1083,12 +1091,20 @@
             const now = new Date().getTime();
             document.querySelectorAll('.admin-countdown').forEach(el => {
                 const endTimeStr = el.getAttribute('data-end-time');
+                const startTimeStr = el.getAttribute('data-start-time');
                 if (!endTimeStr) return;
                 const endTime = new Date(endTimeStr).getTime() + 86399000;
                 const distance = endTime - now;
-                if (distance < 0) {
+                const startTime = new Date(startTimeStr).getTime();
+                const row = el.closest('tr');
+                if (now < startTime) {
+                    el.className = 'admin-countdown badge bg-warning text-dark';
+                    el.innerHTML = '<i class="bi bi-clock-history"></i> Sắp bắt đầu';
+                    if (row) row.classList.remove('table-success');
+                } else if (distance < 0) {
                     el.className = 'admin-countdown badge bg-secondary';
                     el.textContent = 'Đã hết hạn';
+                    if (row) row.classList.remove('table-success');
                 } else {
                     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -1104,11 +1120,52 @@
                         (seconds < 10 ? '0' : '') + seconds;
                     el.className = 'admin-countdown badge bg-success';
                     el.innerHTML = '<i class="bi bi-clock"></i> ' + timeString;
+                    if (row) row.classList.add('table-success');
                 }
             });
         };
         updateAdminCountdowns();
         setInterval(updateAdminCountdowns, 1000);
+    });
+    document.getElementById('formAddPromotion').addEventListener('submit', function(e) {
+        const ten = document.querySelector('#formAddPromotion input[name="name"]').value.trim();
+        const mucGiam = parseFloat(document.querySelector('#formAddPromotion input[name="discountValue"]').value);
+        const start = document.querySelector('#formAddPromotion input[name="startDate"]').value;
+        const end = document.querySelector('#formAddPromotion input[name="endDate"]').value;
+        if (!ten) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng nhập tên chương trình!' });
+            return;
+        }
+        if (isNaN(mucGiam) || mucGiam <= 0) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Mức giảm không hợp lệ', text: 'Mức giảm phải lớn hơn 0!' });
+            return;
+        }
+        if (start && end && end <= start) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Ngày không hợp lệ', text: 'Ngày kết thúc phải lớn hơn ngày bắt đầu!' });
+        }
+    });
+    document.getElementById('formEditPromotion').addEventListener('submit', function(e) {
+        const ten = document.getElementById('edit-name').value.trim();
+        const mucGiam = parseFloat(document.getElementById('edit-discount').value);
+        const start = document.getElementById('edit-start').value;
+        const end = document.getElementById('edit-end').value;
+        if (!ten) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng nhập tên chương trình!' });
+            return;
+        }
+        if (isNaN(mucGiam) || mucGiam <= 0) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Mức giảm không hợp lệ', text: 'Mức giảm phải lớn hơn 0!' });
+            return;
+        }
+        if (start && end && end <= start) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Ngày không hợp lệ', text: 'Ngày kết thúc phải lớn hơn ngày bắt đầu!' });
+        }
     });
 </script>
 </body>
