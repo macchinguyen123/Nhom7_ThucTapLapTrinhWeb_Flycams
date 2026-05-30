@@ -75,6 +75,30 @@ public class DashboardDAO {
         return 0;
     }
 
+    public double getPreviousMonthlyRevenue() {
+        String sql = """ 
+SELECT IFNULL(SUM(totalPrice),0) FROM orders
+WHERE MONTH(createdAt) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))AND YEAR(createdAt) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))
+                AND status = 'Hoàn thành'
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next())
+                return rs.getDouble(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    public double getRevenueGrowthRate() {
+        double currentMonth = getMonthlyRevenue();
+        double previousMonth = getPreviousMonthlyRevenue();
+        if (previousMonth == 0) {
+            return currentMonth > 0 ? 100.0 : 0.0;
+        }
+        return ((currentMonth - previousMonth) / previousMonth) * 100.0;
+    }
     public Map<String, Double> getRevenueLast30Days() {
         Map<String, Double> data = new LinkedHashMap<>();
         String sql = """

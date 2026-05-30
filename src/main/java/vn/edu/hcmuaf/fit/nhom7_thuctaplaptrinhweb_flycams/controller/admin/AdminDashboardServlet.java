@@ -27,6 +27,7 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("totalProducts", dashboardService.getTotalProducts());
         request.setAttribute("totalOrders", dashboardService.getTotalOrders());
         request.setAttribute("monthlyRevenue", dashboardService.getMonthlyRevenue());
+        request.setAttribute("revenueGrowthRate", dashboardService.getRevenueGrowthRate());
         request.setAttribute("revenueMap", dashboardService.getRevenueLast30Days());
         request.setAttribute("userGrowthRate", dashboardService.getUserGrowthRate());
         request.setAttribute("totalCategories", dashboardService.getTotalCategories());
@@ -39,6 +40,10 @@ public class AdminDashboardServlet extends HttpServlet {
         Map<String, Double> revenue30Days = dashboardService.getRevenueLast30Days();
         request.setAttribute("revenueLabels", revenue30Days.keySet());
         request.setAttribute("revenueValues", revenue30Days.values());
+        java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        String startDate = today.minusDays(30).toString();
+        String endDate = today.toString();
+        request.setAttribute("topSellingProducts", dashboardService.getTopSellingProductsWithRevenue(startDate, endDate));
         request.getRequestDispatcher("/page/admin/dashboard.jsp")
                 .forward(request, response);
     }

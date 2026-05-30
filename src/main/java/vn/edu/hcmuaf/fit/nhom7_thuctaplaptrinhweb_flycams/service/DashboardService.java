@@ -30,6 +30,9 @@ public class DashboardService {
         return dashboardDAO.getMonthlyRevenue();
     }
 
+    public double getRevenueGrowthRate() {
+        return dashboardDAO.getRevenueGrowthRate();
+    }
     //Lấy doanh thu 30 ngày gần nhất
     public Map<String, Double> getRevenueLast30Days() {
         return dashboardDAO.getRevenueLast30Days();
