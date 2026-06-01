@@ -12,20 +12,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <style>
-        .complaint-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-        }
 
-        .status-badge {
-            font-size: 13px;
-            padding: 5px 10px;
-        }
-
-    </style>
 </head>
 <body>
 <header class="main-header">
@@ -50,24 +37,15 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="text-primary fw-bold"><i class="bi bi-card-text"></i> Danh Sách Khiếu Nại</h4>
         </div>
-        <c:if test="${not empty sessionScope.message}">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    ${sessionScope.message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <c:remove var="message" scope="session"/>
-        </c:if>
-        <c:if test="${not empty sessionScope.error}">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    ${sessionScope.error}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <c:remove var="error" scope="session"/>
-        </c:if>
         <div class="complaint-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center">
                     <label class="me-2 text-nowrap">Hiển thị</label>
+                    <select id="statusFilter" class="form-select" style="width:140px;">
+                        <option value="">Tất cả</option>
+                        <option value="Chờ xử lý">Chờ xử lý</option>
+                        <option value="Đã xử lý">Đã xử lý</option>
+                    </select>
                     <select id="rowsPerPageCustom" class="form-select d-inline-block" style="width:80px;">
                         <option value="5" selected>5</option>
                         <option value="10">10</option>
@@ -76,6 +54,9 @@
                     <label class="ms-2 text-nowrap">khiếu nại</label>
                 </div>
                 <div class="d-flex align-items-center gap-2">
+                    <input type="date" id="dateFrom" class="form-control" style="width:145px;" title="Từ ngày">
+                    <span class="text-muted">–</span>
+                    <input type="date" id="dateTo" class="form-control" style="width:145px;" title="Đến ngày">
                     <div class="input-group" style="max-width: 300px;">
                             <span class="input-group-text bg-primary text-white">
                                 <i class="bi bi-search"></i>
@@ -104,7 +85,7 @@
                 </thead>
                 <tbody>
                 <c:forEach items="${complaints}" var="c">
-                    <tr>
+                    <tr data-date="<fmt:formatDate value='${c.createdAt}' pattern='yyyy-MM-dd'/>">
                         <td>${c.id}</td>
                         <td>
                             <strong>${c.userFullName}</strong><br>
@@ -176,6 +157,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
     $(document).ready(function () {
@@ -193,6 +175,28 @@
             }
         });
 
+        <c:if test="${not empty sessionScope.message}">
+        Swal.fire({
+            toast: true, position: 'top-end', icon: 'success',
+            title: '${sessionScope.message}',
+            showConfirmButton: false, timer: 3000, timerProgressBar: true
+        });
+        </c:if>
+        <c:remove var="message" scope="session"/>
+
+        <c:if test="${not empty sessionScope.error}">
+        Swal.fire({
+            toast: true, position: 'top-end', icon: 'error',
+            title: '${sessionScope.error}',
+            showConfirmButton: false, timer: 3000, timerProgressBar: true
+        });
+        </c:if>
+        <c:remove var="message" scope="session"/>
+
+        $('#statusFilter').on('change', function () {
+            table.column(4).search(this.value).draw();
+        });
+
         $("#searchCustom").on("keyup search", function () {
             table.search(this.value).draw();
             updatePageInfo();
@@ -208,6 +212,22 @@
         $("#nextPageCustom").click(function () {
             table.page('next').draw('page');
             updatePageInfo();
+        });
+
+        $('#dateFrom, #dateTo').on('change', function () {
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                if (settings.nTable.id !== 'complaintsTable') return true;
+                let from = $('#dateFrom').val();
+                let to   = $('#dateTo').val();
+                if (!from && !to) return true;
+                let rowDate = $(table.row(dataIndex).node()).attr('data-date');
+                if (!rowDate) return true;
+                if (from && rowDate < from) return false;
+                if (to   && rowDate > to)   return false;
+                return true;
+            });
+            table.draw();
+            $.fn.dataTable.ext.search.pop();
         });
 
         function updatePageInfo() {

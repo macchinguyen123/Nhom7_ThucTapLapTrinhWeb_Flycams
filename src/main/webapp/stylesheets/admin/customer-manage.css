@@ -402,5 +402,15 @@ table#tableKhachHang > thead th {
     color: #fff !important;
     border-color: #0047a3 !important;
 }
+.complaint-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
 
+.status-badge {
+    font-size: 13px;
+    padding: 5px 10px;
+}
 
