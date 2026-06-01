@@ -116,7 +116,7 @@
                 <li>
                     <a href="${pageContext.request.contextPath}/Category?id=${cat.id}">
                         <img src="${pageContext.request.contextPath}/${cat.image}" class="menu-icon">
-                            ${cat.categoryName}
+                            ${cat.categoryName} (${cat.productCount})
                     </a>
                 </li>
             </c:forEach>

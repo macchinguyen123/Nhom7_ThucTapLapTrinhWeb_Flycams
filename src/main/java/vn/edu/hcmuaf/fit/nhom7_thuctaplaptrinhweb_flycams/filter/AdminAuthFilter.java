@@ -76,7 +76,7 @@ public class AdminAuthFilter implements Filter {
     private boolean isProductInventoryURI(String uri) {
         return uri.contains("/product-management") || uri.contains("/product-manage")  || uri.contains("/product-save")
                 || uri.contains("/product-delete") || uri.contains("/product-get") || uri.contains("/product-toggle-status")
-                || uri.contains("/inventory-manage") || uri.contains("/inventory-detail")  || uri.contains("/inventory-import") || uri.contains("/category-manage")  || uri.contains("/category-sort")  || uri.contains("/banner-manage")
+                || uri.contains("/inventory-manage") || uri.contains("/inventory-detail")  || uri.contains("/inventory-import") || uri.contains("/category-manage")  || uri.contains("/category-sort") || uri.contains("/category-toggle-status")  || uri.contains("/banner-manage")
                 || uri.contains("/api/inventory-");
     }
 
