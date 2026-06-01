@@ -28,7 +28,7 @@ public class StatisticsServlet extends HttpServlet {
         String endDateStr = request.getParameter("endDate");
         java.time.LocalDate today = java.time.LocalDate.now();
         if (startDateStr == null || startDateStr.trim().isEmpty()) {
-            startDateStr = today.withDayOfMonth(1).toString();
+            startDateStr = today.toString();
         }
         if (endDateStr == null || endDateStr.trim().isEmpty()) {
             endDateStr = today.toString();
@@ -54,6 +54,10 @@ public class StatisticsServlet extends HttpServlet {
         request.setAttribute("lowPerformingProducts", lowPerformingProducts);
         request.setAttribute("topCustomers", topCustomers);
         request.setAttribute("revenueDays", revenue8Days.keySet());
+        request.setAttribute("revenueToday",     dashboardService.getRevenueToday());
+        request.setAttribute("revenueThisMonth", dashboardService.getMonthlyRevenue());
+        request.setAttribute("ordersToday",      dashboardService.getOrdersCountToday());
+        request.setAttribute("bestSellerToday",  dashboardService.getBestSellerToday());
         request.setAttribute("revenueValues", revenue8Days.values());
         request.setAttribute("revenueMonths", revenueByMonth.keySet());
         request.setAttribute("revenueMonthValues", revenueByMonth.values());
