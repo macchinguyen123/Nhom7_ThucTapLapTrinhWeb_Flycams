@@ -16,76 +16,7 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/admin/blog-manage.css">
-    <style>
-        .dataTables_paginate, .dataTables_filter, .dataTables_length, .dataTables_info {
-            display: none !important;
-        }
 
-        table#tableReviews > thead.table-dark th {
-            background-color: #0051c6 !important;
-            color: #ffffff !important;
-            border-color: #0047a3 !important;
-            vertical-align: middle;
-        }
-
-        table#tableReviews tbody tr {
-            transition: background-color 0.2s ease-in-out;
-        }
-
-        table#tableReviews tbody tr:hover {
-            background-color: #f1f5f9 !important;
-        }
-
-        table#tableReviews tbody tr.bad-review {
-            background-color: #fff3f3 !important;
-        }
-
-        table#tableReviews tbody tr.bad-review:hover {
-            background-color: #ffebeb !important;
-        }
-
-        #searchInput:focus, #statusFilter:focus, #rowsPerPage:focus {
-            border-color: #0051c6 !important;
-            box-shadow: 0 0 0 0.25rem rgba(0, 81, 198, 0.25) !important;
-        }
-
-        .status-processed {
-            color: #198754;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            color: #dc3545;
-            font-weight: 600;
-        }
-
-        .action-history-box {
-            background: #f8f9fa;
-            border-left: 4px solid #0d6efd;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-        }
-
-        @keyframes pulse-red {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
-            }
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
-            }
-        }
-
-        .pulse-bell-badge {
-            animation: pulse-red 2s infinite;
-        }
-    </style>
 </head>
 <body>
 <header class="main-header">
@@ -138,8 +69,13 @@
             <div class="input-group" style="max-width: 350px;">
                 <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
                 <input id="searchInput" type="search" class="form-control" placeholder="Tìm tên KH, nội dung...">
+
             </div>
             <div class="d-flex align-items-center gap-3">
+                <input type="date" id="dateFrom" class="form-control form-control-sm" style="width:140px;">
+                <span>–</span>
+                <input type="date" id="dateTo" class="form-control form-control-sm" style="width:140px;">
+
                 <select id="statusFilter" class="form-select">
                     <option value="">Tất cả trạng thái</option>
                     <option value="Chờ xử lý">Chờ xử lý</option>
@@ -169,7 +105,8 @@
                 </thead>
                 <tbody>
                 <c:forEach var="r" items="${badReviews}">
-                    <tr class="${r.status == null || r.status == 'PENDING' ? 'bad-review' : ''}">
+                    <tr class="${r.status == null || r.status == 'PENDING' ? 'bad-review' : ''}"
+                        data-date="<fmt:formatDate value='${r.createdAt}' pattern='yyyy-MM-dd'/>">
                         <td>#RV${r.id}</td>
                         <td class="fw-bold"><c:out value="${r.username}"/></td>
                         <td class="text-start"><c:out value="${r.productName}"/></td>
@@ -261,6 +198,8 @@
     </main>
 </div>
 <script>
+    const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
+    let detailModalInstance = null;
     let reviewTable;
     $(document).ready(function () {
         reviewTable = $('#tableReviews').DataTable({
@@ -271,6 +210,7 @@
                 infoEmpty: "Không tìm thấy kết quả"
             }
         });
+        detailModalInstance = new bootstrap.Modal(document.getElementById('reviewDetailModal'));
         reviewTable.on('draw', function () {
             let pageInfo = reviewTable.page.info();
             if (pageInfo.pages > 0) {
@@ -291,6 +231,21 @@
         });
         $('#rowsPerPage').change(function () {
             reviewTable.page.len($(this).val()).draw();
+        });
+        $('#dateFrom, #dateTo').on('change', function () {
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                if (settings.nTable.id !== 'tableReviews') return true;
+                let from = $('#dateFrom').val();
+                let to   = $('#dateTo').val();
+                if (!from && !to) return true;
+                let rowDate = $(reviewTable.row(dataIndex).node()).attr('data-date');
+                if (!rowDate) return true;
+                if (from && rowDate < from) return false;
+                if (to   && rowDate > to)   return false;
+                return true;
+            });
+            reviewTable.draw();
+            $.fn.dataTable.ext.search.pop();
         });
         $('#prevPage').click(() => reviewTable.page('previous').draw('page'));
         $('#nextPage').click(() => reviewTable.page('next').draw('page'));
@@ -325,18 +280,16 @@
         if (status === 'PENDING') {
             footerHtml = `
                 <button class="btn btn-outline-secondary me-auto" data-bs-dismiss="modal">Đóng</button>
-                <button class="btn btn-success px-4 shadow-sm" onclick="keepReview('${id}')">
+                <button class="btn btn-success px-4 shadow-sm" onclick="keepFromModal('${id}')">
                     <i class="bi bi-check-circle"></i> Bỏ qua cảnh báo (Giữ nguyên)
                 </button>
-                <button class="btn btn-danger px-4 shadow-sm" onclick="deleteReview('${id}')">
+                <button class="btn btn-danger px-4 shadow-sm" onclick="deleteFromModal('${id}')">
                     <i class="bi bi-trash"></i> Xóa bỏ hoàn toàn
                 </button>
             `;
         }
         $('#modal-actions').html(footerHtml);
-
-        let modal = new bootstrap.Modal(document.getElementById('reviewDetailModal'));
-        modal.show();
+        detailModalInstance.show();
     }
 
     function keepReview(id) {
@@ -360,7 +313,8 @@
                     data: {
                         action: 'keep',
                         id: id,
-                        adminNote: note
+                        adminNote: note,
+                        _csrf: CSRF_TOKEN
                     },
                     success: function (res) {
                         Swal.fire('Thành công!', 'Đã phê duyệt giữ lại đánh giá.', 'success')
@@ -399,7 +353,8 @@
                     data: {
                         action: 'delete',
                         id: id,
-                        adminNote: reason
+                        adminNote: reason,
+                        _csrf: CSRF_TOKEN
                     },
                     success: function (res) {
                         Swal.fire('Đã xóa!', 'Đánh giá đã bị ẩn khỏi trang bán hàng thành công.', 'success')
@@ -468,6 +423,19 @@
                     }
                 }
             }
+        });
+    }
+    function keepFromModal(id) {
+        detailModalInstance.hide();
+        $('#reviewDetailModal').one('hidden.bs.modal', function () {
+            keepReview(id);
+        });
+    }
+
+    function deleteFromModal(id) {
+        detailModalInstance.hide();
+        $('#reviewDetailModal').one('hidden.bs.modal', function () {
+            deleteReview(id);
         });
     }
 </script>
