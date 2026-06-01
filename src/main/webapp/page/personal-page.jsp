@@ -42,14 +42,12 @@
         </div>
         <nav class="menu">
             <ul>
-                <li class="active" data-section="profile-section"><a href="#">Tài Khoản Của Tôi</a>
-                </li>
-                <li data-section="repass-section"><a href="#">Đổi mật khẩu</a></li>
-                <li data-section="orders-section"><a href="#">Đơn Mua</a></li>
-                <li data-section="recent-section"><a href="#">Sản Phẩm Đã Xem Gần Đây</a></li>
-                <li data-section="addresses-section"><a
-                        href="${pageContext.request.contextPath}/ListAddressServlet">Địa Chỉ Nhận
-                    Hàng</a></li>
+                <li class="active" data-section="profile-section"><a href="#"><i class="bi bi-person me-2"></i>Hồ sơ cá nhân</a></li>
+                <li data-section="repass-section"><a href="#"><i class="bi bi-shield-lock me-2"></i>Đổi mật khẩu</a></li>
+                <li data-section="orders-section"><a href="#"><i class="bi bi-bag-check me-2"></i>Đơn Mua</a></li>
+                <li data-section="recent-section"><a href="#"><i class="bi bi-clock-history me-2"></i>Sản Phẩm Đã Xem Gần Đây</a></li>
+                <li data-section="addresses-section"><a href="${pageContext.request.contextPath}/ListAddressServlet"><i class="bi bi-geo-alt me-2"></i>Địa Chỉ Nhận Hàng</a></li>
+                <li data-section="login-history-section"><a href="#"><i class="bi bi-journal-text me-2"></i>Lịch sử đăng nhập</a></li>
             </ul>
         </nav>
         <div class="logout-section">
@@ -229,6 +227,7 @@
             <h2>Đơn Mua</h2>
             <div id="order-list" class="order-table"
                  style="display: ${not empty selectedOrder ? 'none' : 'block'}">
+                
                 <div class="order-tabs">
                     <button class="order-tab active" data-status="PENDING"><i
                             class="bi bi-hourglass-split me-1"></i> Chờ xác nhận
@@ -316,7 +315,7 @@
                                    href="${pageContext.request.contextPath}/personal?orderId=${o.id}">
                                     <i class="bi bi-eye"></i> Xem chi tiết
                                 </a>
-                                <c:if test="${o.status.name() eq 'PENDING'}">
+                                <c:if test="${o.status.name() eq 'PENDING' || o.status.name() eq 'PROCESSING'}">
                                     <form method="post"
                                           action="${pageContext.request.contextPath}/personal"
                                           style="display:inline"
@@ -639,7 +638,7 @@
             <p class="instruction">Vui lòng nhập đầy đủ thông tin để đảm bảo đơn hàng được giao
                 chính xác</p>
             <div id="popup" class="popup hidden">
-                <div class="popup-content">
+                <div class="popup-content" style="max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
                     <span id="closePopup" class="close">&times;</span>
                     <h2>Thêm địa chỉ</h2>
                     <form action="${pageContext.request.contextPath}/AddAddressServlet"
@@ -690,7 +689,7 @@
                 </div>
             </div>
             <div id="editPopup" class="popup hidden">
-                <div class="popup-content">
+                <div class="popup-content" style="max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
                     <span id="closeEditPopup" class="close">&times;</span>
                     <h2>Sửa địa chỉ</h2>
                     <form action="${pageContext.request.contextPath}/EditAddressServlet"
@@ -740,6 +739,54 @@
                         <button type="submit" class="green-button">Cập nhật địa chỉ</button>
                     </form>
                 </div>
+            </div>
+        </section>
+        <section id="login-history-section" class="section">
+            <h2>Lịch Sử Đăng Nhập</h2>
+            <p class="desc">Kiểm tra các hoạt động đăng nhập gần đây để bảo vệ tài khoản của bạn</p>
+            <div class="table-responsive mt-3">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Địa chỉ IP</th>
+                            <th>Thiết bị / Trình duyệt</th>
+                            <th>Địa điểm</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:choose>
+                            <c:when test="${empty loginHistories}">
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">Chưa ghi nhận lịch sử đăng nhập nào.</td>
+                                </tr>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="lh" items="${loginHistories}">
+                                    <tr>
+                                        <td><fmt:formatDate value="${lh.loginTime}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
+                                        <td><code>${lh.ipAddress}</code></td>
+                                        <td>
+                                            <i class="bi bi-laptop me-2 text-secondary"></i> ${lh.userAgent}
+                                        </td>
+                                        <td>${lh.location}</td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${lh.status eq 'Success'}">
+                                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Thành công</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge bg-danger"><i class="bi bi-exclamation-circle me-1"></i> Thất bại</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
+                    </tbody>
+                </table>
             </div>
         </section>
     </main>
@@ -1180,6 +1227,7 @@
         document.getElementById("editPhoneNumber").value = phoneNumber;
         document.getElementById("editAddressLine").value = addressLine;
         document.getElementById("editIsDefault").checked = isDefault;
+        document.getElementById("editPopup").classList.remove("hidden");
         if (editProvinceSelect.options.length <= 1) {
             fetch(API_BASE + "/")
                 .then(res => res.json())
@@ -1259,7 +1307,6 @@
                 }, 500);
             }, 500);
         }
-        document.getElementById("editPopup").classList.remove("hidden");
     }
 
     editProvinceSelect.addEventListener("change", function () {

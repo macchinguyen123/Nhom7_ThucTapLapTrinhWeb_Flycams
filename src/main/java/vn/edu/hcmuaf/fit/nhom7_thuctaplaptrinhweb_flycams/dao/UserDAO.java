@@ -204,6 +204,28 @@ public class UserDAO {
         }
         return null;
     }
+    public User getUserByEmailOrPhone(String input) {
+        String sql = "SELECT * FROM users WHERE email = ? OR phoneNumber = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, input);    ps.setString(2, input);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setId(rs.getInt("id"));  user.setRoleId(rs.getInt("roleId"));
+                    user.setFullName(rs.getString("fullName"));  user.setBirthDate(rs.getDate("birthDate"));
+                    user.setGender(rs.getString("gender"));  user.setEmail(rs.getString("email"));
+                    user.setUsername(rs.getString("username"));  user.setPhoneNumber(rs.getString("phoneNumber"));
+                    user.setAvatar(rs.getString("avatar")); user.setStatus(rs.getBoolean("status"));
+                    user.setLockReason(rs.getString("lockReason"));
+                    return user;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     public boolean updatePassword(int userId, String hashedPassword) {
         String sql = "UPDATE users SET password=?, updatedAt=NOW() WHERE id=?";
         try (Connection conn = DBConnection.getConnection();
