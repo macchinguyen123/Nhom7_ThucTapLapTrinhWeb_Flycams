@@ -13,10 +13,12 @@ public class CategoryDAO {
     public List<Categories> getCategoriesForHeader() {
         List<Categories> list = new ArrayList<>();
         String sql = """
-                    SELECT id, categoryName, image
-                    FROM categories
-                    WHERE status = 'Hiện'
-                    ORDER BY sort_order ASC
+                    SELECT c.id, c.categoryName, c.image, COUNT(p.id) AS productCount
+                    FROM categories c
+                    LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
+                    WHERE c.status = 'Hiện'
+                    GROUP BY c.id, c.categoryName, c.image, c.sort_order
+                    ORDER BY c.sort_order ASC
                 """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -26,6 +28,7 @@ public class CategoryDAO {
                 c.setId(rs.getInt("id"));
                 c.setCategoryName(rs.getString("categoryName"));
                 c.setImage(rs.getString("image"));
+                c.setProductCount(rs.getInt("productCount"));
                 list.add(c);
             }
         } catch (Exception e) {
@@ -133,7 +136,13 @@ public class CategoryDAO {
 
     public List<Categories> getAllCategoriesAdmin() {
         List<Categories> list = new ArrayList<>();
-        String sql = "SELECT * FROM categories ORDER BY sort_order ASC";
+        String sql = """
+                    SELECT c.id, c.categoryName, c.image, c.status, c.sort_order, COUNT(p.id) AS productCount
+                    FROM categories c
+                    LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
+                    GROUP BY c.id, c.categoryName, c.image, c.status, c.sort_order
+                    ORDER BY c.sort_order ASC
+                """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -144,11 +153,26 @@ public class CategoryDAO {
                         rs.getString("image"),
                         rs.getString("status")
                 );
+                c.setSortOrder(rs.getInt("sort_order"));
+                c.setProductCount(rs.getInt("productCount"));
                 list.add(c);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public boolean updateCategoryStatus(int id, String status) {
+        String sql = "UPDATE categories SET status = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

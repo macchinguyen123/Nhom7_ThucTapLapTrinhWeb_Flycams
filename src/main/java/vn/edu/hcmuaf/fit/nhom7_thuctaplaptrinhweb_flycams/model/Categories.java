@@ -8,6 +8,7 @@ public class Categories implements Serializable {
     private String image;
     private String status;
     private int sortOrder;
+    private int productCount;
 
     public Categories() {
     }
@@ -57,5 +58,13 @@ public class Categories implements Serializable {
 
     public void setSortOrder(int sortOrder) {
         this.sortOrder = sortOrder;
+    }
+
+    public int getProductCount() {
+        return productCount;
+    }
+
+    public void setProductCount(int productCount) {
+        this.productCount = productCount;
     }
 }

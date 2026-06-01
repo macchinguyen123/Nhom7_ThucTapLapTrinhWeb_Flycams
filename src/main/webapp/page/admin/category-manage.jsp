@@ -23,6 +23,24 @@
         .dataTables_info {
             display: none !important;
         }
+        .drag-handle {
+            cursor: grab;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .drag-handle:hover {
+            color: #0d6efd !important;
+            transform: scale(1.15);
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        tr.table-warning {
+            background-color: rgba(255, 193, 7, 0.15) !important;
+            border: 2px dashed #ffc107 !important;
+        }
+        .fs-7 {
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
@@ -100,31 +118,41 @@
                 </select>
             </div>
         </div>
-        <table id="tableDanhMuc" class="table table-striped table-bordered">
-            <thead class="table-primary">
+        <table id="tableDanhMuc" class="table table-striped table-bordered align-middle">
+            <thead class="table-primary text-center">
             <tr>
-                <th>Mã DM</th>
+                <th style="width: 80px;">Di chuyển</th>
+                <th style="width: 90px;">Mã DM</th>
                 <th>Tên Danh Mục</th>
-                <th>Ảnh Đại Diện</th>
-                <th>Trạng Thái</th>
-                <th>Thao Tác</th>
+                <th>Sản phẩm hoạt động</th>
+                <th style="width: 120px;">Ảnh Đại Diện</th>
+                <th style="width: 130px;">Trạng Thái</th>
+                <th style="width: 120px;">Thao Tác</th>
             </tr>
             </thead>
             <tbody>
             <c:forEach items="${categories}" var="c">
                 <tr data-id="${c.id}">
-                    <td>${c.id}</td>
-                    <td>${c.categoryName}</td>
-                    <td>
+                    <td class="text-center align-middle">
+                        <i class="bi bi-grip-vertical drag-handle text-muted fs-4" style="cursor: grab;" title="Kéo thả để sắp xếp"></i>
+                    </td>
+                    <td class="text-center align-middle">${c.id}</td>
+                    <td class="align-middle fw-semibold text-dark">${c.categoryName}</td>
+                    <td class="text-center align-middle">
+                        <span class="badge bg-info text-dark px-3 py-2 fs-7 rounded-pill">${c.productCount} sản phẩm</span>
+                    </td>
+                    <td class="text-center align-middle">
                         <img src="${pageContext.request.contextPath}/${c.image}" alt="Ảnh danh mục"
                              class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
                         <input type="hidden" class="img-path" value="${c.image}">
                     </td>
-                    <td>
-                                        <span
-                                                class="badge ${c.status == 'Hiện' ? 'bg-success' : 'bg-secondary'}">${c.status}</span>
+                    <td class="text-center align-middle">
+                        <div class="form-check form-switch d-inline-block">
+                            <input class="form-check-input status-toggle" type="checkbox" role="switch"
+                                   data-id="${c.id}" ${c.status == 'Hiện' ? 'checked' : ''} style="cursor: pointer; width: 2.5em; height: 1.25em;">
+                        </div>
                     </td>
-                    <td>
+                    <td class="text-center align-middle">
                         <button class="btn btn-warning btn-sm btn-sua" data-id="${c.id}"
                                 data-name="${c.categoryName}" data-status="${c.status}"
                                 data-img="${c.image}">
@@ -207,6 +235,9 @@
             pageLength: 10,
             ordering: true,
             order: [],
+            columnDefs: [
+                { orderable: false, targets: [0, 4, 5, 6] }
+            ],
             language: {
                 zeroRecords: "Không tìm thấy kết quả"
             }
@@ -216,9 +247,21 @@
         function enableDragSort() {
             table.page.len(-1).draw();
             if (sortable) return;
+            Swal.fire({
+                icon: "info",
+                title: "Chế độ kéo thả đã kích hoạt",
+                text: "Hãy nhấp giữ biểu tượng tay nắm ✥ ở đầu mỗi hàng và di chuyển để sắp xếp danh mục.",
+                timer: 3500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                position: "top-end",
+                toast: true
+            });
+
             sortable = new Sortable(document.querySelector("#tableDanhMuc tbody"), {
                 animation: 150,
-                ghostClass: "bg-warning",
+                handle: ".drag-handle",
+                ghostClass: "table-warning",
                 onEnd: function () {
                     let order = [];
                     $("#tableDanhMuc tbody tr").each(function (index) {
@@ -244,17 +287,25 @@
                 url: "${pageContext.request.contextPath}/admin/category-sort",
                 method: "POST",
                 contentType: "application/json",
+                headers: {
+                    "X-CSRF-Token": CSRF_TOKEN
+                },
                 data: JSON.stringify(order),
                 success: function () {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Đã lưu thứ tự",
-                        timer: 1200,
-                        showConfirmButton: false
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Đã lưu thứ tự hiển thị mới!'
                     });
                 },
                 error: function () {
-                    Swal.fire("Lỗi", "Không thể lưu thứ tự", "error");
+                    Swal.fire("Lỗi", "Không thể lưu thứ tự sắp xếp", "error");
                 }
             });
         }
@@ -265,22 +316,61 @@
             allowSaveOrder = true;
             switch (value) {
                 case "name-asc":
-                    table.order([1, 'asc']).draw();
+                    table.order([2, 'asc']).draw();
                     break;
                 case "name-desc":
-                    table.order([1, 'desc']).draw();
+                    table.order([2, 'desc']).draw();
                     break;
                 case "id-asc":
-                    table.order([0, 'asc']).draw();
+                    table.order([1, 'asc']).draw();
                     break;
                 case "id-desc":
-                    table.order([0, 'desc']).draw();
+                    table.order([1, 'desc']).draw();
                     break;
                 case "custom":
                     table.order([]).draw();
                     enableDragSort();
                     break;
             }
+        });
+        $(document).on("change", ".status-toggle", function() {
+            let checkbox = $(this);
+            let id = checkbox.data("id");
+            let status = checkbox.is(":checked") ? "Hiện" : "Ẩn";
+            checkbox.prop("disabled", true);
+            $.ajax({
+                url: "${pageContext.request.contextPath}/admin/category-toggle-status",
+                method: "POST",
+                contentType: "application/json",
+                headers: {
+                    "X-CSRF-Token": CSRF_TOKEN
+                },
+                data: JSON.stringify({ id: id, status: status }),
+                success: function(response) {
+                    checkbox.prop("disabled", false);
+                    if (response.success) {
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Cập nhật trạng thái thành công!'
+                        });
+                    } else {
+                        Swal.fire("Lỗi", response.message || "Cập nhật thất bại", "error");
+                        checkbox.prop("checked", !checkbox.is(":checked"));
+                    }
+                },
+                error: function() {
+                    checkbox.prop("disabled", false);
+                    Swal.fire("Lỗi", "Không thể kết nối đến máy chủ", "error");
+                    checkbox.prop("checked", !checkbox.is(":checked"));
+                }
+            });
         });
         table.on('draw', function () {
             if (!allowSaveOrder) return;

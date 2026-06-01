@@ -48,4 +48,9 @@ public class CategoryService {
     public void updateCategorySort(int id, int sortOrder) {
         categoryDAO.updateSortOrder(id, sortOrder);
     }
+
+    //Cập nhật trạng thái của danh mục
+    public boolean updateCategoryStatus(int id, String status) {
+        return categoryDAO.updateCategoryStatus(id, status);
+    }
 }
