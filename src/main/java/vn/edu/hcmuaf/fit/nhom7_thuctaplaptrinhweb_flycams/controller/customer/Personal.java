@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.*;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.LoginHistoryDAO;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AddressService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.OrderService;
@@ -91,6 +92,9 @@ public class Personal extends HttpServlet {
         request.setAttribute("selectedOrder", selectedOrder);
         List<Product> recentProducts = (List<Product>) session.getAttribute("recentProducts");
         request.setAttribute("recentProducts", recentProducts);
+        LoginHistoryDAO loginHistoryDAO = new LoginHistoryDAO();
+        List<LoginHistory> loginHistories = loginHistoryDAO.getLoginHistoryByUserId(user.getId(), 10);
+        request.setAttribute("loginHistories", loginHistories);
         long totalTime = System.currentTimeMillis() - startTime;
         request.getRequestDispatcher("/page/personal-page.jsp").forward(request, response);
     }

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AddressDAO {
-
     public boolean insert(Address address) throws SQLException {
         String sql = """
                     INSERT INTO addresses

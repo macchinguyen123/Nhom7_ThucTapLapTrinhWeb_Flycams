@@ -8,6 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.cart.Carts;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.LoginHistory;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.LoginHistoryDAO;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.UserDAO;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.AuthService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.CartService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.LoginAttemptService;
@@ -59,8 +62,27 @@ public class Login extends HttpServlet {
         }
         AuthService authService = new AuthService();
         User user = authService.login(input, password);
+        String ipAddress = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        String parsedUA = LoginHistory.parseUserAgent(userAgent);
+        String location = LoginHistory.getIpLocation(ipAddress);
+        LoginHistoryDAO loginHistoryDAO = new LoginHistoryDAO();
         if (user == null) {
-           LoginAttemptService.failAttempt(input);
+            LoginAttemptService.failAttempt(input);
+            User targetUser = new UserDAO().getUserByEmailOrPhone(input);
+            LoginHistory failLog = new LoginHistory();
+            if (targetUser != null) {
+                failLog.setUserId(targetUser.getId());
+                failLog.setUsername(targetUser.getUsername());
+            } else {
+                failLog.setUserId(null);
+                failLog.setUsername(input);
+            }
+            failLog.setIpAddress(ipAddress);
+            failLog.setUserAgent(parsedUA);
+            failLog.setLocation(location);
+            failLog.setStatus("Failure");
+            loginHistoryDAO.insert(failLog);
             if (LoginAttemptService.isLocked(input)) {
                 String msg = "Tài khoản của bạn đã bị khóa tạm thời trong 5 phút do nhập sai mật khẩu quá 5 lần.";
                 request.setAttribute("error", msg);
@@ -73,6 +95,14 @@ public class Login extends HttpServlet {
         }
         LoginAttemptService.successAttempt(input);
         if (!user.isStatus()) {
+            LoginHistory lockedLog = new LoginHistory();
+            lockedLog.setUserId(user.getId());
+            lockedLog.setUsername(user.getUsername());
+            lockedLog.setIpAddress(ipAddress);
+            lockedLog.setUserAgent(parsedUA);
+            lockedLog.setLocation(location);
+            lockedLog.setStatus("Failure (Locked)");
+            loginHistoryDAO.insert(lockedLog);
             String reason = user.getLockReason() != null ? user.getLockReason() : "Vi phạm chính sách.";
             request.setAttribute("lockedError", "Tài khoản bạn đã bị khoá");
             request.setAttribute("lockReason", reason);
@@ -80,6 +110,14 @@ public class Login extends HttpServlet {
             request.getRequestDispatcher("/page/login.jsp").forward(request, response);
             return;
         }
+        LoginHistory successLog = new LoginHistory();
+        successLog.setUserId(user.getId());
+        successLog.setUsername(user.getUsername());
+        successLog.setIpAddress(ipAddress);
+        successLog.setUserAgent(parsedUA);
+        successLog.setLocation(location);
+        successLog.setStatus("Success");
+        loginHistoryDAO.insert(successLog);
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
         Carts sessionCart = (Carts) session.getAttribute("cart");
