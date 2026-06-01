@@ -11,32 +11,88 @@
 <body>
 <jsp:include page="/page/header-common.jsp"/>
 <section class="warranty">
-    <div class="container">
-        <h1>Thanh toán tiền mặt/COD</h1>
-        <ul>
-            <p>Quý khách có thể chọn phương thức thanh toán COD khi mua hàng online qua website skydrone.vn và thanh
-                toán tiền mặt cho nhân viên giao hàng</p>
-        </ul>
-        <h1>Thanh toán quét mã QR</h1>
-        <ul>
-            <p>Thanh toán VNPAY-QR là hình thức thanh toán tiên phong cho xu thế tiêu dùng không dùng tiền mặt tương
-                lai. Thao tác thanh toán an toàn, đơn giản, nhanh chóng và bảo mật cấp cao. Chỉ cần sử dụng app Mobile
-                Banking ngân hàng của Quý khách và quét mã VNPAY-QR để thanh toán. Bên cạnh đó, thanh toán bằng
-                VNPAY-QR, Quý khách sẽ có thể nhận được những chương trình ưu đãi đặc biệt. VNPAY-QR được áp dụng thanh
-                toán tại website skydrone.vn.</p>
-        </ul>
-        <h1>Thanh toán thẻ ATM nội địa - Internet Banking</h1>
-        <ul>
-            <p class="note">Quý khách có thể thanh toán bằng thẻ ATM thông qua cổng Internet Banking khi mua hàng online
-                tại skydrone.vn</p>
-        </ul>
-        <h1>Thanh toán chuyển khoản</h1>
-        <ul>
-            <li>Chủ tài khoản: Công ty TNHH SKYDrone Việt Nam</li>
-            <li>Tên ngân hàng: Ngân hàng BIDV - CN Chợ Lớn</li>
-            <li>Số tài khoản: <b>060033893739</b></li>
-            <li>Nội dung chuyển khoản: Mã đơn hàng</li>
-        </ul>
+    <div class="container py-4" style="max-width: 800px;">
+        <h1 class="fw-semibold mb-4" style="font-size: 1.5rem;">Chính sách thanh toán</h1>
+        <div class="card border mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="rounded-2 d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+                         style="width:40px;height:40px;flex-shrink:0;">
+                        <i class="bi bi-truck text-primary fs-5"></i>
+                    </div>
+                    <h2 class="fw-semibold mb-0" style="font-size:1.1rem;">Thanh toán tiền mặt / COD</h2>
+                </div>
+                <p class="text-muted mb-0">
+                    Quý khách có thể chọn phương thức thanh toán COD khi mua hàng online qua website skydrone.vn
+                    và thanh toán tiền mặt cho nhân viên giao hàng.
+                </p>
+            </div>
+        </div>
+
+        <div class="card border mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="rounded-2 d-flex align-items-center justify-content-center bg-success bg-opacity-10"
+                         style="width:40px;height:40px;flex-shrink:0;">
+                        <i class="bi bi-qr-code text-success fs-5"></i>
+                    </div>
+                    <h2 class="fw-semibold mb-0" style="font-size:1.1rem;">Thanh toán quét mã QR</h2>
+                </div>
+                <p class="text-muted mb-0">
+                    Thanh toán VNPAY-QR là hình thức thanh toán tiên phong cho xu thế tiêu dùng không dùng tiền mặt.
+                    Thao tác an toàn, đơn giản, nhanh chóng — chỉ cần dùng app Mobile Banking và quét mã VNPAY-QR.
+                    Áp dụng tại website skydrone.vn.
+                </p>
+            </div>
+        </div>
+
+        <div class="card border mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="rounded-2 d-flex align-items-center justify-content-center bg-warning bg-opacity-10"
+                         style="width:40px;height:40px;flex-shrink:0;">
+                        <i class="bi bi-credit-card text-warning fs-5"></i>
+                    </div>
+                    <h2 class="fw-semibold mb-0" style="font-size:1.1rem;">Thanh toán thẻ ATM nội địa / Internet Banking</h2>
+                </div>
+                <p class="text-muted mb-0">
+                    Quý khách có thể thanh toán bằng thẻ ATM thông qua cổng Internet Banking
+                    khi mua hàng online tại skydrone.vn.
+                </p>
+            </div>
+        </div>
+
+        <div class="card border mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="rounded-2 d-flex align-items-center justify-content-center"
+                         style="width:40px;height:40px;flex-shrink:0;background:rgba(83,74,183,.1);">
+                        <i class="bi bi-bank" style="color:#534AB7;" class="fs-5"></i>
+                    </div>
+                    <h2 class="fw-semibold mb-0" style="font-size:1.1rem;">Thanh toán chuyển khoản</h2>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between px-3 py-2 rounded-2 bg-light">
+                        <span class="text-muted">Chủ tài khoản</span>
+                        <span class="fw-semibold">Công ty TNHH SKYDrone Việt Nam</span>
+                    </div>
+                    <div class="d-flex justify-content-between px-3 py-2 rounded-2 bg-light">
+                        <span class="text-muted">Ngân hàng</span>
+                        <span class="fw-semibold">BIDV – CN Chợ Lớn</span>
+                    </div>
+                    <div class="d-flex justify-content-between px-3 py-2 rounded-2"
+                         style="background:rgba(83,74,183,.08);">
+                        <span style="color:#534AB7;">Số tài khoản</span>
+                        <span class="fw-semibold" style="color:#3C3489;letter-spacing:1px;">060033893739</span>
+                    </div>
+                    <div class="d-flex justify-content-between px-3 py-2 rounded-2 bg-light">
+                        <span class="text-muted">Nội dung chuyển khoản</span>
+                        <span class="fw-semibold">Mã đơn hàng</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </section>
 <jsp:include page="/page/footer.jsp"/>
