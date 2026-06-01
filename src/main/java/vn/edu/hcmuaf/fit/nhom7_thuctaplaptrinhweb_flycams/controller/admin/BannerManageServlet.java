@@ -24,11 +24,19 @@ public class BannerManageServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         try {
-            //lấy danh sách tất cả banner
-            List<Banner> banners = bannerService.getAllBanners();
-            //set attribute để hiển thị trong JSP
+            String show = request.getParameter("show");
+            List<Banner> banners;
+            boolean isTrash = "trash".equals(show);
+            if (isTrash) {
+                banners = bannerService.getDeletedBanners();
+            } else {
+                banners = bannerService.getAllBanners();
+            }
+            List<Banner> trashBanners = bannerService.getDeletedBanners();
+            int trashCount = trashBanners != null ? trashBanners.size() : 0;
             request.setAttribute("banners", banners);
-            //forward đến trang JSP (file nằm ở /webapp/page/admin/banner-manage.jsp)
+            request.setAttribute("isTrash", isTrash);
+            request.setAttribute("trashCount", trashCount);
             request.getRequestDispatcher("/page/admin/banner-manage.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,6 +61,12 @@ public class BannerManageServlet extends HttpServlet {
                 case "delete":
                     handleDeleteBanner(request, response);
                     break;
+                case "restore":
+                    handleRestoreBanner(request, response);
+                    break;
+                case "hard-delete":
+                    handleHardDeleteBanner(request, response);
+                    break;
                 case "toggle":
                     handleToggleStatus(request, response);
                     break;
@@ -64,7 +78,21 @@ public class BannerManageServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=system_error");
         }
     }
-    //xử lý thêm banner
+    private java.sql.Timestamp parseTimestamp(String datetimeLocalStr) {
+        if (datetimeLocalStr == null || datetimeLocalStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            String formatted = datetimeLocalStr.replace("T", " ");
+            if (formatted.length() == 16) {
+                formatted += ":00";
+            }
+            return java.sql.Timestamp.valueOf(formatted);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     private void handleAddBanner(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
@@ -74,6 +102,8 @@ public class BannerManageServlet extends HttpServlet {
             String link = request.getParameter("link");
             String orderIndexStr = request.getParameter("orderIndex");
             String status = request.getParameter("status");
+            String startDateStr = request.getParameter("startDate");
+            String endDateStr = request.getParameter("endDate");
             if (type == null || type.trim().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=add_failed");
                 return;
@@ -84,10 +114,9 @@ public class BannerManageServlet extends HttpServlet {
             } catch (NumberFormatException e) {
                 orderIndex = 0;
             }
-            //tạo Banner mới
+            
             Banner banner = new Banner();
             banner.setType(type);
-            //set URL tương ứng với type
             if ("image".equals(type)) {
                 banner.setImageUrl(imageUrl != null ? imageUrl.trim() : "");
                 banner.setVideoUrl(null);
@@ -98,7 +127,8 @@ public class BannerManageServlet extends HttpServlet {
             banner.setLink(link != null ? link.trim() : "");
             banner.setOrderIndex(orderIndex);
             banner.setStatus(status != null ? status : "active");
-            //thêm vào database
+            banner.setStartDate(parseTimestamp(startDateStr));
+            banner.setEndDate(parseTimestamp(endDateStr));
             boolean success = bannerService.addBanner(banner);
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=added");
@@ -110,7 +140,6 @@ public class BannerManageServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=add_failed");
         }
     }
-    //xử lý sửa banner
     private void handleEditBanner(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
@@ -121,7 +150,8 @@ public class BannerManageServlet extends HttpServlet {
             String link = request.getParameter("link");
             String orderIndexStr = request.getParameter("orderIndex");
             String status = request.getParameter("status");
-            //validate input
+            String startDateStr = request.getParameter("startDate");
+            String endDateStr = request.getParameter("endDate");
             if (idStr == null || type == null || type.trim().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=update_failed");
                 return;
@@ -133,11 +163,9 @@ public class BannerManageServlet extends HttpServlet {
             } catch (NumberFormatException e) {
                 orderIndex = 0;
             }
-            //lấy banner hiện tại
             Banner banner = bannerService.getBannerById(id);
             if (banner != null) {
                 banner.setType(type);
-                //set URL tương ứng với type
                 if ("image".equals(type)) {
                     banner.setImageUrl(imageUrl != null ? imageUrl.trim() : "");
                     banner.setVideoUrl(null);
@@ -148,7 +176,8 @@ public class BannerManageServlet extends HttpServlet {
                 banner.setLink(link != null ? link.trim() : "");
                 banner.setOrderIndex(orderIndex);
                 banner.setStatus(status != null ? status : "active");
-                //cập nhật database
+                banner.setStartDate(parseTimestamp(startDateStr));
+                banner.setEndDate(parseTimestamp(endDateStr));
                 boolean success = bannerService.updateBanner(banner);
                 if (success) {
                     response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=updated");
@@ -163,7 +192,6 @@ public class BannerManageServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=update_failed");
         }
     }
-    //xử lý xóa banner
     private void handleDeleteBanner(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         try {
@@ -176,6 +204,44 @@ public class BannerManageServlet extends HttpServlet {
             boolean success = bannerService.deleteBanner(id);
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=deleted");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=delete_failed");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=delete_failed");
+        }
+    }
+    private void handleRestoreBanner(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            String idStr = request.getParameter("id");
+            if (idStr == null || idStr.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=restore_failed");
+                return;
+            }
+            int id = Integer.parseInt(idStr);
+            boolean success = bannerService.restoreBanner(id);
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=restored");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=restore_failed");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=restore_failed");
+        }
+    }
+    private void handleHardDeleteBanner(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            String idStr = request.getParameter("id");
+            if (idStr == null || idStr.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=delete_failed");
+                return;
+            }
+            int id = Integer.parseInt(idStr);
+            boolean success = bannerService.hardDeleteBanner(id);
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/banner-manage?msg=hard_deleted");
             } else {
                 response.sendRedirect(request.getContextPath() + "/admin/banner-manage?error=delete_failed");
             }
