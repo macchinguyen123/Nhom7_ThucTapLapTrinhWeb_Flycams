@@ -43,7 +43,10 @@
     </div>
 </header>
 <div class="layout">
-    <main class="main-content container-fluid p-4" style="margin-left: 0; width: 100%;">
+    <jsp:include page="sidebar.jsp">
+        <jsp:param name="activePage" value="complaints"/>
+    </jsp:include>
+    <main class="main-content container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="text-primary fw-bold"><i class="bi bi-card-text"></i> Danh Sách Khiếu Nại</h4>
         </div>

@@ -47,6 +47,9 @@
     </div>
 </header>
 <div class="layout">
+    <jsp:include page="sidebar.jsp">
+        <jsp:param name="activePage" value="inventory"/>
+    </jsp:include>
     <main class="main-content container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
