@@ -56,37 +56,62 @@
         <jsp:param name="activeSubPage" value="confirmed"/>
     </jsp:include>
     <main class="main-content container-fluid p-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
             <h4 class="text-primary fw-bold mb-0"><i class="bi bi-truck"></i> Danh Sách Giao Hàng</h4>
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 w-100">
-                <div class="btn-group shadow-sm" role="group">
-                    <button class="btn btn-outline-secondary active filter" data-status="all">
-                        <i class="bi bi-list-ul"></i> Tất cả
-                    </button>
-                    <button class="btn btn-outline-warning filter" data-status="Đang xử lý">
-                        <i class="bi bi-hourglass-split"></i> Chờ xử lý
-                    </button>
-                    <button class="btn btn-outline-primary filter" data-status="Đang giao hàng">
-                        <i class="bi bi-truck"></i> Đang giao
-                    </button>
-                    <button class="btn btn-outline-success filter" data-status="Giao thành công">
-                        <i class="bi bi-check-circle"></i> Thành công
-                    </button>
-                    <button class="btn btn-outline-danger filter" data-status="Giao thất bại">
-                        <i class="bi bi-x-circle"></i> Thất bại
-                    </button>
-                    <button class="btn btn-outline-info filter" data-status="Yêu cầu trả hàng">
-                        <i class="bi bi-arrow-return-left"></i> Yêu cầu trả
-                    </button>
-                    <button class="btn btn-outline-secondary filter" data-status="Đã trả hàng">
-                        <i class="bi bi-check-all"></i> Đã trả
-                    </button>
-                </div>
-                <div class="input-group shadow-sm" style="max-width: 300px;">
-                                    <span class="input-group-text bg-primary text-white"><i
-                                            class="bi bi-search"></i></span>
-                    <input id="search" type="search" class="form-control"
-                           placeholder="Tìm kiếm đơn hàng...">
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <div class="btn-group shadow-sm flex-wrap" role="group">
+                <button class="btn btn-outline-secondary active filter" data-status="all">
+                    <i class="bi bi-list-ul"></i> Tất cả
+                </button>
+                <button class="btn btn-outline-warning filter" data-status="Đang xử lý">
+                    <i class="bi bi-hourglass-split"></i> Chờ xử lý
+                </button>
+                <button class="btn btn-outline-primary filter" data-status="Đang giao hàng">
+                    <i class="bi bi-truck"></i> Đang giao
+                </button>
+                <button class="btn btn-outline-success filter" data-status="Giao thành công">
+                    <i class="bi bi-check-circle"></i> Thành công
+                </button>
+                <button class="btn btn-outline-danger filter" data-status="Giao thất bại">
+                    <i class="bi bi-x-circle"></i> Thất bại
+                </button>
+                <button class="btn btn-outline-info filter" data-status="Yêu cầu trả hàng">
+                    <i class="bi bi-arrow-return-left"></i> Yêu cầu trả
+                </button>
+                <button class="btn btn-outline-secondary filter" data-status="Đã trả hàng">
+                    <i class="bi bi-check-all"></i> Đã trả
+                </button>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm mb-3" style="background: linear-gradient(135deg,#f8f9ff 0%,#eef2ff 100%);">
+            <div class="card-body py-3">
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-sm-auto">
+                        <label class="form-label fw-semibold mb-1" style="color:#3a3a6a;"><i class="bi bi-calendar-range me-1 text-primary"></i>Khoảng thời gian</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="date" id="filterDateFrom" class="form-control form-control-sm" style="min-width:140px;" title="Từ ngày">
+                            <span class="text-muted fw-bold">–</span>
+                            <input type="date" id="filterDateTo" class="form-control form-control-sm" style="min-width:140px;" title="Đến ngày">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-auto">
+                        <label class="form-label fw-semibold mb-1" style="color:#3a3a6a;"><i class="bi bi-credit-card me-1 text-primary"></i>Trạng thái thanh toán</label>
+                        <select id="filterPayment" class="form-select form-select-sm" style="min-width:190px;">
+                            <option value="all">Tất cả</option>
+                            <option value="paid">Đã thanh toán (Online)</option>
+                            <option value="cod">Chưa thanh toán (COD)</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-auto">
+                        <label class="form-label fw-semibold mb-1" style="color:#3a3a6a;"><i class="bi bi-search me-1 text-primary"></i>Tìm kiếm</label>
+                        <input id="search" type="search" class="form-control form-control-sm" placeholder="Tìm theo mã, địa chỉ..." style="min-width:200px;">
+                    </div>
+                    <div class="col-12 col-sm-auto">
+                        <button id="btnResetFilter" class="btn btn-outline-secondary btn-sm" title="Xoá bộ lọc">
+                            <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -106,14 +131,15 @@
                 <th>Mã ĐH</th>
                 <th>Mã KH</th>
                 <th>Địa Chỉ</th>
-                <th>Ngày Nhận</th>
+                <th>Ngày Lập</th>
+                <th>Thanh Toán</th>
                 <th>Trạng Thái</th>
                 <th>Thao Tác</th>
             </tr>
             </thead>
             <tbody class="text-center" id="orderTableBody">
             <c:forEach var="o" items="${orders}">
-                <tr>
+                <tr data-date="<fmt:formatDate value="${o.createdAt}" pattern="yyyy-MM-dd"/>" data-payment="${o.paymentMethod}">
                     <td>${o.shippingCode}</td>
                     <td>${o.id}</td>
                     <td>${o.userId}</td>
@@ -122,9 +148,17 @@
                         <fmt:formatDate value="${o.createdAt}" pattern="dd/MM/yyyy"/>
                     </td>
                     <td>
-                                            <span class="badge ${o.statusClass}">
-                                                    ${o.statusLabel}
-                                            </span>
+                        <c:choose>
+                            <c:when test="${o.paymentMethod eq 'COD' or empty o.paymentMethod}">
+                                <span class="badge bg-warning text-dark"><i class="bi bi-cash-coin me-1"></i>COD</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-success"><i class="bi bi-credit-card me-1"></i>Đã TT</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </td>
+                    <td>
+                        <span class="badge ${o.statusClass}">${o.statusLabel}</span>
                     </td>
                     <td>
                         <button class="btn btn-primary btn-sm view" data-id="${o.id}"
@@ -395,6 +429,23 @@
     }
 
     $(document).ready(function () {
+        // Lọc theo ngày và thanh toán
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            if (settings.nTable.id !== 'tblDonHang') return true;
+            const dateFrom = $("#filterDateFrom").val();
+            const dateTo   = $("#filterDateTo").val();
+            const payment  = $("#filterPayment").val();
+            const row        = settings.aoData[dataIndex].nTr;
+            const rowDate    = $(row).data('date') || '';
+            const rowPayment = ($(row).data('payment') || '').toUpperCase();
+            // Lọc ngày
+            if (dateFrom && rowDate < dateFrom) return false;
+            if (dateTo   && rowDate > dateTo)   return false;
+            // Lọc thanh toán
+            if (payment === 'cod'  && rowPayment !== 'COD' && rowPayment !== '') return false;
+            if (payment === 'paid' && (rowPayment === 'COD' || rowPayment === '')) return false;
+            return true;
+        });
         var table = $('#tblDonHang').DataTable({
             "paging": true,
             "lengthChange": false,
@@ -410,19 +461,34 @@
                 "zeroRecords": "Không tìm thấy dữ liệu"
             }
         });
+        // Tìm kiếm text
         $("#search").on("keyup", function () {
             table.search(this.value).draw();
         });
         $("#rowsPerPage").on("change", function () {
             table.page.len($(this).val()).draw();
         });
+        // Lọc trạng thái vận chuyển (cột 6 vì đã thêm cột Thanh Toán)
         $(".filter").on("click", function () {
             $(".filter").removeClass("active");
             $(this).addClass("active");
             const status = $(this).data("status");
-            if (status === "all") table.column(5).search("").draw();
-            else table.column(5).search(status).draw();
-            updatePagination();
+            if (status === "all") table.column(6).search("").draw();
+            else table.column(6).search(status).draw();
+        });
+        // Lọc nâng cao: ngày và thanh toán
+        $("#filterDateFrom, #filterDateTo, #filterPayment").on("change", function () {
+            table.draw();
+        });
+        // Đặt lại bộ lọc
+        $("#btnResetFilter").on("click", function () {
+            $("#filterDateFrom").val('');
+            $("#filterDateTo").val('');
+            $("#filterPayment").val('all');
+            $("#search").val('');
+            $(".filter").removeClass("active");
+            $(".filter[data-status='all']").addClass("active");
+            table.column(6).search('').search('').draw();
         });
 
         function updateCustomPagination() {

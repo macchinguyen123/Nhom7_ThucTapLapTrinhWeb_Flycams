@@ -76,9 +76,6 @@
                         <a href="${pageContext.request.contextPath}/admin/order-manage">
                             <li class="${param.activeSubPage == 'confirmed' ? 'active' : ''}">Đã Xác Nhận</li>
                         </a>
-                        <a href="${pageContext.request.contextPath}/admin/rejected-orders">
-                            <li class="${param.activeSubPage == 'rejected' ? 'active' : ''}">Đã Hủy</li>
-                        </a>
                     </ul>
                 </li>
             </c:when>

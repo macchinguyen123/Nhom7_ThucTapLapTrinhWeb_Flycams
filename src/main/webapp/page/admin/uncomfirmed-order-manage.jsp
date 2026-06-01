@@ -55,20 +55,39 @@
             <h4 class="text-primary fw-bold mb-0">
                 <i class="bi bi-receipt-cutoff"></i> Quản Lý Đơn Hàng
             </h4>
-            <div class="d-flex align-items-center gap-3">
-                <a href="${pageContext.request.contextPath}/admin/rejected-orders" class="btn btn-outline-danger shadow-sm">
-                    <i class="bi bi-shield-x"></i> Đơn hàng bị từ chối
-                </a>
-                <form class="d-flex m-0" role="search" style="max-width: 300px;">
-                    <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
-                    <div class="input-group">
-                        <span class="input-group-text bg-primary text-white border-primary">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input id="searchInput" type="search" class="form-control border-primary"
-                               placeholder="Tìm kiếm đơn hàng..." aria-label="Tìm kiếm">
+            <a href="${pageContext.request.contextPath}/admin/rejected-orders" class="btn btn-outline-danger shadow-sm">
+                <i class="bi bi-shield-x"></i> Đơn hàng bị từ chối
+            </a>
+        </div>
+        <div class="card border-0 shadow-sm mb-3" style="background: linear-gradient(135deg,#f8f9ff 0%,#eef2ff 100%);">
+            <div class="card-body py-3">
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-sm-auto">
+                        <label class="form-label fw-semibold mb-1" style="color:#3a3a6a;"><i class="bi bi-calendar-range me-1 text-primary"></i>Khoảng thời gian</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="date" id="filterDateFrom" class="form-control form-control-sm" style="min-width:140px;" title="Từ ngày">
+                            <span class="text-muted fw-bold">–</span>
+                            <input type="date" id="filterDateTo" class="form-control form-control-sm" style="min-width:140px;" title="Đến ngày">
+                        </div>
                     </div>
-                </form>
+                    <div class="col-12 col-sm-auto">
+                        <label class="form-label fw-semibold mb-1" style="color:#3a3a6a;"><i class="bi bi-credit-card me-1 text-primary"></i>Trạng thái thanh toán</label>
+                        <select id="filterPayment" class="form-select form-select-sm" style="min-width:190px;">
+                            <option value="all">Tất cả</option>
+                            <option value="paid">Đã thanh toán (Online)</option>
+                            <option value="cod">Chưa thanh toán (COD)</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-auto">
+                        <label class="form-label fw-semibold mb-1" style="color:#3a3a6a;"><i class="bi bi-search me-1 text-primary"></i>Tìm kiếm</label>
+                        <input id="searchInput" type="search" class="form-control form-control-sm" placeholder="Tìm theo mã, tên..." style="min-width:200px;">
+                    </div>
+                    <div class="col-12 col-sm-auto">
+                        <button id="btnResetFilter" class="btn btn-outline-secondary btn-sm" title="Xoá bộ lọc">
+                            <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -107,7 +126,7 @@
             </thead>
             <tbody>
             <c:forEach items="${orders}" var="o">
-                <tr>
+                <tr data-date="<fmt:formatDate value="${o.createdAt}" pattern="yyyy-MM-dd"/>" data-payment="${o.paymentMethod}">
                     <td class="text-center">
                         <input type="checkbox" class="form-check-input order-checkbox" value="${o.id}">
                     </td>
@@ -122,9 +141,14 @@
                         <fmt:formatNumber value="${o.totalPrice}" pattern="#,##0 VNĐ"/>
                     </td>
                     <td>
-                                            <span class="badge ${o.statusClass}">
-                                                    ${o.statusLabel}
-                                            </span>
+                        <c:choose>
+                            <c:when test="${o.paymentMethod eq 'COD' or empty o.paymentMethod}">
+                                <span class="badge bg-warning text-dark"><i class="bi bi-cash-coin me-1"></i>COD - Chưa TT</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-success"><i class="bi bi-credit-card me-1"></i>Đã thanh toán</span>
+                            </c:otherwise>
+                        </c:choose>
                     </td>
                     <td>
                         <button class="btn btn-info btn-sm" data-id="${o.id}"
@@ -415,6 +439,21 @@
     }
 
     $(document).ready(function () {
+        // Lọc theo ngày và thanh toán
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            if (settings.nTable.id !== 'tableDonHang') return true;
+            const dateFrom = $("#filterDateFrom").val();
+            const dateTo   = $("#filterDateTo").val();
+            const payment  = $("#filterPayment").val();
+            const row        = settings.aoData[dataIndex].nTr;
+            const rowDate    = $(row).data('date') || '';
+            const rowPayment = ($(row).data('payment') || '').toUpperCase();
+            if (dateFrom && rowDate < dateFrom) return false;
+            if (dateTo   && rowDate > dateTo)   return false;
+            if (payment === 'cod'  && rowPayment !== 'COD' && rowPayment !== '') return false;
+            if (payment === 'paid' && (rowPayment === 'COD' || rowPayment === '')) return false;
+            return true;
+        });
         var table = $('#tableDonHang').DataTable({
             paging: true,
             info: false,
@@ -554,6 +593,20 @@
         $("#rowsPerPage").change(function () {
             var value = $(this).val();
             table.page.len(value).draw();
+            updatePageInfo();
+        });
+        // Lọc nâng cao: ngày và thanh toán
+        $("#filterDateFrom, #filterDateTo, #filterPayment").on("change", function () {
+            table.draw();
+            updatePageInfo();
+        });
+        // Đặt lại bộ lọc
+        $("#btnResetFilter").on("click", function () {
+            $("#filterDateFrom").val('');
+            $("#filterDateTo").val('');
+            $("#filterPayment").val('all');
+            $("#searchInput").val('');
+            table.search('').draw();
             updatePageInfo();
         });
         table.on('draw', function () {
