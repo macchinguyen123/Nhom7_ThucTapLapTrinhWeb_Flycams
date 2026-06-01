@@ -114,4 +114,16 @@ public class DashboardService {
     public List<Map<String, Object>> getLowStockProducts() {
         return dashboardDAO.getLowStockProducts();
     }
+
+    public double getRevenueToday() {
+        return dashboardDAO.getRevenueToday();
+    }
+
+    public int getOrdersCountToday() {
+        return dashboardDAO.getOrdersCountToday();
+    }
+
+    public String getBestSellerToday() {
+        return dashboardDAO.getBestSellerToday();
+    }
 }

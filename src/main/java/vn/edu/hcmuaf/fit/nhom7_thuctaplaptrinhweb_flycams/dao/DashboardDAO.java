@@ -604,4 +604,50 @@ WHERE MONTH(createdAt) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))AND YE
         }
         return result;
     }
+
+    public double getRevenueToday() {
+        String sql = """
+        SELECT IFNULL(SUM(totalPrice), 0)
+        FROM orders
+        WHERE DATE(createdAt) = CURDATE()
+          AND status = 'Hoàn thành'
+    """;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getDouble(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    public int getOrdersCountToday() {
+        String sql = "SELECT COUNT(*) FROM orders WHERE DATE(createdAt) = CURDATE()";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    public String getBestSellerToday() {
+        String sql = """
+        SELECT p.productName, SUM(oi.quantity) AS totalSold
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.id
+        JOIN orders o ON oi.order_id = o.id
+        WHERE DATE(o.createdAt) = CURDATE()
+          AND o.status = 'Hoàn thành'
+        GROUP BY p.id, p.productName
+        ORDER BY totalSold DESC
+        LIMIT 1
+    """;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next())
+                return rs.getString("productName") + " (" + rs.getInt("totalSold") + " chiếc)";
+        } catch (Exception e) { e.printStackTrace(); }
+        return "Chưa có dữ liệu";
+    }
 }

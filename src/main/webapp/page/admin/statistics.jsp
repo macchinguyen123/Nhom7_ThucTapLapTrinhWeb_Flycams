@@ -102,6 +102,42 @@
             <div class="row g-4">
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm h-100 p-3 text-center"
+                         style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                        <div class="mb-2"><i class="bi bi-calendar-day fs-1 text-warning"></i></div>
+                        <h6 class="text-warning fw-bold">DOANH THU HÔM NAY</h6>
+                        <h3 class="fw-bolder text-warning mb-0">
+                            <fmt:formatNumber value="${revenueToday}" pattern="#,##0 VNĐ"/>
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 p-3 text-center"
+                         style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);">
+                        <div class="mb-2"><i class="bi bi-calendar-month fs-1" style="color:#7c3aed"></i></div>
+                        <h6 class="fw-bold" style="color:#7c3aed">DOANH THU THÁNG NÀY</h6>
+                        <h3 class="fw-bolder mb-0" style="color:#7c3aed">
+                            <fmt:formatNumber value="${revenueThisMonth}" pattern="#,##0 VNĐ"/>
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 p-3 text-center"
+                         style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                        <div class="mb-2"><i class="bi bi-bag-check fs-1 text-danger"></i></div>
+                        <h6 class="text-danger fw-bold">ĐƠN HÔM NAY</h6>
+                        <h3 class="fw-bolder text-danger mb-0">${ordersToday} Đơn</h3>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 p-3 text-center"
+                         style="background: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%);">
+                        <div class="mb-2"><i class="bi bi-star-fill fs-1 text-success"></i></div>
+                        <h6 class="text-success fw-bold">SẢN PHẨM BÁN CHẠY HÔM NAY</h6>
+                        <h5 class="fw-bolder text-success mb-0">${bestSellerToday}</h5>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 p-3 text-center"
                          style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
                         <div class="mb-2"><i class="bi bi-cash-coin fs-1 text-success"></i></div>
                         <h6 class="text-success fw-bold">TỔNG DOANH THU</h6>
