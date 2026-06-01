@@ -176,10 +176,8 @@ public class OrderService {
 
     // Xác nhận đơn hàng + Random mã vận chuyển
     public boolean confirmOrder(int orderId) {
-        // Random VC + 6 số
-        String randomDigits = String.valueOf((int) (Math.random() * 900000) + 100000); // 100000 -> 999999
+        String randomDigits = String.valueOf((int) (Math.random() * 900000) + 100000);
         String shippingCode = "VC" + randomDigits;
-
         return orderDaoAdmin.updateOrderStatusAndShippingCode(orderId, "Đang xử lý", shippingCode);
     }
 

@@ -33,8 +33,10 @@ public class BlogManageServlet extends HttpServlet {
         HttpSession session = req.getSession(true);
         CsrfTokenUtil.getOrCreate(session);
         List<Post> posts = articleService.getAllPosts();
+        List<Post> deletedPosts = articleService.getDeletedPosts();
         List<BlogReview> reviews = blogReviewService.getAllReviews();
         req.setAttribute("posts", posts);
+        req.setAttribute("deletedPosts", deletedPosts);
         req.setAttribute("reviews", reviews);
         req.getRequestDispatcher("/page/admin/blog-manage.jsp")
                 .forward(req, resp);
@@ -50,7 +52,14 @@ public class BlogManageServlet extends HttpServlet {
                 int postId = Integer.parseInt(request.getParameter("id"));
                 boolean success = articleService.deletePost(postId);
                 response.sendRedirect(request.getContextPath() + "/admin/blog-manage?msg="
-                        + (success ? "deleted" : "delete_failed"));
+                        + (success ? "deleted" : "delete_failed") + (success ? "&showTrash=true" : ""));
+                break;
+            }
+            case "restore": {
+                int postId = Integer.parseInt(request.getParameter("id"));
+                boolean success = articleService.restorePost(postId);
+                response.sendRedirect(request.getContextPath() + "/admin/blog-manage?msg="
+                        + (success ? "restored" : "restore_failed"));
                 break;
             }
             case "delete_review": {

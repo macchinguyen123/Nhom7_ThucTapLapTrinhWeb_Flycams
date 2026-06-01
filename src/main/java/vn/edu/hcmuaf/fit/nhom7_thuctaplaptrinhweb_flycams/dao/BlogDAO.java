@@ -7,29 +7,120 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class BlogDAO extends DBConnection {
+    private static Boolean hasIsDeletedColumn;
+    private static Boolean hasViewColumn;
+    private static Boolean hasLikeCountColumn;
+
+    private boolean hasColumn(Connection conn, String tableName, String columnName) throws SQLException {
+        if (columnName == null || columnName.trim().isEmpty()) {
+            return false;
+        }
+        try (ResultSet rs = conn.getMetaData().getColumns(null, null, tableName, null)) {
+            while (rs.next()) {
+                if (columnName.equalsIgnoreCase(rs.getString("COLUMN_NAME"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean hasIsDeletedColumn(Connection conn) throws SQLException {
+        if (hasIsDeletedColumn == null) {
+            hasIsDeletedColumn = hasColumn(conn, "posts", "is_deleted");
+        }
+        return hasIsDeletedColumn;
+    }
+
+    private boolean hasViewColumn(Connection conn) throws SQLException {
+        if (hasViewColumn == null) {
+            hasViewColumn = hasColumn(conn, "posts", "view");
+        }
+        return hasViewColumn;
+    }
+
+    private boolean hasLikeCountColumn(Connection conn) throws SQLException {
+        if (hasLikeCountColumn == null) {
+            hasLikeCountColumn = hasColumn(conn, "posts", "like_count");
+        }
+        return hasLikeCountColumn;
+    }
+
     public List<Post> getAllPosts() {
         List<Post> list = new ArrayList<>();
-        String sql = "SELECT id, title, content, image, createdAt, product_id FROM posts ORDER BY createdAt DESC";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Post p = new Post(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("content"),
-                        rs.getString("image"),
-                        rs.getTimestamp("createdAt"),
-                        rs.getInt("product_id"),
-                        0
-                );
-                list.add(p);
+        StringBuilder sql = new StringBuilder("SELECT id, title, content, image, createdAt, product_id");
+        try (Connection conn = DBConnection.getConnection()) {
+            boolean hasView = hasViewColumn(conn);
+            boolean hasLikeCount = hasLikeCountColumn(conn);
+            if (hasView) {
+                sql.append(", COALESCE(view, 0) AS view");
+            }
+            if (hasLikeCount) {
+                sql.append(", COALESCE(like_count, 0) AS likeCount");
+            }
+            sql.append(" FROM posts");
+            if (hasIsDeletedColumn(conn)) {
+                sql.append(" WHERE is_deleted = 0");
+            }
+            sql.append(" ORDER BY createdAt DESC");
+            try (PreparedStatement ps = conn.prepareStatement(sql.toString());
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Post p = new Post(
+                            rs.getInt("id"),
+                            rs.getString("title"),
+                            rs.getString("content"),
+                            rs.getString("image"),
+                            rs.getTimestamp("createdAt"),
+                            rs.getInt("product_id"),
+                            hasView ? rs.getInt("view") : 0
+                    );
+                    list.add(p);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Post> getDeletedPosts() {
+        List<Post> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT id, title, content, image, createdAt, product_id");
+        try (Connection conn = DBConnection.getConnection()) {
+            if (!hasIsDeletedColumn(conn)) {
+                return list;
+            }
+            boolean hasView = hasViewColumn(conn);
+            boolean hasLikeCount = hasLikeCountColumn(conn);
+            if (hasView) {
+                sql.append(", COALESCE(view, 0) AS view");
+            }
+            if (hasLikeCount) {
+                sql.append(", COALESCE(like_count, 0) AS likeCount");
+            }
+            sql.append(" FROM posts WHERE is_deleted = 1 ORDER BY createdAt DESC");
+            try (PreparedStatement ps = conn.prepareStatement(sql.toString());
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Post p = new Post(
+                            rs.getInt("id"),
+                            rs.getString("title"),
+                            rs.getString("content"),
+                            rs.getString("image"),
+                            rs.getTimestamp("createdAt"),
+                            rs.getInt("product_id"),
+                            hasView ? rs.getInt("view") : 0
+                    );
+                    list.add(p);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -38,21 +129,31 @@ public class BlogDAO extends DBConnection {
     }
 
     public Post getPostById(int id) {
-        String sql = "SELECT id, title, content, image, createdAt, product_id FROM posts WHERE id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new Post(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("content"),
-                        rs.getString("image"),
-                        rs.getTimestamp("createdAt"),
-                        rs.getInt("product_id"),
-                        0
-                );
+        StringBuilder sql = new StringBuilder("SELECT id, title, content, image, createdAt, product_id");
+        try (Connection conn = DBConnection.getConnection()) {
+            boolean hasView = hasViewColumn(conn);
+            boolean hasLikeCount = hasLikeCountColumn(conn);
+            if (hasView) {
+                sql.append(", COALESCE(view, 0) AS view");
+            }
+            if (hasLikeCount) {
+                sql.append(", COALESCE(like_count, 0) AS likeCount");
+            }
+            sql.append(" FROM posts WHERE id = ?");
+            try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                ps.setInt(1, id);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    return new Post(
+                            rs.getInt("id"),
+                            rs.getString("title"),
+                            rs.getString("content"),
+                            rs.getString("image"),
+                            rs.getTimestamp("createdAt"),
+                            rs.getInt("product_id"),
+                            hasView ? rs.getInt("view") : 0
+                    );
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -163,5 +264,13 @@ public class BlogDAO extends DBConnection {
         return list;
     }
     public void incrementView(int postId) {
+        String sql = "UPDATE posts SET view = COALESCE(view, 0) + 1 WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, postId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

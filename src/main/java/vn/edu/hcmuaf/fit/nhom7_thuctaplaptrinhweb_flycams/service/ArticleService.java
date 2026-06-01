@@ -59,6 +59,9 @@ public class ArticleService {
     // Admin
     private PostDAO postDAO = new PostDAO();
 
+    public List<Post> getDeletedPosts() {
+        return postDAO.getDeletedPosts();
+    }
     public boolean addPost(Post post) {
         return postDAO.addPost(post);
     }
@@ -71,6 +74,9 @@ public class ArticleService {
         return postDAO.deletePost(postId);
     }
 
+    public boolean restorePost(int postId) {
+        return postDAO.restorePost(postId);
+    }
     public void incrementView(int postId) {
         blogDAO.incrementView(postId);
     }
