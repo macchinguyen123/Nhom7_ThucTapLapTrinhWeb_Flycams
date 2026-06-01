@@ -15,6 +15,7 @@
           rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/stylesheets/admin/blog-manage.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         .banner-thumb,
         .banner-video {
@@ -33,6 +34,24 @@
         .modal-header .btn-close {
             filter: brightness(0) invert(1);
         }
+        .drag-handle {
+            cursor: grab;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .drag-handle:hover {
+            color: #0d6efd !important;
+            transform: scale(1.2);
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        tr.table-warning {
+            background-color: rgba(255, 193, 7, 0.15) !important;
+            border: 2px dashed #ffc107 !important;
+        }
+        .fs-7 {
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 
@@ -44,7 +63,7 @@
     </div>
     <div class="header-right">
         <a href="${pageContext.request.contextPath}/admin/profile"
-           class="text-decoration-none text-while">
+           class="text-decoration-none text-white">
             <div class="thong-tin-admin d-flex align-items-center gap-2">
                 <i class="bi bi-person-circle fs-4"></i>
                 <span class="fw-semibold">${sessionScope.user.fullName}</span>
@@ -74,20 +93,34 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="text-primary fw-bold"><i class="bi bi-images"></i> Quản Lý Banner</h4>
         </div>
+        <div class="d-flex gap-2 mb-3">
+            <a href="${pageContext.request.contextPath}/admin/banner-manage" class="btn ${not isTrash ? 'btn-primary' : 'btn-outline-primary'}">
+                <i class="bi bi-list-task"></i> Danh sách hoạt động
+            </a>
+            <a href="${pageContext.request.contextPath}/admin/banner-manage?show=trash" class="btn ${isTrash ? 'btn-danger' : 'btn-outline-danger'} position-relative">
+                <i class="bi bi-trash"></i> Thùng rác
+                <c:if test="${trashCount > 0}">
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        ${trashCount}
+                    </span>
+                </c:if> </a>
+        </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="input-group" style="max-width: 350px;">
-        <span class="input-group-text bg-primary text-white">
-            <i class="bi bi-search"></i>
-        </span>
+                <span class="input-group-text bg-primary text-white">
+                    <i class="bi bi-search"></i>
+                </span>
                 <input type="search" class="form-control" id="searchBannerInput"
                        placeholder="Tìm kiếm banner...">
             </div>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBannerModal">
-                <i class="bi bi-plus-lg"></i> Thêm Banner
-            </button>
+            <c:if test="${not isTrash}">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBannerModal">
+                    <i class="bi bi-plus-lg"></i> Thêm Banner
+                </button>
+            </c:if>
         </div>
 
-        <div class="d-flex justify-content-start align-items-center mb-2 gap-2">
+        <div class="d-flex justify-content-start align-items-center mb-2 gap-2 flex-wrap">
             <label class="me-1">Hiển thị</label>
             <select id="rowsPerPage" class="form-select d-inline-block" style="width:80px;">
                 <option value="5" selected>5</option>
@@ -105,14 +138,16 @@
                 </select>
             </div>
 
-            <div class="ms-4 d-flex align-items-center gap-2">
-                <label class="mb-0">Trạng thái:</label>
-                <select id="filterStatus" class="form-select d-inline-block" style="width:150px;">
-                    <option value="">Tất cả</option>
-                    <option value="Hoạt động">Hoạt động</option>
-                    <option value="Tạm ẩn">Tạm ẩn</option>
-                </select>
-            </div>
+            <c:if test="${not isTrash}">
+                <div class="ms-4 d-flex align-items-center gap-2">
+                    <label class="mb-0">Trạng thái:</label>
+                    <select id="filterStatus" class="form-select d-inline-block" style="width:150px;">
+                        <option value="">Tất cả</option>
+                        <option value="Hoạt động">Hoạt động</option>
+                        <option value="Tạm ẩn">Tạm ẩn</option>
+                    </select>
+                </div>
+            </c:if>
         </div>
         <div class="users-table mt-4">
             <section>
@@ -120,17 +155,26 @@
                        id="tableBanner">
                     <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
+                        <c:if test="${not isTrash}">
+                            <th style="width: 80px;">Sắp xếp</th>
+                        </c:if>
+                        <th style="width: 70px;">ID</th>
                         <th>Loại</th>
                         <th>Preview</th>
-                        <th>Thứ tự</th>
+                        <th>Lập lịch hiển thị</th>
+                        <th style="width: 100px;">Thứ tự</th>
                         <th>Trạng thái</th>
                         <th>Hành động</th>
                     </tr>
                     </thead>
                     <tbody>
                     <c:forEach var="banner" items="${banners}">
-                        <tr>
+                        <tr data-id="${banner.id}">
+                            <c:if test="${not isTrash}">
+                                <td>
+                                    <i class="bi bi-grip-vertical drag-handle text-muted fs-4" title="Kéo thả để sắp xếp"></i>
+                                </td>
+                            </c:if>
                             <td>${banner.id}</td>
                             <td>
                                 <c:choose>
@@ -154,9 +198,30 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
+                            <td class="text-start fs-7">
+                                <div><b>Bắt đầu:</b> 
+                                    <c:choose>
+                                        <c:when test="${not empty banner.startDate}">
+                                            <fmt:formatDate value="${banner.startDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                        </c:when>
+                                        <c:otherwise><span class="text-muted">Không giới hạn</span></c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div><b>Kết thúc:</b> 
+                                    <c:choose>
+                                        <c:when test="${not empty banner.endDate}">
+                                            <fmt:formatDate value="${banner.endDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                        </c:when>
+                                        <c:otherwise><span class="text-muted">Không giới hạn</span></c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </td>
                             <td>${banner.orderIndex}</td>
                             <td>
                                 <c:choose>
+                                    <c:when test="${banner.isDeleted == 1}">
+                                        <span class="badge bg-danger">Đã xóa tạm</span>
+                                    </c:when>
                                     <c:when test="${banner.status == 'active'}">
                                         <span class="badge bg-success">Hoạt động</span>
                                     </c:when>
@@ -166,38 +231,56 @@
                                 </c:choose>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-warning btn-sm me-1"
-                                        data-id="${banner.id}" data-type="${banner.type}"
-                                        data-image="${fn:escapeXml(banner.imageUrl)}"
-                                        data-video="${fn:escapeXml(banner.videoUrl)}"
-                                        data-link="${fn:escapeXml(banner.link)}"
-                                        data-order="${banner.orderIndex}"
-                                        data-status="${banner.status}"
-                                        onclick="openEditModal(this)">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-danger btn-sm me-1"
-                                        data-id="${banner.id}" onclick="confirmDelete(this)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                                <button type="button"
-                                        class="btn btn-sm me-1 ${banner.status == 'active' ? 'btn-success' : 'btn-secondary'}"
-                                        data-id="${banner.id}"
-                                        data-status="${banner.status}"
-                                        title="${banner.status == 'active' ? 'Đang hoạt động - nhấn để tắt' : 'Đang tạm ẩn - nhấn để bật'}"
-                                        onclick="toggleStatus(this)">
-                                    <i class="bi ${banner.status == 'active' ? 'bi-toggle-on' : 'bi-toggle-off'}"></i>
-                                </button>
-                                <button type="button" class="btn btn-info btn-sm"
-                                        data-id="${banner.id}" data-type="${banner.type}"
-                                        data-image="${fn:escapeXml(banner.imageUrl)}"
-                                        data-video="${fn:escapeXml(banner.videoUrl)}"
-                                        data-link="${fn:escapeXml(banner.link)}"
-                                        data-order="${banner.orderIndex}"
-                                        data-status="${banner.status}"
-                                        onclick="openViewModal(this)">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+                                <c:choose>
+                                    <c:when test="${isTrash}">
+                                        <button type="button" class="btn btn-success btn-sm me-1"
+                                                data-id="${banner.id}" onclick="confirmRestore(this)" title="Khôi phục banner">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Khôi phục
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                data-id="${banner.id}" onclick="confirmHardDelete(this)" title="Xóa vĩnh viễn">
+                                            <i class="bi bi-trash3-fill"></i> Xóa vĩnh viễn
+                                        </button>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <button type="button" class="btn btn-warning btn-sm me-1"
+                                                data-id="${banner.id}" data-type="${banner.type}"
+                                                data-image="${fn:escapeXml(banner.imageUrl)}"
+                                                data-video="${fn:escapeXml(banner.videoUrl)}"
+                                                data-link="${fn:escapeXml(banner.link)}"
+                                                data-order="${banner.orderIndex}"
+                                                data-status="${banner.status}"
+                                                data-start="${not empty banner.startDate ? banner.startDate.toString().substring(0, 16).replace(' ', 'T') : ''}"
+                                                data-end="${not empty banner.endDate ? banner.endDate.toString().substring(0, 16).replace(' ', 'T') : ''}"
+                                                onclick="openEditModal(this)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm me-1"
+                                                data-id="${banner.id}" onclick="confirmDelete(this)" title="Xóa tạm vào Thùng rác">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm me-1 ${banner.status == 'active' ? 'btn-success' : 'btn-secondary'}"
+                                                data-id="${banner.id}"
+                                                data-status="${banner.status}"
+                                                title="${banner.status == 'active' ? 'Đang hoạt động - nhấn để tắt' : 'Đang tạm ẩn - nhấn để bật'}"
+                                                onclick="toggleStatus(this)">
+                                            <i class="bi ${banner.status == 'active' ? 'bi-toggle-on' : 'bi-toggle-off'}"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-sm"
+                                                data-id="${banner.id}" data-type="${banner.type}"
+                                                data-image="${fn:escapeXml(banner.imageUrl)}"
+                                                data-video="${fn:escapeXml(banner.videoUrl)}"
+                                                data-link="${fn:escapeXml(banner.link)}"
+                                                data-order="${banner.orderIndex}"
+                                                data-status="${banner.status}"
+                                                data-start="${not empty banner.startDate ? banner.startDate.toString().substring(0, 16).replace(' ', 'T') : ''}"
+                                                data-end="${not empty banner.endDate ? banner.endDate.toString().substring(0, 16).replace(' ', 'T') : ''}"
+                                                onclick="openViewModal(this)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
@@ -253,6 +336,18 @@
                         <label class="form-label">Link điều hướng (URL)</label>
                         <input type="text" name="link" class="form-control"
                                placeholder="https://...">
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày/Giờ bắt đầu hiển thị</label>
+                            <input type="datetime-local" name="startDate" class="form-control">
+                            <small class="text-muted">Để trống nếu muốn hiển thị ngay lập tức.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày/Giờ kết thúc hiển thị</label>
+                            <input type="datetime-local" name="endDate" class="form-control">
+                            <small class="text-muted">Để trống nếu không muốn tự động ẩn.</small>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Thứ tự hiển thị</label>
@@ -315,6 +410,16 @@
                         <label class="form-label">Link điều hướng</label>
                         <input type="text" name="link" id="edit-link" class="form-control">
                     </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày/Giờ bắt đầu hiển thị</label>
+                            <input type="datetime-local" name="startDate" id="edit-start-date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày/Giờ kết thúc hiển thị</label>
+                            <input type="datetime-local" name="endDate" id="edit-end-date" class="form-control">
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Thứ tự hiển thị</label>
                         <input type="number" name="orderIndex" id="edit-order" class="form-control">
@@ -362,6 +467,10 @@
                         <td id="view-link"></td>
                     </tr>
                     <tr>
+                        <th>Lập lịch hiển thị</th>
+                        <td id="view-schedule"></td>
+                    </tr>
+                    <tr>
                         <th>Thứ tự</th>
                         <td id="view-order"></td>
                     </tr>
@@ -389,12 +498,16 @@
 <script>
     const baseUrl = "${pageContext.request.contextPath}";
     const CSRF_TOKEN = "${sessionScope.CSRF_TOKEN}";
+    const isTrash = ${isTrash};
     let bannerTable;
-
+    let sortable;
     $(document).ready(function () {
         bannerTable = $('#tableBanner').DataTable({
             pageLength: 5,
-            columnDefs: [{targets: [2, 5], orderable: false}],
+            columnDefs: [{
+                targets: isTrash ? [2] : [0, 3, 7], 
+                orderable: false
+            }],
             language: {zeroRecords: "Không tìm thấy dữ liệu"}
         });
         $('#searchBannerInput').on('keyup', function () {
@@ -413,15 +526,20 @@
             updatePageInfo();
         });
         $('#filterType').on('change', function () {
-            bannerTable.column(1).search(this.value).draw();
+            bannerTable.column(isTrash ? 1 : 2).search(this.value).draw();
             updatePageInfo();
         });
-        $('#filterStatus').on('change', function () {
-            bannerTable.column(4).search(this.value).draw();
-            updatePageInfo();
-        });
+        if (!isTrash) {
+            $('#filterStatus').on('change', function () {
+                bannerTable.column(6).search(this.value).draw();
+                updatePageInfo();
+            });
+        }
         bannerTable.on('draw', updatePageInfo);
         updatePageInfo();
+        if (!isTrash) {
+            enableDragSort();
+        }
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         const error = urlParams.get('error');
@@ -444,8 +562,24 @@
         } else if (msg === 'deleted') {
             Swal.fire({
                 icon: 'success',
-                title: 'Đã xóa!',
-                text: 'Banner đã được xóa khỏi hệ thống.',
+                title: 'Đã xóa tạm!',
+                text: 'Banner đã được chuyển vào Thùng rác.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else if (msg === 'restored') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã khôi phục!',
+                text: 'Banner đã được khôi phục về danh sách hoạt động.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else if (msg === 'hard_deleted') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã xóa vĩnh viễn!',
+                text: 'Banner đã bị xóa hoàn toàn khỏi cơ sở dữ liệu.',
                 timer: 2000,
                 showConfirmButton: false
             });
@@ -467,8 +601,13 @@
                 title: 'Thất bại!',
                 text: 'Không thể xóa banner. Vui lòng thử lại.',
             });
+        } else if (error === 'restore_failed') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Thất bại!',
+                text: 'Không thể khôi phục banner. Vui lòng thử lại.',
+            });
         }
-
     });
 
     function updatePageInfo() {
@@ -476,6 +615,52 @@
         $('#pageInfo').text((info.page + 1) + ' / ' + info.pages);
     }
 
+    function enableDragSort() {
+        bannerTable.page.len(-1).draw();
+        if (sortable) return;
+        sortable = new Sortable(document.querySelector("#tableBanner tbody"), {
+            animation: 150,
+            handle: ".drag-handle",
+            ghostClass: "table-warning",
+            onEnd: function () {
+                let order = [];
+                $("#tableBanner tbody tr").each(function (index) {
+                    order.push({
+                        id: $(this).data("id"),
+                        orderIndex: index + 1
+                    });
+                });
+                saveSortOrder(order);
+            }
+        });
+    }
+    function saveSortOrder(order) {
+        $.ajax({
+            url: baseUrl + "/admin/banner-sort",
+            method: "POST",
+            contentType: "application/json",
+            headers: {
+                "X-CSRF-Token": CSRF_TOKEN
+            },
+            data: JSON.stringify(order),
+            success: function () {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                });
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Đã lưu thứ tự hiển thị banner mới!'
+                });
+            },
+            error: function () {
+                Swal.fire("Lỗi", "Không thể lưu thứ tự sắp xếp banner", "error");
+            }
+        });
+    }
     function toggleMediaInput(prefix) {
         const type = document.getElementById(prefix + '-type').value;
         const imageGroup = document.getElementById(prefix + '-image-group');
@@ -497,6 +682,8 @@
         document.getElementById('edit-link').value = btn.dataset.link;
         document.getElementById('edit-order').value = btn.dataset.order;
         document.getElementById('edit-status').value = btn.dataset.status;
+        document.getElementById('edit-start-date').value = btn.dataset.start || '';
+        document.getElementById('edit-end-date').value = btn.dataset.end || '';
         toggleMediaInput('edit');
         const editImg = document.getElementById('edit-image');
         if (editImg._triggerPreview) editImg._triggerPreview();
@@ -506,33 +693,75 @@
     function confirmDelete(btn) {
         const id = btn.dataset.id;
         Swal.fire({
-            title: 'Bạn có chắc chắn?',
-            text: "Bạn sẽ không thể khôi phục lại banner này!",
+            title: 'Chuyển vào Thùng rác?',
+            text: "Banner sẽ tạm ẩn khỏi giao diện khách hàng nhưng vẫn có thể khôi phục lại từ Thùng rác.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Có, xóa nó!',
+            confirmButtonColor: '#ffc107',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Đồng ý, xóa tạm!',
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = baseUrl + '/admin/banner-manage';
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'delete';
-                form.appendChild(actionInput);
-                const idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'id';
-                idInput.value = id;
-                form.appendChild(idInput);
-                document.body.appendChild(form);
-                form.submit();
+                submitPostAction('delete', id);
             }
         })
+    }
+    function confirmRestore(btn) {
+        const id = btn.dataset.id;
+        Swal.fire({
+            title: 'Khôi phục banner này?',
+            text: "Banner sẽ được đưa trở lại danh sách hoạt động chính.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Khôi phục ngay!',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitPostAction('restore', id);
+            }
+        })
+    }
+    function confirmHardDelete(btn) {
+        const id = btn.dataset.id;
+        Swal.fire({
+            title: 'Xóa vĩnh viễn?',
+            text: "Hành động này sẽ xóa hoàn toàn banner khỏi CSDL và KHÔNG THỂ khôi phục lại!",
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xóa vĩnh viễn!',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitPostAction('hard-delete', id);
+            }
+        })
+    }
+    function submitPostAction(action, id) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = baseUrl + '/admin/banner-manage';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_csrf';
+        csrfInput.value = CSRF_TOKEN;
+        form.appendChild(csrfInput);
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = action;
+        form.appendChild(actionInput);
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'id';
+        idInput.value = id;
+        form.appendChild(idInput);
+        document.body.appendChild(form);
+        form.submit();
     }
     function openViewModal(btn) {
         document.getElementById('view-id').innerText = btn.dataset.id;
@@ -540,6 +769,9 @@
         document.getElementById('view-link').innerText = btn.dataset.link || '---';
         document.getElementById('view-order').innerText = btn.dataset.order;
         document.getElementById('view-status').innerText = btn.dataset.status === 'active' ? 'Hoạt động' : 'Tạm ẩn';
+        const start = btn.dataset.start ? btn.dataset.start.replace('T', ' ') : 'Không giới hạn';
+        const end = btn.dataset.end ? btn.dataset.end.replace('T', ' ') : 'Không giới hạn';
+        document.getElementById('view-schedule').innerHTML = '<div><b>Bắt đầu:</b> ' + start + '</div><div><b>Kết thúc:</b> ' + end + '</div>';
         const mediaContainer = document.getElementById('view-media-container');
         if (btn.dataset.type === 'image') {
             mediaContainer.innerHTML = '<img src="' + btn.dataset.image + '" style="max-width: 100%; border-radius: 6px;">';
@@ -592,10 +824,6 @@
             setTimeout(() => alert.remove(), 500);
         }
     }, 3000);
-    const addImageInput = document.getElementById('add-image-input');
-    const addImgPreview = document.getElementById('add-img-preview');
-    const addImgPreviewWrap = document.getElementById('add-img-preview-wrap');
-    const addImgErr = document.getElementById('add-img-err');
 
     function bindImgPreview(inputId, thumbId, errId) {
         const input = document.getElementById(inputId);
@@ -636,7 +864,10 @@
 
         fetch(baseUrl + '/admin/banner-manage', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': CSRF_TOKEN
+            },
             body: 'action=toggle&id=' + id + '&status=' + currentStatus
         })
             .then(res => res.json())
@@ -649,7 +880,7 @@
                     btn.querySelector('i').className = isActive ? 'bi bi-toggle-on' : 'bi bi-toggle-off';
                     btn.title = isActive ? 'Đang hoạt động - nhấn để tắt' : 'Đang tạm ẩn - nhấn để bật';
 
-                    const statusCell = btn.closest('tr').querySelector('td:nth-child(5)');
+                    const statusCell = btn.closest('tr').querySelector('td:nth-child(7)'); // Cập nhật cột trạng thái (cột 7 do có cột Di chuyển)
                     statusCell.innerHTML = isActive
                         ? '<span class="badge bg-success">Hoạt động</span>'
                         : '<span class="badge bg-secondary">Tạm ẩn</span>';
@@ -669,9 +900,6 @@
                 Swal.fire('Lỗi!', 'Mất kết nối đến server.', 'error');
             });
     }
-
 </script>
-
 </body>
-
 </html>

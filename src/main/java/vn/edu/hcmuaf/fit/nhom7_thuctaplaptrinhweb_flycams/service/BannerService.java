@@ -32,4 +32,16 @@ public class BannerService {
     public boolean updateStatus(int id, String status) {
         return bannerDAO.updateStatus(id, status);
     }
+    public List<Banner> getDeletedBanners() {
+        return bannerDAO.getDeletedBanners();
+    }
+    public boolean restoreBanner(int id) {
+        return bannerDAO.restoreBanner(id);
+    }
+    public boolean hardDeleteBanner(int id) {
+        return bannerDAO.hardDeleteBanner(id);
+    }
+    public boolean updateSortOrder(int id, int orderIndex) {
+        return bannerDAO.updateSortOrder(id, orderIndex);
+    }
 }

@@ -13,6 +13,9 @@ public class Banner implements Serializable {
     private String status; // "active" hoặc "inactive"
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private int isDeleted;
+    private Timestamp startDate;
+    private Timestamp endDate;
     // Constructor mặc định
     public Banner() {
     }
@@ -93,6 +96,24 @@ public class Banner implements Serializable {
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
+    public int getIsDeleted() {
+        return isDeleted;
+    }
+    public void setIsDeleted(int isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+    public Timestamp getStartDate() {
+        return startDate;
+    }
+    public void setStartDate(Timestamp startDate) {
+        this.startDate = startDate;
+    }
+    public Timestamp getEndDate() {
+        return endDate;
+    }
+    public void setEndDate(Timestamp endDate) {
+        this.endDate = endDate;
+    }
     //method tiện ích để lấy media URL (ảnh hoặc video)
     public String getMediaUrl() {
         if ("image".equals(type)) {
@@ -114,6 +135,9 @@ public class Banner implements Serializable {
                 ", status='" + status + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", isDeleted=" + isDeleted +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
                 '}';
     }
 }
