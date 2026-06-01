@@ -22,7 +22,6 @@ public class OrderActionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            // Đảm bảo encoding đúng
             req.setCharacterEncoding("UTF-8");
             String action = req.getParameter("action");
             if (action == null || action.trim().isEmpty()) {
@@ -57,7 +56,7 @@ public class OrderActionServlet extends HttpServlet {
                     for (String id : ids) {
                         if (!id.trim().isEmpty()) {
                             int oid = Integer.parseInt(id.trim());
-                            boolean s = false;
+                            boolean s;
                             if (note != null && !note.isEmpty()) {
                                 s = orderService.updateOrderStatusAndNote(oid, "Hủy", note);
                             } else {

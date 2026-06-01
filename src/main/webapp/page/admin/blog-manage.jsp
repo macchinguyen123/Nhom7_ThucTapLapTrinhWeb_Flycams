@@ -118,10 +118,19 @@
                            placeholder="Tìm kiếm bài viết...">
                 </div>
             </form>
-            <button class="btn btn-success" data-bs-toggle="modal"
-                    data-bs-target="#addBlogModal">
-                <i class="bi bi-plus-lg"></i> Thêm Bài Viết
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" data-bs-toggle="modal"
+                        data-bs-target="#addBlogModal">
+                    <i class="bi bi-plus-lg"></i> Thêm Bài Viết
+                </button>
+                <button class="btn btn-secondary" type="button" onclick="showActivePanel()" style="display: none;" id="backFromTrashBtn">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </button>
+                <button class="btn btn-outline-secondary" id="trashToggleBtn" type="button"
+                        onclick="showTrashPanel()">
+                    <i class="bi bi-trash"></i> Thùng rác
+                </button>
+            </div>
 
         </div>
         <div class="modal fade" id="addBlogModal" tabindex="-1">
@@ -200,6 +209,7 @@
             </div>
         </div>
         <div id="dsblog" class="users-table mt-4">
+            <div id="activeBlogSection">
             <section>
                 <table id="tableBlog"
                        class="table table-striped table-bordered align-middle text-center">
@@ -276,6 +286,7 @@
                                             data-image="${p.image}"
                                             data-date="<fmt:formatDate value='${p.createdAt}' pattern='yyyy-MM-dd'/>"
                                             data-product="${p.productId}"
+                                            data-views="${p.view}"
                                             onclick="openViewModal(this)"
                                             title="Xem">
                                         <i class="bi bi-eye"></i>
@@ -294,6 +305,87 @@
                     <button id="nextPage"
                             class="btn btn-outline-primary btn-sm">Sau
                     </button>
+                </div>
+            </section>
+            </div>
+            <section id="trashBlogPanel" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="mb-0">Bài viết đã xóa</h5>
+                    </div>
+                    <div class="input-group" style="max-width: 300px;">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="search" id="searchTrashInput" class="form-control"
+                               placeholder="Tìm kiếm thùng rác...">
+                    </div>
+                </div>
+                <table id="tableTrash"
+                       class="table table-striped table-bordered align-middle text-center">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th style="width: 200px;">Tiêu đề</th>
+                        <th>Nội dung</th>
+                        <th>Ảnh</th>
+                        <th>Ngày tạo</th>
+                        <th>Mã sản phẩm</th>
+                        <th>Lượt xem</th>
+                        <th>Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="p" items="${deletedPosts}">
+                        <tr>
+                            <td>${p.id}</td>
+                            <td class="text-start">${p.title}</td>
+                            <td class="text-start">
+                                <c:set var="words" value="${fn:split(p.content, ' ')}"/>
+                                <c:choose>
+                                    <c:when test="${fn:length(words) > 8}">
+                                        <c:forEach var="w" items="${words}" begin="0"
+                                                   end="7">
+                                            ${w}
+                                        </c:forEach>...
+                                    </c:when>
+                                    <c:otherwise>
+                                        ${p.content}
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty p.image}">
+                                        <img src="${p.image}" class="blog-thumb">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-muted">Không có ảnh</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <fmt:formatDate value="${p.createdAt}"
+                                                pattern="yyyy-MM-dd"/>
+                            </td>
+                            <td>${p.productId}</td>
+                            <td>${p.view}</td>
+                            <td>
+                                <button type="button" class="btn btn-success btn-sm"
+                                        data-id="${p.id}"
+                                        onclick="confirmRestore(this)"
+                                        title="Khôi phục">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Khôi phục
+                                </button>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-end align-items-center mt-3">
+                    <button id="prevTrashPage" class="btn btn-outline-primary btn-sm">Trước</button>
+                    <span id="trashPageInfo" class="mx-2">1 / 1</span>
+                    <button id="nextTrashPage" class="btn btn-outline-primary btn-sm">Sau</button>
                 </div>
             </section>
             <section>
@@ -609,6 +701,25 @@
         });
         blogTable.on('draw', updatePageInfo);
         updatePageInfo();
+        let trashTable = $('#tableTrash').DataTable({
+            pageLength: 5,
+            order: [],
+            columnDefs: [{targets: [2, 3, 7], orderable: false}],
+            language: {zeroRecords: "Không tìm thấy dữ liệu"}
+        });
+        $('#searchTrashInput').on('keyup', function () {
+            trashTable.search(this.value).draw();
+        });
+        $('#prevTrashPage').click(() => {
+            trashTable.page('previous').draw('page');
+            updateTrashPageInfo();
+        });
+        $('#nextTrashPage').click(() => {
+            trashTable.page('next').draw('page');
+            updateTrashPageInfo();
+        });
+        trashTable.on('draw', updateTrashPageInfo);
+        updateTrashPageInfo();
         document.addEventListener('focusin', function (e) {
             if (e.target.closest('.ck-body-wrapper, .ck-balloon-panel, .ck-link-form, .ck-input')) {
                 e.stopImmediatePropagation();
@@ -625,8 +736,10 @@
             add_failed:   { icon: 'error',   title: 'Thất bại!',    text: 'Không thể thêm bài viết. Vui lòng thử lại.' },
             edit_failed:  { icon: 'error',   title: 'Thất bại!',    text: 'Không thể cập nhật bài viết. Vui lòng thử lại.' },
             delete_failed:{ icon: 'error',   title: 'Thất bại!',    text: 'Không thể xóa bài viết. Vui lòng thử lại.' },
-            review_deleted:      { icon: 'success', title: 'Đã xóa!',   text: 'Bình luận đã được xóa.' },
-            review_delete_failed:{ icon: 'error',   title: 'Thất bại!', text: 'Không thể xóa bình luận.' },
+            restored:          { icon: 'success', title: 'Thành công!',  text: 'Bài viết đã được khôi phục.' },
+            restore_failed:    { icon: 'error',   title: 'Thất bại!',    text: 'Không thể khôi phục bài viết.' },
+            review_deleted:    { icon: 'success', title: 'Đã xóa!',      text: 'Bình luận đã được xóa.' },
+            review_delete_failed:{ icon: 'error',   title: 'Thất bại!',  text: 'Không thể xóa bình luận.' },
         };
 
         const key = msg || error;
@@ -896,7 +1009,9 @@
 
     function showList() {
         $('#blog-detail').hide();
-        $('.users-table').show();
+        document.getElementById('activeBlogSection').style.display = 'block';
+        document.getElementById('trashBlogPanel').style.display = 'none';
+        document.getElementById('trashToggleBtn').style.display = 'inline-flex';
     }
     function openViewReview(btn) {
         document.getElementById('vr-blogtitle').innerText = btn.dataset.blogtitle || '---';
@@ -960,6 +1075,64 @@
         $('#pageInfo').text((info.page + 1) + ' / ' + info.pages);
     }
 
+    function updateTrashPageInfo() {
+        const info = $('#tableTrash').DataTable().page.info();
+        $('#trashPageInfo').text((info.page + 1) + ' / ' + info.pages);
+    }
+
+    function showTrashPanel() {
+        $('#blog-detail').hide();
+        document.getElementById('activeBlogSection').style.display = 'none';
+        document.getElementById('trashBlogPanel').style.display = 'block';
+        document.getElementById('trashToggleBtn').style.display = 'none';
+        document.getElementById('backFromTrashBtn').style.display = 'inline-flex';
+    }
+
+    function showActivePanel() {
+        $('#blog-detail').hide();
+        document.getElementById('activeBlogSection').style.display = 'block';
+        document.getElementById('trashBlogPanel').style.display = 'none';
+        document.getElementById('trashToggleBtn').style.display = 'inline-flex';
+        document.getElementById('backFromTrashBtn').style.display = 'none';
+    }
+
+    function confirmRestore(btn) {
+        const id = btn.dataset.id;
+        Swal.fire({
+            title: 'Khôi phục bài viết?',
+            text: 'Bài viết sẽ được chuyển về danh sách quản lý.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Khôi phục',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = baseUrl + '/admin/blog-manage';
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'restore';
+                form.appendChild(actionInput);
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                idInput.value = id;
+                form.appendChild(idInput);
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_csrf';
+                csrfInput.value = CSRF_TOKEN;
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         const logoutBtn = document.getElementById("logoutBtn");
         const logoutModal = document.getElementById("logoutModal");
@@ -996,7 +1169,8 @@
         document.getElementById("view-content").innerHTML = btn.dataset.content;
         document.getElementById("view-date").innerText = btn.dataset.date;
         document.getElementById("view-product").innerText = "SP" + btn.dataset.product;
-        document.getElementById("view-views").innerText = btn.dataset.views;
+        document.getElementById("view-views").innerText = btn.dataset.views || 0;
+        document.getElementById("view-likes").innerText = btn.dataset.likes || 0;
         const img = document.getElementById("view-image");
         img.src = btn.dataset.image;
         let modal = new bootstrap.Modal(
@@ -1031,6 +1205,11 @@
                 idInput.name = 'id';
                 idInput.value = id;
                 form.appendChild(idInput);
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_csrf';
+                csrfInput.value = CSRF_TOKEN;
+                form.appendChild(csrfInput);
                 document.body.appendChild(form);
                 form.submit();
             }
@@ -1212,5 +1391,45 @@
             }
         });
     }
+</script>
+<script>
+    window.showTrashPanel = function() {
+        const detail = document.getElementById('blog-detail');
+        const activeSection = document.getElementById('activeBlogSection');
+        const trashSection = document.getElementById('trashBlogPanel');
+        const toggleBtn = document.getElementById('trashToggleBtn');
+        const backBtn = document.getElementById('backFromTrashBtn');
+        if (detail) detail.style.display = 'none';
+        if (activeSection) activeSection.style.display = 'none';
+        if (trashSection) trashSection.style.display = 'block';
+        if (toggleBtn) toggleBtn.style.display = 'none';
+        if (backBtn) backBtn.style.display = 'inline-flex';
+    };
+    window.showActivePanel = function() {
+        const detail = document.getElementById('blog-detail');
+        const activeSection = document.getElementById('activeBlogSection');
+        const trashSection = document.getElementById('trashBlogPanel');
+        const toggleBtn = document.getElementById('trashToggleBtn');
+        const backBtn = document.getElementById('backFromTrashBtn');
+        if (detail) detail.style.display = 'none';
+        if (activeSection) activeSection.style.display = 'block';
+        if (trashSection) trashSection.style.display = 'none';
+        if (toggleBtn) toggleBtn.style.display = 'inline-flex';
+        if (backBtn) backBtn.style.display = 'none';
+    };
+    document.addEventListener('DOMContentLoaded', function() {
+        const trashToggleBtn = document.getElementById('trashToggleBtn');
+        if (trashToggleBtn) {
+            trashToggleBtn.removeAttribute('onclick');
+            trashToggleBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                window.showTrashPanel();
+            });
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('showTrash') === 'true') {
+            window.showTrashPanel();
+        }
+    });
 </script>
 </html>

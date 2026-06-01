@@ -15,7 +15,7 @@ public class Post implements Serializable {
     public Post() {
     }
 
-    public Post(int id, String title, String content, String image, Date createdAt, int productId, int view ) {
+    public Post(int id, String title, String content, String image, Date createdAt, int productId, int view) {
         this.id = id;
         this.title = title;
         this.content = content;

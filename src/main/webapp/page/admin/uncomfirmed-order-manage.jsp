@@ -179,8 +179,7 @@
                 <button type="button" class="btn-close btn-close-white"
                         data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="row g-4">
+                        <div class="row g-4">
                     <div class="col-md-6">
                         <div class="card border-0 shadow-sm rounded-4">
                             <div class="card-body">
@@ -274,13 +273,13 @@
                                         <th>Ghi chú:</th>
                                         <td><span id="md_note">---</span></td>
                                     </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                     </tbody>
+                                 </table>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+              </div>
             <div class="modal-footer bg-light d-flex justify-content-between">
                 <div class="text-muted small fst-italic">Kiểm tra kỹ trước khi xác nhận đơn hàng.</div>
                 <div>
