@@ -101,7 +101,7 @@
                     <i class="bi bi-journal-text"></i>Bài viết
                 </button>
             </a>
-            <c:if test="${not empty user and user.roleId == 1}">
+            <c:if test="${not empty user and (user.roleId == 1 or user.roleId == 3 or user.roleId == 4 or user.roleId == 5)}">
                 <a href="${pageContext.request.contextPath}/admin/dashboard">
                     <button class="nav-item ${currentPage.contains('/vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.controller.admin') ? 'active' : ''}">
                         <i class="bi bi-shield-lock"></i>Quản lý Admin

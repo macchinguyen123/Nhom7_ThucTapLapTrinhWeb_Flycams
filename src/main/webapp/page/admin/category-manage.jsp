@@ -55,73 +55,9 @@
     </div>
 </header>
 <div class="layout">
-    <aside class="sidebar">
-        <div class="user-info">
-            <c:choose>
-                <c:when test="${not empty sessionScope.user.avatar}">
-                    <img src="${pageContext.request.contextPath}/image/avatar/${sessionScope.user.avatar}?v=${sessionScope.user.updatedAt != null ? sessionScope.user.updatedAt.time : ''}"
-                         alt="Avatar"
-                         style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
-                </c:when>
-                <c:otherwise>
-                    <img src="${pageContext.request.contextPath}/image/logoTCN.png" alt="Avatar">
-                </c:otherwise>
-            </c:choose>
-            <h3>${sessionScope.user.fullName}</h3>
-            <p>Chào mừng bạn trở lại 👋</p>
-        </div>
-        <ul class="menu">
-            <li>
-                <a href="${pageContext.request.contextPath}/admin/dashboard"><i
-                        class="bi bi-speedometer2"></i> Tổng Quan</a>
-            </li>
-            <li>
-                <a href="${pageContext.request.contextPath}/admin/customer-manage"><i
-                        class="bi bi-person-lines-fill"></i> Quản Lý Tài Khoản</a>
-            </li>
-            <li>
-                <a href="${pageContext.request.contextPath}/admin/product-management"><i
-                        class="bi bi-box-seam"></i> Quản Lý Sản Phẩm</a>
-            </li>
-            <li class="active">
-                <a href="${pageContext.request.contextPath}/admin/category-manage"><i
-                        class="bi bi-tags"></i> Quản Lý Danh Mục</a>
-            </li>
-            <li class="has-submenu">
-                <div class="menu-item">
-                    <i class="bi bi-truck"></i>
-                    <span>Quản Lý Đơn Hàng</span>
-                    <i class="bi bi-chevron-right arrow"></i>
-                </div>
-                <ul class="submenu">
-                    <li><a href="${pageContext.request.contextPath}/admin/unconfirmed-orders">Chưa Xác
-                        Nhận</a></li>
-                    <li><a href="${pageContext.request.contextPath}/admin/order-manage">Đã Xác Nhận</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="${pageContext.request.contextPath}/admin/blog-manage"><i
-                        class="bi bi-journal-text"></i> Quản Lý Blog</a>
-            </li>
-            <li>
-                <a href="${pageContext.request.contextPath}/admin/promotion-manage"><i
-                        class="bi bi-megaphone"></i> Quản Lý Khuyến Mãi</a>
-            </li>
-            <li>
-                <a href="${pageContext.request.contextPath}/admin/statistics"><i
-                        class="bi bi-bar-chart"></i> Báo Cáo & Thống Kê</a>
-            </li>
-            <a href="${pageContext.request.contextPath}/admin/chat-manage">
-                <li><i class="bi bi-chat-left-text"></i> Hộp thoại</li>
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/banner-manage">
-                <li><i class="bi bi-images"></i> Quản Lý Banner</li>
-            </a>
-            <a href="${pageContext.request.contextPath}/admin/review-manage">
-                <li><i class="bi bi-shield-exclamation"></i> Quản Lý Đánh Giá Xấu</li>
-            </a>
-        </ul>
-    </aside>
+    <jsp:include page="sidebar.jsp">
+        <jsp:param name="activePage" value="category"/>
+    </jsp:include>
     <main class="main-content container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="text-primary fw-bold"><i class="bi bi-tags"></i> Quản Lý Danh Mục</h4>
@@ -483,29 +419,7 @@
     })();
 </script>
 <script>
-    document.querySelectorAll('.has-submenu .menu-item').forEach(item => {
-        item.addEventListener('click', function (e) {
-            e.preventDefault();
-            const parent = this.parentElement;
-            const submenu = parent.querySelector('.submenu');
-            const arrow = this.querySelector('.arrow');
-            parent.classList.toggle('active');
-            parent.classList.toggle('open');
-            if (parent.classList.contains('active') || parent.classList.contains('open')) {
-                if (arrow) {
-                    arrow.classList.remove('bi-chevron-right');
-                    arrow.classList.add('bi-chevron-down');
-                }
-                if (submenu) submenu.style.display = 'block';
-            } else {
-                if (arrow) {
-                    arrow.classList.remove('bi-chevron-down');
-                    arrow.classList.add('bi-chevron-right');
-                }
-                if (submenu) submenu.style.display = 'none';
-            }
-        });
-    });
+
 </script>
 </body>
 </html>

@@ -28,6 +28,12 @@ public class UpdateCustomer extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+        jakarta.servlet.http.HttpSession session = req.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
+        if (currentUser == null || currentUser.getRoleId() != 1) {
+            resp.getWriter().write("{\"success\":false, \"msg\":\"Access Denied: Super Admin role required.\"}");
+            return;
+        }
         try {
             int id = Integer.parseInt(req.getParameter("id"));
             String fullName = req.getParameter("fullName");
