@@ -126,4 +126,8 @@ public class DashboardService {
     public String getBestSellerToday() {
         return dashboardDAO.getBestSellerToday();
     }
+
+    public Map<String, Double> getRevenueByDayInRange(String startDate, String endDate) {
+        return dashboardDAO.getRevenueByDayInRange(startDate, endDate);
+    }
 }

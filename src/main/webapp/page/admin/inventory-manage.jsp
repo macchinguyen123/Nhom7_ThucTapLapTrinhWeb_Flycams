@@ -132,7 +132,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-box-arrow-in-down"></i> Đề Xuất Thêm Mới - Nhập Kho Sản Phẩm
+                <h5 class="modal-title"><i class="bi bi-box-arrow-in-down"></i> Nhập Kho Sản Phẩm
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -401,6 +401,9 @@
                         url: contextPath + '/admin/api/inventory-import',
                         type: 'POST',
                         contentType: 'application/json',
+                        headers: {
+                            'X-CSRF-Token': typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : ''
+                        },
                         data: JSON.stringify({
                             productId: parseInt(productId),
                             quantity: parseInt(quantity),

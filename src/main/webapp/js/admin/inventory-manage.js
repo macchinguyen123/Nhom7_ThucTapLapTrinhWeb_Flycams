@@ -4,16 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const API_IMPORT = ctx + '/admin/api/inventory-import';
     let currentPage = 1;
     let currentLimit = 10;
+    let totalPages = 1;
     let currentSearch = '';
     let debounceTimer = null;
     const tableBody = document.querySelector('#inventoryTable tbody');
     const searchInput = document.querySelector('#searchInput');
-    const paginationContainer = document.querySelector('#paginationContainer');
     const loadingSpinner = document.querySelector('#loadingSpinner');
-    const importSubmitBtn = document.querySelector('#btnSubmitImport');
-    const btnReload = document.querySelector('#btnReloadInventory');
+    const importSubmitBtn = document.querySelector('#btnSaveImport');
     init();
     function init() {
+        const rowsPerPageSelect = document.querySelector('#rowsPerPage');
+        if (rowsPerPageSelect) {
+            currentLimit = parseInt(rowsPerPageSelect.value) || 10;
+        }
         bindEvents();
         fetchInventoryData();
     }
@@ -28,24 +31,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 300);
             });
         }
-        if (btnReload) {
-            btnReload.addEventListener('click', () => {
-                fetchInventoryData();
-            });
-        }
         if (importSubmitBtn) {
             importSubmitBtn.addEventListener('click', handleImportSubmit);
         }
-        if (paginationContainer) {
-            paginationContainer.addEventListener('click', (e) => {
-                const target = e.target.closest('.page-link');
-                if (!target) return;
+        const prevPageBtn = document.querySelector('#prevPage');
+        const nextPageBtn = document.querySelector('#nextPage');
+        const rowsPerPageSelect = document.querySelector('#rowsPerPage');
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = parseInt(target.dataset.page);
-                if (page && page !== currentPage) {
-                    currentPage = page;
+                if (currentPage > 1) {
+                    currentPage--;
                     fetchInventoryData();
                 }
+            });
+        }
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    fetchInventoryData();
+                }
+            });
+        }
+        if (rowsPerPageSelect) {
+            rowsPerPageSelect.addEventListener('change', (e) => {
+                currentLimit = parseInt(e.target.value) || 10;
+                currentPage = 1;
+                fetchInventoryData();
             });
         }
     }
@@ -56,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(url, {
                 method: 'GET',
                 credentials: 'same-origin',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -72,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('error', result.message || 'Lỗi khi tải dữ liệu kho hàng.');
             }
         } catch (error) {
-            (function(){})('Error fetching inventory:', error);
             showToast('error', 'Không thể kết nối đến máy chủ.');
             if (tableBody) {
                 tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
@@ -85,16 +98,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tableBody) return;
 
         if (!data || data.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Không tìm thấy sản phẩm nào.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox fs-3 d-block mb-2"></i>Không tìm thấy sản phẩm nào.</td></tr>`;
             return;
         }
         let html = '';
         data.forEach((item, index) => {
             let statusBadge = '';
+            let rowClass = '';
             if (item.status === 'Hết hàng') {
                 statusBadge = '<span class="badge bg-danger">Hết hàng</span>';
+                rowClass = 'out-of-stock';
             } else if (item.status === 'Sắp hết hàng') {
                 statusBadge = '<span class="badge bg-warning text-dark">Sắp hết hàng</span>';
+                rowClass = 'low-stock';
             } else {
                 statusBadge = `<span class="badge bg-success">${item.status || 'Còn hàng'}</span>`;
             }
@@ -103,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 : `<div style="width: 50px; height: 50px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc; border-radius: 4px;" class="img-thumbnail"><i class="bi bi-image text-muted"></i></div>`;
 
             html += `
-                <tr>
+                <tr class="${rowClass}">
                     <td class="align-middle">${(currentPage - 1) * currentLimit + index + 1}</td>
                     <td class="align-middle"><strong>#${item.id}</strong></td>
                     <td class="align-middle text-center">
@@ -115,20 +131,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         </span>
                         <small class="text-muted">${item.categoryName || 'Không phân loại'}</small>
                     </td>
-                    <td class="align-middle text-success font-weight-bold">+${item.totalImported}</td>
-                    <td class="align-middle text-danger font-weight-bold">-${item.totalSold}</td>
+                    <td class="align-middle text-success fw-bold">+${item.totalImported}</td>
+                    <td class="align-middle text-danger fw-bold">-${item.totalSold}</td>
                     <td class="align-middle">
-                        <span class="fs-5 fw-bold ${item.currentStock <= 0 ? 'text-danger' : 'text-primary'}">
+                        <span class="fs-5 fw-bold ${item.currentStock <= 0 ? 'text-danger' : (item.currentStock < 10 ? 'text-warning' : 'text-primary')}">
                             ${item.currentStock}
                         </span>
                     </td>
                     <td class="align-middle">${statusBadge}</td>
                     <td class="align-middle">
-                        <button class="btn btn-sm btn-outline-info btn-view-chart" data-id="${item.id}" title="Xem biểu đồ">
-                            <i class="fas fa-chart-line"></i>
+                        <button class="btn btn-sm btn-outline-info btn-view-chart" data-id="${item.id}" title="Xem thống kê">
+                            <i class="bi bi-eye"></i>
                         </button>
                         <button class="btn btn-sm btn-primary btn-quick-import" data-id="${item.id}" data-name="${item.productName}" data-img="${item.imageUrl || ''}" title="Nhập kho nhanh">
-                            <i class="fas fa-plus"></i> Nhập
+                            <i class="bi bi-plus-lg"></i> Nhập
                         </button>
                     </td>
                 </tr>
@@ -150,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const productId = btnEl.dataset.id;
                 const productName = btnEl.dataset.name;
                 const productImg = btnEl.dataset.img;
+
                 const inputProductId = document.getElementById('importProductId');
                 const labelProductIdDisplay = document.getElementById('importProductIdDisplay');
                 const labelProductName = document.getElementById('importProductName');
@@ -176,32 +193,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     function renderPagination(paginationInfo) {
-        if (!paginationContainer) return;
-        const { currentPage, totalPages } = paginationInfo;
-        if (totalPages <= 1) {
-            paginationContainer.innerHTML = '';
-            return;
+        const { currentPage: apiCurrentPage, totalPages: apiTotalPages } = paginationInfo;
+        currentPage = apiCurrentPage;
+        totalPages = apiTotalPages;
+        const prevPageBtn = document.querySelector('#prevPage');
+        const nextPageBtn = document.querySelector('#nextPage');
+        const pageInfoSpan = document.querySelector('#pageInfo');
+        if (pageInfoSpan) {
+            pageInfoSpan.textContent = `${currentPage} / ${totalPages}`;
         }
-        let html = '<ul class="pagination justify-content-end mb-0">';
-        html += `
-            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage - 1}">Trước</a>
-            </li>
-        `;
-        for (let i = 1; i <= totalPages; i++) {
-            html += `
-                <li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                </li>
-            `;
+        if (prevPageBtn) {
+            if (currentPage === 1) {
+                prevPageBtn.classList.add('disabled');
+                prevPageBtn.setAttribute('disabled', 'true');
+            } else {
+                prevPageBtn.classList.remove('disabled');
+                prevPageBtn.removeAttribute('disabled');
+            }
         }
-        html += `
-            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${currentPage + 1}">Sau</a>
-            </li>
-        `;
-        html += '</ul>';
-        paginationContainer.innerHTML = html;
+        if (nextPageBtn) {
+            if (currentPage === totalPages || totalPages === 0) {
+                nextPageBtn.classList.add('disabled');
+                nextPageBtn.setAttribute('disabled', 'true');
+            } else {
+                nextPageBtn.classList.remove('disabled');
+                nextPageBtn.removeAttribute('disabled');
+            }
+        }
     }
     async function handleImportSubmit(e) {
         e.preventDefault();
@@ -232,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         importSubmitBtn.disabled = true;
-        importSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        importSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
         try {
             const payload = {
                 productId: parseInt(productId),
@@ -243,20 +261,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(API_IMPORT, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
             if (response.ok && result.status === 'success') {
-                if (typeof bootstrap !== 'undefined') {
-                    const modalEl = document.getElementById('modalNhapKho');
-                    if (modalEl) {
-                        const modal = bootstrap.Modal.getInstance(modalEl);
-                        if (modal) modal.hide();
-                    }
+                const modalEl = document.getElementById('modalNhapKho');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
                 }
-                document.getElementById('formImport').reset();
+                const formEl = document.getElementById('formNhapKho');
+                if (formEl) formEl.reset();
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         icon: 'success',
@@ -265,27 +284,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         timer: 2000,
                         showConfirmButton: false
                     });
-                } else {
-                    alert(result.message);
                 }
                 fetchInventoryData();
             } else {
                 throw new Error(result.message || 'Có lỗi xảy ra từ server.');
             }
         } catch (error) {
-            (function(){})('Import Error:', error);
             if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Thất bại',
-                    text: error.message
-                });
+                Swal.fire({ icon: 'error', title: 'Thất bại', text: error.message });
             } else {
                 alert('Lỗi: ' + error.message);
             }
         } finally {
             importSubmitBtn.disabled = false;
-            importSubmitBtn.innerHTML = 'Xác nhận nhập kho';
+            importSubmitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Xác nhận nhập kho';
         }
     }
     function showSpinner() {
@@ -296,17 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function showToast(type, message) {
         if (typeof Swal !== 'undefined') {
-            const Toast = Swal.mixin({
+            Swal.mixin({
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true
-            });
-            Toast.fire({
-                icon: type,
-                title: message
-            });
+            }).fire({ icon: type, title: message });
         } else {
             alert(`[${type.toUpperCase()}] ${message}`);
         }
