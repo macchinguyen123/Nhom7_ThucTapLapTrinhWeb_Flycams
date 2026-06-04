@@ -650,4 +650,37 @@ WHERE MONTH(createdAt) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))AND YE
         } catch (Exception e) { e.printStackTrace(); }
         return "Chưa có dữ liệu";
     }
+    public Map<String, Double> getRevenueByDayInRange(String startDate, String endDate) {
+        Map<String, Double> result = new LinkedHashMap<>();
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            for (LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
+                result.put(d.toString(), 0.0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String sql = """
+                    SELECT DATE(createdAt) AS day, IFNULL(SUM(totalPrice), 0) AS revenue
+                    FROM orders
+                    WHERE status = 'Ho\u00e0n th\u00e0nh'
+                    AND DATE(createdAt) >= ? AND DATE(createdAt) <= ?
+                    GROUP BY DATE(createdAt)
+                    ORDER BY day
+                """;
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, startDate);
+            ps.setString(2, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getString("day"), rs.getDouble("revenue"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

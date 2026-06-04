@@ -156,6 +156,20 @@
             </div>
         </section>
         <section class="mb-5">
+            <h5 class="text-primary fw-bold mb-3"><i class="bi bi-bar-chart-fill"></i> Biểu Đồ Doanh Thu Theo Khoảng Lọc</h5>
+            <div class="card shadow-sm border-0 p-4">
+                <div class="chart-box-fix" style="height: 350px; position: relative;">
+                    <canvas id="chartDoanhThuKhoang"></canvas>
+                    <div id="emptyRange" class="chart-empty-state"
+                         style="display:none; position: absolute; top:0; left:0; right:0; bottom:0;
+                                flex-direction:column; align-items:center; justify-content:center;">
+                        <i class="bi bi-bar-chart-line fs-1 d-block mb-3 text-muted"></i>
+                        <span class="text-muted fw-semibold">Không có doanh thu trong khoảng thời gian này</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="mb-5">
             <h5 class="text-primary fw-bold mb-3"><i class="bi bi-cart-check"></i> Đơn Hàng Giao Dịch Trong Khoảng</h5>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center gap-2">
@@ -488,6 +502,55 @@
                     label: 'Doanh thu (VNĐ)',
                     data: revenueMonthValues,
                     backgroundColor: '#0d6efd',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.parsed.y.toLocaleString("vi-VN") + " VNĐ"
+                        }
+                    }
+                },
+                scales: {
+                    y: {beginAtZero: true, ticks: {callback: val => val.toLocaleString("vi-VN") + " VNĐ"}},
+                    x: {grid: {display: false}}
+                }
+            }
+        });
+    }
+    const rangeDayLabels = [
+        <c:forEach var="d" items="${revenueDayLabels}" varStatus="st">
+        "${d}"<c:if test="${!st.last}">, </c:if>
+        </c:forEach>
+    ];
+    const rangeDayValues = [
+        <c:forEach var="v" items="${revenueDayValues}" varStatus="st">
+        ${v}<c:if test="${!st.last}">, </c:if>
+        </c:forEach>
+    ];
+    const isRangeEmpty = rangeDayValues.length === 0 || rangeDayValues.every(v => v === 0 || v === null);
+    if (isRangeEmpty) {
+        document.getElementById('emptyRange').style.display = 'flex';
+        document.getElementById('chartDoanhThuKhoang').style.display = 'none';
+    } else {
+        new Chart(document.getElementById('chartDoanhThuKhoang').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: rangeDayLabels.map(d => {
+                    let dt = new Date(d + 'T00:00:00');
+                    return ("0" + dt.getDate()).slice(-2) + "/"
+                         + ("0" + (dt.getMonth() + 1)).slice(-2) + "/"
+                         + dt.getFullYear();
+                }),
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: rangeDayValues,
+                    backgroundColor: '#198754',
                     borderRadius: 5
                 }]
             },

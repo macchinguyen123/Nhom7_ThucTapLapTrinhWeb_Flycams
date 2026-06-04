@@ -1,5 +1,6 @@
 package vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao;
 
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Image;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Product;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.DBConnection;
 
@@ -270,7 +271,21 @@ public class ProductDAO {
                     p.setStatus(rs.getString("status"));
                     p.setMinStock(minStock);
                     p.setView(rs.getInt("view"));
-                    p.setImages(imageDAO.getImagesByProduct(p.getId()));
+                    List<Image> imgs = imageDAO.getImagesByProduct(p.getId());
+                    p.setImages(imgs);
+                    if (imgs != null && !imgs.isEmpty()) {
+                        String mainImg = null;
+                        for (Image img : imgs) {
+                            if ("Chính".equalsIgnoreCase(img.getImageType())) {
+                                mainImg = img.getImageUrl();
+                                break;
+                            }
+                        }
+                        if (mainImg == null) {
+                            mainImg = imgs.get(0).getImageUrl();
+                        }
+                        p.setMainImage(mainImg);
+                    }
                     return p;
                 }
             }

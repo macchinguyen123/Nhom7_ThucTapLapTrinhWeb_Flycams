@@ -43,6 +43,7 @@ public class StatisticsServlet extends HttpServlet {
         List<Map<String, Object>> topCustomers = dashboardService.getTopCustomersBySpending(startDateStr, endDateStr);
         Map<String, Double> revenue8Days = dashboardService.getRevenueLast8Days();
         Map<String, Double> revenueByMonth = dashboardService.getRevenueByMonth();
+        Map<String, Double> revenueByDay = dashboardService.getRevenueByDayInRange(startDateStr, endDateStr);
         request.setAttribute("startDate", startDateStr);
         request.setAttribute("endDate", endDateStr);
         request.setAttribute("ordersInRange", ordersInRange);
@@ -61,6 +62,8 @@ public class StatisticsServlet extends HttpServlet {
         request.setAttribute("revenueValues", revenue8Days.values());
         request.setAttribute("revenueMonths", revenueByMonth.keySet());
         request.setAttribute("revenueMonthValues", revenueByMonth.values());
+        request.setAttribute("revenueDayLabels", revenueByDay.keySet());
+        request.setAttribute("revenueDayValues", revenueByDay.values());
         request.getRequestDispatcher("/page/admin/statistics.jsp")
                 .forward(request, response);
     }

@@ -25,7 +25,7 @@ public class InventoryDAO {
             ps.setString(5, imp.getNote());
             int rows = ps.executeUpdate();
             if (rows > 0) {
-                updateProductQuantity(conn, imp.getProductId());
+                updateProductQuantity(conn, imp.getProductId(), imp.getQuantity());
                 return true;
             }
         } catch (Exception e) {
@@ -44,7 +44,7 @@ public class InventoryDAO {
                 
                 int rows = ps.executeUpdate();
                 if (rows > 0) {
-                    updateProductQuantity(conn, imp.getProductId());
+                    updateProductQuantity(conn, imp.getProductId(), imp.getQuantity());
                     return true;
                 }
             } catch (Exception ex) {
@@ -53,13 +53,10 @@ public class InventoryDAO {
         }
         return false;
     }
-    private void updateProductQuantity(Connection conn, int productId) throws SQLException {
-        int totalImported = getTotalImported(conn, productId);
-        int totalSold = getTotalSold(conn, productId);
-        int inventory = totalImported - totalSold;
-        String sql = "UPDATE products SET quantity = ? WHERE id = ?";
+    private void updateProductQuantity(Connection conn, int productId, int importedQty) throws SQLException {
+        String sql = "UPDATE products SET quantity = quantity + ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, inventory);
+            ps.setInt(1, importedQty);
             ps.setInt(2, productId);
             ps.executeUpdate();
         }
@@ -103,7 +100,16 @@ public class InventoryDAO {
         try (Connection conn = DBConnection.getConnection()) {
             int totalImported = getTotalImported(conn, productId);
             int totalSold = getTotalSold(conn, productId);
-            int inventory = totalImported - totalSold;
+            int inventory = 0;
+            String sql = "SELECT quantity FROM products WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, productId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        inventory = rs.getInt(1);
+                    }
+                }
+            }
             double salesRatio = 0;
             if (totalImported > 0) {
                 salesRatio = (double) totalSold / totalImported * 100;
@@ -145,7 +151,7 @@ public class InventoryDAO {
                      "FROM products p " + 
                      "LEFT JOIN categories c ON p.category_id = c.id " +
                      "WHERE p.productName LIKE ? OR CAST(p.id AS CHAR) LIKE ? " +
-                     "ORDER BY p.id DESC LIMIT ? OFFSET ?";
+                     "ORDER BY p.quantity ASC LIMIT ? OFFSET ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String searchPattern = "%" + (search != null ? search : "") + "%";
@@ -159,7 +165,7 @@ public class InventoryDAO {
                     int id = rs.getInt("id");
                     int totalImported = rs.getInt("totalImported");
                     int totalSold = rs.getInt("totalSold");
-                    int currentStock = totalImported - totalSold;
+                    int currentStock = rs.getInt("currentStock");
                     record.put("id", id);
                     record.put("productName", rs.getString("productName"));
                     record.put("categoryName", rs.getString("categoryName"));
