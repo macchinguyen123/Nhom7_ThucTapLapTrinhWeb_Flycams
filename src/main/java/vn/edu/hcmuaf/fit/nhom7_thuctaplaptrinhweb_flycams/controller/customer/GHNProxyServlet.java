@@ -13,10 +13,10 @@ import java.nio.charset.StandardCharsets;
 
 @WebServlet(name = "GHNProxyServlet", value = "/ghn/*")
 public class GHNProxyServlet extends HttpServlet {
-    private static final String GHN_TOKEN = "64eae663-1e9c-11f1-a973-aee5264794df";
-    private static final int GHN_SHOP_ID = 	199571;
-    private static final int FROM_DISTRICT = 3695;
-    private static final String GHN_BASE = "https://online-gateway.ghn.vn/shiip/public-api";
+    private static final String GHN_TOKEN = "756e2538-616a-11f1-a973-aee5264794df";
+    private static final int GHN_SHOP_ID = 200585;
+    private static final int FROM_DISTRICT = 1540;
+    private static final String GHN_BASE = "https://dev-online-gateway.ghn.vn/shiip/public-api";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -39,6 +39,9 @@ public class GHNProxyServlet extends HttpServlet {
                     break;
                 case "/fee":
                     handleFee(req, resp);
+                    break;
+                case "/leadtime":
+                    handleLeadtime(req, resp);
                     break;
                 default:
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -102,6 +105,26 @@ public class GHNProxyServlet extends HttpServlet {
                 + "\"height\":10,"
                 + "\"insurance_value\":0,"
                 + "\"coupon\":\"\""
+                + "}";
+        String body = callGHN_POST(url, jsonPayload);
+        resp.getWriter().write(body);
+    }
+
+    private void handleLeadtime(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String districtId = req.getParameter("districtId");
+        String wardCode = req.getParameter("wardCode");
+        if (districtId == null || districtId.isEmpty()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"Missing districtId\"}");
+            return;
+        }
+        String safeWardCode = (wardCode != null && !wardCode.isEmpty()) ? wardCode : "";
+        String url = GHN_BASE + "/v2/shipping-order/leadtime";
+        String jsonPayload = "{"
+                + "\"from_district_id\":" + FROM_DISTRICT + ","
+                + "\"to_district_id\":" + districtId + ","
+                + (safeWardCode.isEmpty() ? "" : "\"to_ward_code\":\"" + safeWardCode + "\",")
+                + "\"service_id\": 53320"
                 + "}";
         String body = callGHN_POST(url, jsonPayload);
         resp.getWriter().write(body);

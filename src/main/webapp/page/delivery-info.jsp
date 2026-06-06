@@ -139,6 +139,10 @@
                 <span>Phí vận chuyển</span>
                 <span id="shippingFeeDisplay">—</span>
             </div>
+            <div class="d-flex justify-content-between mb-2 text-muted small" id="leadtimeContainer" style="display: none;">
+                <span>Dự kiến giao hàng</span>
+                <span id="leadtimeDisplay">—</span>
+            </div>
             <hr>
             <div class="d-flex justify-content-between fw-bold total">
                 <span>Tổng cộng</span>
@@ -153,6 +157,7 @@
 </div>
 <script>
     const GHN_API = "${pageContext.request.contextPath}/ghn";
+    const OPEN_API = "https://provinces.open-api.vn/api";
     const provinceSelect = document.getElementById("province");
     const districtSelect = document.getElementById("district");
     const wardSelect = document.getElementById("ward");
@@ -167,6 +172,8 @@
     const ghnWardCodeInput = document.getElementById("ghnWardCode");
     const shippingFeeInput = document.getElementById("shippingFeeInput");
     const shippingFeeDisplay = document.getElementById("shippingFeeDisplay");
+    const leadtimeContainer = document.getElementById("leadtimeContainer");
+    const leadtimeDisplay = document.getElementById("leadtimeDisplay");
     const totalDisplay = document.getElementById("totalDisplay");
     const subtotalEl = document.getElementById("subtotalValue");
 
@@ -189,8 +196,7 @@
                 setTimeout(() => savedAddressSelect.dispatchEvent(new Event('change')), 300);
             }
         })
-        .catch(err => {
-            (function(){})("Lỗi load tỉnh GHN:", err);
+        .catch(() => {
             provinceSelect.innerHTML = '<option value="">-- Không tải được tỉnh --</option>';
         });
 
@@ -219,7 +225,7 @@
                 });
                 districtSelect.disabled = false;
             })
-            .catch(err => (function(){})("Lỗi load quận GHN:", err));
+            .catch(() => {});
     });
 
     // ─── Chọn Quận → load Phường GHN ─────────────────────────────────────────
@@ -246,7 +252,7 @@
                 });
                 wardSelect.disabled = false;
             })
-            .catch(err => (function(){})("Lỗi load phường GHN:", err));
+            .catch(() => {});
     });
 
     function findOptionByText(selectEl, text) {
@@ -268,8 +274,6 @@
         }
         return null;
     }
-
-    // ─── Chọn Phường → tính phí ship ─────────────────────────────────────────
     wardSelect.addEventListener("change", function () {
         const opt = this.options[this.selectedIndex];
         const wardCode = opt.dataset.code || "";
@@ -279,7 +283,6 @@
         if (!districtId) return;
 
         shippingFeeDisplay.textContent = "Đang tính...";
-
         fetch(GHN_API + "/fee?districtId=" + districtId + "&wardCode=" + wardCode)
             .then(r => r.json())
             .then(json => {
@@ -295,11 +298,28 @@
                     totalDisplay.textContent = formatVND(subtotal + fee) + " VNĐ";
                 }
             })
-            .catch(err => {
-                (function(){})("Lỗi tính phí ship:", err);
+            .catch(() => {
                 shippingFeeDisplay.textContent = "Lỗi";
                 shippingFeeInput.value = 0;
             });
+        // Tính thời gian giao dự kiến
+        fetch(GHN_API + "/leadtime?districtId=" + districtId + "&wardCode=" + wardCode)
+            .then(r => r.json())
+            .then(json => {
+                if (json.code === 200 && json.data) {
+                    const leadtimeTimestamp = json.data.leadtime;
+                    if (leadtimeContainer && leadtimeDisplay) {
+                        leadtimeContainer.style.display = "flex";
+                        if (leadtimeTimestamp > 0) {
+                            const date = new Date(leadtimeTimestamp * 1000);
+                            leadtimeDisplay.textContent = date.toLocaleDateString('vi-VN');
+                        } else {
+                            leadtimeDisplay.textContent = "Chưa có thông tin";
+                        }
+                    }
+                }
+            })
+            .catch(() => {});
     });
 
     // ─── Chọn địa chỉ đã lưu ─────────────────────────────────────────────────
@@ -389,8 +409,6 @@
         toggleRequiredFields(false);
         manualInputFields.style.opacity = "1";
     });
-
-    // ─── Tính phí ship (gọi lại khi auto-fill địa chỉ đã lưu) ───────────────
     function triggerFeeCalc(districtId, wardCode) {
         if (!districtId) return;
         shippingFeeDisplay.textContent = "Đang tính...";
@@ -412,6 +430,23 @@
             .catch(() => {
                 shippingFeeDisplay.textContent = "Lỗi";
             });
+        fetch(GHN_API + "/leadtime?districtId=" + districtId + "&wardCode=" + (wardCode || ""))
+            .then(r => r.json())
+            .then(json => {
+                if (json.code === 200 && json.data) {
+                    const leadtimeTimestamp = json.data.leadtime;
+                    if (leadtimeContainer && leadtimeDisplay) {
+                        leadtimeContainer.style.display = "flex";
+                        if (leadtimeTimestamp > 0) {
+                            const date = new Date(leadtimeTimestamp * 1000);
+                            leadtimeDisplay.textContent = date.toLocaleDateString('vi-VN');
+                        } else {
+                            leadtimeDisplay.textContent = "Chưa có thông tin";
+                        }
+                    }
+                }
+            })
+            .catch(() => {});
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
