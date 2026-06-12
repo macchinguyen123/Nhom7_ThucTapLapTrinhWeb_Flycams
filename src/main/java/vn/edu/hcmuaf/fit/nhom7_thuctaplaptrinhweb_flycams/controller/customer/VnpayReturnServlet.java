@@ -61,6 +61,7 @@ public class VnpayReturnServlet extends HttpServlet {
         }
         HttpSession session = request.getSession();
         if ("00".equals(responseCode) && signValue.equalsIgnoreCase(vnp_SecureHash)) {
+            boolean orderPlaced = false;
             try {
                 User user = (User) session.getAttribute("user");
                 List<OrderItems> items = (List<OrderItems>) session.getAttribute("BUY_NOW_ITEM");
@@ -73,58 +74,61 @@ public class VnpayReturnServlet extends HttpServlet {
                 if (user != null && items != null && !items.isEmpty()) {
                     OrderService orderService = new OrderService();
                     int orderId = orderService.placeOrder(user, addressId, phone, note, "VNPAY", items, cart, shippingFee.doubleValue());
-                    if (orderId > 0 && user.getEmail() != null && !user.getEmail().isEmpty()) {
-                        final String finalEmail = user.getEmail();
-                        final String finalFullName = user.getFullName();
-                        final int finalOrderId = orderId;
-                        final List<OrderItems> finalItems = new ArrayList<>(items);
-                        new Thread(() -> {
-                            try {
-                                StringBuilder itemRows = new StringBuilder();
-                                long total = 0;
-                                NumberFormat fmt = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
-                                for (OrderItems item : finalItems) {
-                                    long price = (long) item.getPrice();
-                                    int qty = item.getQuantity();
-                                    long subtotal = price * qty;
-                                    total += subtotal;
-                                    itemRows.append("<tr>")
-                                            .append("<td style='padding:4px 8px;border:1px solid #ddd;'>").append(item.getProduct().getProductName()).append("</td>")
-                                            .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:center;'>").append(qty).append("</td>")
-                                            .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'>").append(fmt.format(price)).append("đ</td>")
-                                            .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'>").append(fmt.format(subtotal)).append("đ</td>")
-                                            .append("</tr>");
+                    if (orderId > 0) {
+                        orderPlaced = true;
+                        if (orderId > 0 && user.getEmail() != null && !user.getEmail().isEmpty()) {
+                            final String finalEmail = user.getEmail();
+                            final String finalFullName = user.getFullName();
+                            final int finalOrderId = orderId;
+                            final List<OrderItems> finalItems = new ArrayList<>(items);
+                            new Thread(() -> {
+                                try {
+                                    StringBuilder itemRows = new StringBuilder();
+                                    long total = 0;
+                                    NumberFormat fmt = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
+                                    for (OrderItems item : finalItems) {
+                                        long price = (long) item.getPrice();
+                                        int qty = item.getQuantity();
+                                        long subtotal = price * qty;
+                                        total += subtotal;
+                                        itemRows.append("<tr>")
+                                                .append("<td style='padding:4px 8px;border:1px solid #ddd;'>").append(item.getProduct().getProductName()).append("</td>")
+                                                .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:center;'>").append(qty).append("</td>")
+                                                .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'>").append(fmt.format(price)).append("đ</td>")
+                                                .append("<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'>").append(fmt.format(subtotal)).append("đ</td>")
+                                                .append("</tr>");
+                                    }
+                                    String productTable = "<table style='width:100%;border-collapse:collapse;margin:10px 0;'>"
+                                            + "<tr style='background:#f0f0f0;'>"
+                                            + "<th style='padding:4px 8px;border:1px solid #ddd;text-align:left;'>Sản phẩm</th>"
+                                            + "<th style='padding:4px 8px;border:1px solid #ddd;'>SL</th>"
+                                            + "<th style='padding:4px 8px;border:1px solid #ddd;'>Đơn giá</th>"
+                                            + "<th style='padding:4px 8px;border:1px solid #ddd;'>Thành tiền</th>"
+                                            + "</tr>"
+                                            + itemRows
+                                            + "<tr><td colspan='3' style='padding:4px 8px;border:1px solid #ddd;text-align:right;'><b>Tổng tiền:</b></td>"
+                                            + "<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'><b>" + fmt.format(total) + "đ</b></td></tr>"
+                                            + "</table>";
+                                    EmailSender emailSender = new EmailSender();
+                                    String htmlContent = "<p>Xin chào <b>" + finalFullName + "</b>,</p>"
+                                            + "<p>Thanh toán qua <b>VNPAY</b> cho đơn hàng <b>#" + finalOrderId + "</b> của bạn đã được xử lý thành công.</p>"
+                                            + "<p><b>Thông tin đơn hàng:</b></p>"
+                                            + "<ul>"
+                                            + "<li>Mã đơn hàng: <b>#" + finalOrderId + "</b></li>"
+                                            + "<li>Khách hàng: " + finalFullName + "</li>"
+                                            + "<li>Phương thức thanh toán: VNPAY (Đã thanh toán)</li>"
+                                            + "<li>Trạng thái: Đã thanh toán</li>"
+                                            + "</ul>"
+                                            + "<p><b>Danh sách sản phẩm:</b></p>"
+                                            + productTable
+                                            + "<p>Đơn hàng đang được chuẩn bị và sẽ được giao sớm nhất có thể.</p>"
+                                            + "<p>Trân trọng,<br>Đội ngũ SkyDrone</p>";
+                                    emailSender.sendOrderHtmlEmail(finalEmail, "[SkyDrone] Xác nhận thanh toán VNPAY - Đơn hàng #" + finalOrderId, htmlContent);
+                                } catch (Exception mailEx) {
+                                    mailEx.printStackTrace();
                                 }
-                                String productTable = "<table style='width:100%;border-collapse:collapse;margin:10px 0;'>"
-                                        + "<tr style='background:#f0f0f0;'>"
-                                        + "<th style='padding:4px 8px;border:1px solid #ddd;text-align:left;'>Sản phẩm</th>"
-                                        + "<th style='padding:4px 8px;border:1px solid #ddd;'>SL</th>"
-                                        + "<th style='padding:4px 8px;border:1px solid #ddd;'>Đơn giá</th>"
-                                        + "<th style='padding:4px 8px;border:1px solid #ddd;'>Thành tiền</th>"
-                                        + "</tr>"
-                                        + itemRows
-                                        + "<tr><td colspan='3' style='padding:4px 8px;border:1px solid #ddd;text-align:right;'><b>Tổng tiền:</b></td>"
-                                        + "<td style='padding:4px 8px;border:1px solid #ddd;text-align:right;'><b>" + fmt.format(total) + "đ</b></td></tr>"
-                                        + "</table>";
-                                EmailSender emailSender = new EmailSender();
-                                String htmlContent = "<p>Xin chào <b>" + finalFullName + "</b>,</p>"
-                                        + "<p>Thanh toán qua <b>VNPAY</b> cho đơn hàng <b>#" + finalOrderId + "</b> của bạn đã được xử lý thành công.</p>"
-                                        + "<p><b>Thông tin đơn hàng:</b></p>"
-                                        + "<ul>"
-                                        + "<li>Mã đơn hàng: <b>#" + finalOrderId + "</b></li>"
-                                        + "<li>Khách hàng: " + finalFullName + "</li>"
-                                        + "<li>Phương thức thanh toán: VNPAY (Đã thanh toán)</li>"
-                                        + "<li>Trạng thái: Đã thanh toán</li>"
-                                        + "</ul>"
-                                        + "<p><b>Danh sách sản phẩm:</b></p>"
-                                        + productTable
-                                        + "<p>Đơn hàng đang được chuẩn bị và sẽ được giao sớm nhất có thể.</p>"
-                                        + "<p>Trân trọng,<br>Đội ngũ SkyDrone</p>";
-                                emailSender.sendOrderHtmlEmail(finalEmail, "[SkyDrone] Xác nhận thanh toán VNPAY - Đơn hàng #" + finalOrderId, htmlContent);
-                            } catch (Exception mailEx) {
-                                mailEx.printStackTrace();
-                            }
-                        }).start();
+                            }).start();
+                        }
                     }
                     if (cart != null) session.setAttribute("cart", cart);
                     session.removeAttribute("BUY_NOW_ITEM");
@@ -132,9 +136,17 @@ public class VnpayReturnServlet extends HttpServlet {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                session.setAttribute("paymentError", "Thanh toán thành công nhưng tạo đơn hàng thất bại: " + e.getMessage() + ". Vui lòng liên hệ bộ phận hỗ trợ.");
             }
-            session.setAttribute("paymentSuccess", "Thanh toán thành công! Đơn hàng của bạn đã được xác nhận.");
-            response.sendRedirect(request.getContextPath() + "/personal?tab=orders");
+            if (orderPlaced) {
+                session.setAttribute("paymentSuccess", "Thanh toán thành công! Đơn hàng của bạn đã được xác nhận.");
+                response.sendRedirect(request.getContextPath() + "/personal?tab=orders");
+            } else {
+                if (session.getAttribute("paymentError") == null) {
+                    session.setAttribute("paymentError", "Tạo đơn hàng thất bại! Vui lòng liên hệ bộ phận hỗ trợ.");
+                }
+                response.sendRedirect(request.getContextPath() + "/home");
+            }
 
         } else {
             // Thanh toán thất bại

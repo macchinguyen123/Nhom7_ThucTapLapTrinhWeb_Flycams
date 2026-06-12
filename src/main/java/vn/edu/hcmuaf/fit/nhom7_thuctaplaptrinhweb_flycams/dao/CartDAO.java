@@ -59,32 +59,33 @@ public class CartDAO {
     }
 
     public int getOrCreateCartId(int userId) {
+        try (Connection conn = DBConnection.getConnection()) {
+            if (conn == null) return -1;
+            return getOrCreateCartId(conn, userId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+    public int getOrCreateCartId(Connection conn, int userId) throws SQLException {
         String query = "SELECT id FROM carts WHERE user_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    int id = rs.getInt("id");
-                    return id;
+                    return rs.getInt("id");
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         String insert = "INSERT INTO carts (user_id) VALUES (?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = conn.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    int id = rs.getInt(1);
-                    return id;
+                    return rs.getInt(1);
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return -1;
     }
@@ -155,16 +156,22 @@ public class CartDAO {
     }
 
     public void removeCartItem(int userId, int productId) {
-        int cartId = getOrCreateCartId(userId);
+        try (Connection conn = DBConnection.getConnection()) {
+            if (conn != null) {
+                removeCartItem(conn, userId, productId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void removeCartItem(Connection conn, int userId, int productId) throws SQLException {
+        int cartId = getOrCreateCartId(conn, userId);
         if (cartId == -1) return;
         String delete = "DELETE FROM cart_items WHERE cart_id = ? AND product_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(delete)) {
+        try (PreparedStatement ps = conn.prepareStatement(delete)) {
             ps.setInt(1, cartId);
             ps.setInt(2, productId);
             ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 

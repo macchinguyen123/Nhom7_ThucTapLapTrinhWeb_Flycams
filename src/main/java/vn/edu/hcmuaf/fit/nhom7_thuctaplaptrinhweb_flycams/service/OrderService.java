@@ -6,7 +6,9 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.*;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.OrderItems;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Orders;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.DBConnection;
 
+import java.sql.Connection;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
@@ -42,29 +44,55 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
         order.setShippingFee(shippingFee);
 
-        int orderId = ordersDAO.insert(order);
-
-        if (orderId <= 0) {
-            throw new Exception("Insert order failed");
+        Connection con = DBConnection.getConnection();
+        if (con == null) {
+            throw new Exception("Không thể kết nối đến cơ sở dữ liệu!");
         }
 
-        for (OrderItems item : items) {
-            item.setOrderId(orderId);
-            orderItemsDAO.insert(item);
+        try {
+            con.setAutoCommit(false);
+            int orderId = ordersDAO.insert(con, order);
+            if (orderId <= 0) {
+                throw new Exception("Thêm đơn hàng thất bại!");
+            }
 
-            // Reduce Product stock
-            productManagement.reduceQuantity(item.getProductId(), item.getQuantity());
+            for (OrderItems item : items) {
+                item.setOrderId(orderId);
+                orderItemsDAO.insert(con, item);
 
-            // Update Cart
-            if (cart != null) {
-                cart.removeItem(item.getProductId());
-                if (user != null) {
-                    cartDAO.removeCartItem(user.getId(), item.getProductId());
+                // Reduce Product stock
+                boolean stockReduced = productManagement.reduceQuantity(con, item.getProductId(), item.getQuantity());
+                if (!stockReduced) {
+                    String productName = (item.getProduct() != null && item.getProduct().getProductName() != null)
+                            ? item.getProduct().getProductName() : "Sản phẩm (ID: " + item.getProductId() + ")";
+                    throw new Exception("Sản phẩm '" + productName + "' đã hết hàng hoặc không đủ số lượng trong kho!");
+                }
+
+                // Update Cart
+                if (cart != null) {
+                    cart.removeItem(item.getProductId());
+                    if (user != null) {
+                        cartDAO.removeCartItem(con, user.getId(), item.getProductId());
+                    }
                 }
             }
-        }
 
-        return orderId;
+            con.commit();
+            return orderId;
+        } catch (Exception e) {
+            try {
+                con.rollback();
+            } catch (java.sql.SQLException ex) {
+                ex.printStackTrace();
+            }
+            throw e;
+        } finally {
+            try {
+                con.close();
+            } catch (java.sql.SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     // Lấy danh sách đơn hàng của người dùng

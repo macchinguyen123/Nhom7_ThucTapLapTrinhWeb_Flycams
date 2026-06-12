@@ -111,9 +111,14 @@ public class ProductManagement {
     }
 
     public boolean reduceQuantity(int productId, int quantity) throws SQLException {
+        try (Connection conn = DBConnection.getConnection()) {
+            if (conn == null) throw new SQLException("Cannot establish database connection");
+            return reduceQuantity(conn, productId, quantity);
+        }
+    }
+    public boolean reduceQuantity(Connection conn, int productId, int quantity) throws SQLException {
         String sql = "UPDATE products SET quantity = quantity - ? WHERE id = ? AND quantity >= ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, quantity);
             ps.setInt(2, productId);
             ps.setInt(3, quantity);

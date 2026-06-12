@@ -15,12 +15,17 @@ import java.util.Map;
 public class OrdersDAO {
 
     public int insert(Orders order) throws SQLException {
+        try (Connection con = DBConnection.getConnection()) {
+            if (con == null) throw new SQLException("Cannot establish database connection");
+            return insert(con, order);
+        }
+    }
+    public int insert(Connection con, Orders order) throws SQLException {
         String sql = "INSERT INTO orders " +
                 "(user_id, shippingCode, totalPrice, status, address_id, phoneNumber, createdAt, paymentMethod, note, shippingFee) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, order.getUserId());
             ps.setString(2, order.getShippingCode());
