@@ -16,8 +16,17 @@ public class Reviews implements Serializable {
     private String status;
     private String adminNote;
     private String productName;
+    private String image;
 
     public Reviews() {
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getUsername() {

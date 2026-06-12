@@ -16,6 +16,9 @@ public class SupabaseStorageUtil {
     private static final String SUPABASE_BUCKET = DBProperties.supabaseBucket;
 
     public static String uploadFile(Part filePart) throws IOException {
+        return uploadFile(filePart, "avatar");
+    }
+    public static String uploadFile(Part filePart, String folder) throws IOException {
         if (filePart == null || filePart.getSize() == 0) {
             throw new IOException("File không hợp lệ hoặc rỗng");
         }
@@ -24,13 +27,13 @@ public class SupabaseStorageUtil {
             throw new IOException("Tên file không hợp lệ");
         }
         if (SUPABASE_URL == null || SUPABASE_URL.trim().isEmpty() ||
-            SUPABASE_KEY == null || SUPABASE_KEY.trim().isEmpty() ||
-            SUPABASE_BUCKET == null || SUPABASE_BUCKET.trim().isEmpty()) {
-            System.err.println("[Supabase] Chưa cấu hình trong DB.properties — bỏ qua upload Supabase.");
+                SUPABASE_KEY == null || SUPABASE_KEY.trim().isEmpty() ||
+                SUPABASE_BUCKET == null || SUPABASE_BUCKET.trim().isEmpty()) {
             return null;
         }
         String sanitizedFileName = originalFileName.replaceAll("[^a-zA-Z0-9._-]", "_").replace(" ", "_");
-        String fileName = "avatar/" + System.currentTimeMillis() + "_" + sanitizedFileName;
+        String folderPrefix = (folder != null && !folder.trim().isEmpty()) ? folder.trim() + "/" : "";
+        String fileName = folderPrefix + System.currentTimeMillis() + "_" + sanitizedFileName;
         String contentType = filePart.getContentType();
         if (contentType == null || contentType.trim().isEmpty()) {
             contentType = "image/jpeg";

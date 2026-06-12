@@ -311,6 +311,9 @@
             formData.append("phone", document.querySelector('input[name="phone"]').value);
             fetch('${pageContext.request.contextPath}/admin/profile?action=update-info', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': CSRF_TOKEN
+                },
                 body: formData
             }).then(response => {
                 return response.text().then(text => {
