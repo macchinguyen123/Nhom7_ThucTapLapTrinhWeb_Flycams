@@ -7,7 +7,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.cart.Carts;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.dao.ProductDAO;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.OrderItems;
+import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.Product;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.model.User;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.service.OrderService;
 import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.MailProperties.EmailSender;
@@ -46,6 +48,16 @@ public class PaymentServlet extends HttpServlet {
             return;
         }
         try {
+            ProductDAO productDAO = new ProductDAO();
+            for (OrderItems item : items) {
+                Product p = productDAO.getProductById(item.getProductId());
+                if (p == null) {
+                    throw new Exception("Sản phẩm không tồn tại!");
+                }
+                if (p.getQuantity() < item.getQuantity()) {
+                    throw new Exception("Sản phẩm '" + p.getProductName() + "' không đủ số lượng trong kho (Hiện còn: " + p.getQuantity() + ")!");
+                }
+            }
             long totalAmount = shippingFee;
             for (OrderItems item : items) {
                 totalAmount += (long) item.getPrice() * item.getQuantity();
@@ -159,7 +171,8 @@ public class PaymentServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/personal?tab=orders");
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServletException("Payment failed", e);
+            session.setAttribute("ORDER_ERROR", e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/page/payment.jsp");
         }
     }
     private String getClientIp(HttpServletRequest req) {

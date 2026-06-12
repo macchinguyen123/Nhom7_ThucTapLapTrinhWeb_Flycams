@@ -7,29 +7,33 @@ import vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderItemsDAO {
 
     public void insert(OrderItems item) {
+        try (Connection con = DBConnection.getConnection()) {
+            if (con != null) {
+                insert(con, item);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void insert(Connection con, OrderItems item) throws SQLException {
         String sql = """
             INSERT INTO order_items (order_id, product_id, quantity, price)
             VALUES (?, ?, ?, ?)
         """;
 
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, item.getOrderId());
             ps.setInt(2, item.getProductId());
             ps.setInt(3, item.getQuantity());
             ps.setDouble(4, item.getPrice());
-
             ps.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

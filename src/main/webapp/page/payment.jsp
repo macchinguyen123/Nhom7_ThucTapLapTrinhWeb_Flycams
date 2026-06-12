@@ -25,6 +25,14 @@
             </nav>
         </div>
         <h5 class="mb-4 fw-bold">Phương Thức Thanh Toán</h5>
+        <c:if test="${not empty sessionScope.ORDER_ERROR}">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ${sessionScope.ORDER_ERROR}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <c:remove var="ORDER_ERROR" scope="session"/>
+        </c:if>
         <form id="paymentForm" action="${pageContext.request.contextPath}/PaymentServlet"
               method="post">
             <input type="hidden" name="paymentMethod" id="paymentMethod">
