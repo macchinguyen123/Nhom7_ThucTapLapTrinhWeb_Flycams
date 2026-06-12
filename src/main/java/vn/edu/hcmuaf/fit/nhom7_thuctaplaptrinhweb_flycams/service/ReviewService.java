@@ -14,8 +14,8 @@ public class ReviewService {
     }
 
     //Lưu đánh giá mới của người dùng cho sản phẩm
-    public void saveReview(int userId, int productId, int rating, String content) {
-        reviewsDAO.saveReview(userId, productId, rating, content);
+    public void saveReview(int userId, int productId, int rating, String content, String image) {
+        reviewsDAO.saveReview(userId, productId, rating, content, image);
     }
 
     //Lấy điểm đánh giá trung bình của sản phẩm

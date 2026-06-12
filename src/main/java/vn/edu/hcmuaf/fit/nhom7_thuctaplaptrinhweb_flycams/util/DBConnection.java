@@ -30,7 +30,7 @@ public class DBConnection {
             //khởi tạo cấu hình HikariCP
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + name +
-                    "?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC");
+                    "?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh");
             config.setUsername(user);
             config.setPassword(pass);
             config.setDriverClassName("com.mysql.cj.jdbc.Driver");

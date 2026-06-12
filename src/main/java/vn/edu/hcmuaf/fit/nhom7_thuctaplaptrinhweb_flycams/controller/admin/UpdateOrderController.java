@@ -38,7 +38,7 @@ public class UpdateOrderController extends HttpServlet {
         String status = json.get("status") != null ? json.get("status").toString() : "";
         String note = json.get("note") != null ? json.get("note").toString() : "";
         LocalDate completedAt = null;
-        if ("Hoàn thành".equalsIgnoreCase(status) || "Giao thành công".equalsIgnoreCase(status)) {
+        if ("Hoàn thành".equalsIgnoreCase(status)) {
             completedAt = LocalDate.now();
         }
         String[] addrParts = fullAddress.split(",");

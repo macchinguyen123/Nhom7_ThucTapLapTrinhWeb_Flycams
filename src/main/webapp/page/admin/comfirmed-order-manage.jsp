@@ -1,4 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="vn.edu.hcmuaf.fit.nhom7_thuctaplaptrinhweb_flycams.util.CsrfTokenUtil" %>
+<% CsrfTokenUtil.getOrCreate(session); %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
@@ -285,6 +287,7 @@
                                     <label class="form-label">Hình Thức Thanh Toán</label>
                                     <input type="text" class="form-control" id="dh-httt"
                                            value="Thanh toán khi nhận hàng" readonly>
+                                    <input type="hidden" id="dh-httt-raw" value="">
                                 </div>
                                 <div class="info-row">
                                     <div class="info-label">Trạng Thái Thanh Toán:</div>
@@ -398,10 +401,11 @@
                 document.getElementById("dh-tong").innerText =
                     total.toLocaleString("vi-VN") + " VNĐ";
                 // thông tin thanh toán
-                document.getElementById("dh-httt").value =
-                    o.paymentMethod || "COD";
+                document.getElementById("dh-httt").value = o.paymentMethod === 'COD' || !o.paymentMethod
+                        ? 'Thanh toán khi nhận hàng' : 'Đã thanh toán online';
+                document.getElementById("dh-httt-raw").value = o.paymentMethod || 'COD';
                 document.getElementById("dh-tttt").innerText =
-                    o.paymentMethod ? "Đã chọn" : "Chưa thanh toán";
+                    o.paymentMethod && o.paymentMethod !== 'COD' ? "Đã thanh toán" : "Chưa thanh toán";
                 // Trạng thái vận chuyển
                 document.getElementById("dh-ttvc").value = o.status;
                 // Hiển thị nút Hủy Đơn nếu đang xử lý hoặc đang giao
@@ -531,13 +535,16 @@
             email: document.getElementById("dh-email").value,
             phoneNumber: document.getElementById("dh-sdt").value,
             fullAddress: document.getElementById("dh-diachi").value,
-            paymentMethod: document.getElementById("dh-httt").value,
+            paymentMethod: document.getElementById("dh-httt-raw").value || document.getElementById("dh-httt").value,
             status: document.getElementById("dh-ttvc").value,
             note: document.getElementById("dh-note").value
         };
         fetch("${pageContext.request.contextPath}/admin/update-order", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-Token": CSRF_TOKEN
+            },
             body: JSON.stringify(payload)
         })
             .then(res => res.json())

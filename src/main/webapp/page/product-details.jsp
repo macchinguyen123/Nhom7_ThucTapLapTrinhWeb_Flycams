@@ -257,6 +257,18 @@
                         <p class="review-text">
                                 ${r.content}
                         </p>
+                        <c:if test="${not empty r.image}">
+                            <div class="review-image" style="margin-top: 10px;">
+                                <c:choose>
+                                    <c:when test="${fn:startsWith(r.image, 'http://') || fn:startsWith(r.image, 'https://')}">
+                                        <img src="${r.image}" class="review-img-zoomable" style="max-width: 120px; max-height: 120px; border-radius: 4px; cursor: zoom-in; border: 1px solid #ddd; object-fit: cover;" alt="Hình ảnh đánh giá">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${pageContext.request.contextPath}/image/review/${r.image}" class="review-img-zoomable" style="max-width: 120px; max-height: 120px; border-radius: 4px; cursor: zoom-in; border: 1px solid #ddd; object-fit: cover;" alt="Hình ảnh đánh giá">
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </c:forEach>
@@ -398,7 +410,7 @@
             Trường bắt buộc được đánh dấu <span>*</span>
         </p>
         <form class="review-form" id="reviewForm"
-              action="${pageContext.request.contextPath}/ReviewServlet" method="post">
+              action="${pageContext.request.contextPath}/ReviewServlet" method="post" enctype="multipart/form-data">
             <input type="hidden" name="product_id" value="${product.id}">
             <input type="hidden" name="_csrf" value="${sessionScope.CSRF_TOKEN}">
             <div class="rating-group">
@@ -446,6 +458,14 @@
                 <label for="comment-popup">Nhận xét của bạn <span>*</span></label>
                 <textarea id="comment-popup" name="content" placeholder="Viết nhận xét tại đây..."
                           required></textarea>
+            </div>
+            <div class="image-upload-group" style="margin-top: 15px; margin-bottom: 15px; text-align: left;">
+                <label for="review-image-input" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px;">Hình ảnh đính kèm (tùy chọn)</label>
+                <input type="file" id="review-image-input" name="review_image" accept="image/*" style="display: block; width: 100%; border: 1px solid #ccc; padding: 6px; border-radius: 4px; font-size: 14px;">
+                <div id="review-image-preview-container" style="display: none; margin-top: 10px; align-items: center; gap: 10px;">
+                    <img id="review-image-preview" src="" style="max-height: 80px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
+                    <button type="button" id="remove-review-image-btn" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; height: fit-content;">Xóa ảnh</button>
+                </div>
             </div>
             <button type="submit" class="submit-btn">Xác Nhận</button>
         </form>
@@ -587,6 +607,16 @@
                 modalImg.classList.remove("zoomed");
             });
         }
+        document.querySelectorAll('.review-img-zoomable').forEach(img => {
+            img.addEventListener('click', function() {
+                if (modal && modalImg) {
+                    modal.classList.add("active");
+                    modalImg.src = this.src;
+                    isZoomed = false;
+                    modalImg.classList.remove("zoomed");
+                }
+            });
+        });
         function closeModal() {
             modal.classList.remove("active");
         }
@@ -850,29 +880,49 @@
         }
     });
     const reviewForm = document.getElementById('reviewForm');
+    const reviewImageInput = document.getElementById('review-image-input');
+    const reviewImagePreviewContainer = document.getElementById('review-image-preview-container');
+    const reviewImagePreview = document.getElementById('review-image-preview');
+    const removeReviewImageBtn = document.getElementById('remove-review-image-btn');
+    if (reviewImageInput && reviewImagePreviewContainer && reviewImagePreview) {
+        reviewImageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    reviewImagePreview.src = e.target.result;
+                    reviewImagePreviewContainer.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                reviewImagePreview.src = '';
+                reviewImagePreviewContainer.style.display = 'none';
+            }
+        });
+    }
+    if (removeReviewImageBtn && reviewImageInput) {
+        removeReviewImageBtn.addEventListener('click', function() {
+            reviewImageInput.value = '';
+            reviewImagePreview.src = '';
+            reviewImagePreviewContainer.style.display = 'none';
+        });
+    }
     if (reviewForm) {
         reviewForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            const productId = reviewForm.querySelector('input[name="product_id"]').value;
             const rating = reviewForm.querySelector('input[name="rating"]:checked')?.value;
-            const content = reviewForm.querySelector('textarea[name="content"]').value;
             const contextPath = '<%=request.getContextPath()%>';
             if (!rating) {
                 showNotification('Vui lòng chọn số sao đánh giá', 'error');
                 return;
             }
-            const params = new URLSearchParams({
-                product_id: productId,
-                rating: rating,
-                content: content,
-                _csrf: '${sessionScope.CSRF_TOKEN}'
-            });
+            const formData = new FormData(reviewForm);
             fetch(contextPath + '/ReviewServlet', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded',
+                headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: params
+                body: formData
             })
                 .then(res => res.json())
                 .then(data => {

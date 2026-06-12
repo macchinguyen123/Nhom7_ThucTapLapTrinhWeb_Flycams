@@ -25,10 +25,11 @@ public class Carts implements Serializable {
 
     public void addItem(Product product, int quantity) {
         if (quantity <= 0) quantity = 1;
-        CartItems item = data.get(product.getId());
+        CartItems item = data.remove(product.getId());
         if (item != null) {
             //thêm trùng , cộng số lượng
             item.updateQuantity(quantity);
+            data.put(product.getId(), item);
         } else {
             data.put(product.getId(), new CartItems(product, quantity));
         }

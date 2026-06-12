@@ -349,7 +349,9 @@ public class OrderDaoAdmin {
                 ps.executeUpdate();
             }
 
-            String sqlOrder = """
+            String sqlOrder;
+            if (completedAt != null) {
+                sqlOrder = """
                         UPDATE orders
                         SET phoneNumber = ?,
                             paymentMethod = ?,
@@ -358,18 +360,27 @@ public class OrderDaoAdmin {
                             completedAt = ?
                         WHERE id = ?
                     """;
+            } else {
+                sqlOrder = """
+                        UPDATE orders
+                        SET phoneNumber = ?,
+                            paymentMethod = ?,
+                            status = ?,
+                            note = ?
+                        WHERE id = ?
+                    """;
+            }
             try (PreparedStatement ps = con.prepareStatement(sqlOrder)) {
                 ps.setString(1, phoneNumber);
                 ps.setString(2, paymentMethod);
                 ps.setString(3, status);
                 ps.setString(4, note);
-
-                if (completedAt != null)
+                if (completedAt != null) {
                     ps.setTimestamp(5, Timestamp.valueOf(completedAt.atStartOfDay()));
-                else
-                    ps.setNull(5, Types.TIMESTAMP);
-
-                ps.setInt(6, orderId);
+                    ps.setInt(6, orderId);
+                } else {
+                    ps.setInt(5, orderId);
+                }
                 ps.executeUpdate();
             }
 

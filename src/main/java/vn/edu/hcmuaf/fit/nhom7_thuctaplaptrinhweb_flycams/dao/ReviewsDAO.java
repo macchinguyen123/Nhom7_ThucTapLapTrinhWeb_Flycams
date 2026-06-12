@@ -30,20 +30,26 @@ public class ReviewsDAO {
         return false;
     }
 
-    public void saveReview(int userId, int productId, int rating, String content) {
+    public void saveReview(int userId, int productId, int rating, String content, String image) {
+        String dbImage = (image == null) ? "" : image;
         String sql = """
-                    INSERT INTO reviews (user_id, product_id, rating, content)
-                    VALUES (?, ?, ?, ?)
-                    ON DUPLICATE KEY UPDATE rating=?, content=?, status='PENDING', createdAt=NOW()
+                    INSERT INTO reviews (user_id, product_id, rating, content, image, createdAt)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE rating=?, content=?, image=?, status='PENDING', createdAt=?
                 """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            java.sql.Timestamp now = new java.sql.Timestamp(System.currentTimeMillis());
             ps.setInt(1, userId);
             ps.setInt(2, productId);
             ps.setInt(3, rating);
             ps.setString(4, content);
-            ps.setInt(5, rating);
-            ps.setString(6, content);
+            ps.setString(5, dbImage);
+            ps.setTimestamp(6, now);
+            ps.setInt(7, rating);
+            ps.setString(8, content);
+            ps.setString(9, dbImage);
+            ps.setTimestamp(10, now);
 
             ps.executeUpdate();
         } catch (Exception e) {
@@ -153,6 +159,7 @@ public class ReviewsDAO {
                 r.setAvatar(rs.getString("avatar"));
                 r.setStatus(rs.getString("status"));
                 r.setAdminNote(rs.getString("adminNote"));
+                r.setImage(rs.getString("image"));
                 list.add(r);
             }
         } catch (Exception e) {
@@ -187,6 +194,7 @@ public class ReviewsDAO {
                 r.setStatus(rs.getString("status"));
                 r.setAdminNote(rs.getString("adminNote"));
                 r.setProductName(rs.getString("productName"));
+                r.setImage(rs.getString("image"));
                 list.add(r);
             }
         } catch (Exception e) {
