@@ -111,11 +111,22 @@
                 <div class="avatar-wrapper">
                     <c:choose>
                         <c:when test="${not empty admin.avatar}">
-                            <img src="${pageContext.request.contextPath}/image/avatar/${admin.avatar}"
-                                 alt="Avatar" class="avatar-img" id="avatarPreview">
+                            <c:choose>
+                                <c:when test="${fn:startsWith(admin.avatar, 'http://') || fn:startsWith(admin.avatar, 'https://')}">
+                                    <img src="${admin.avatar}"
+                                         data-original="${admin.avatar}"
+                                         alt="Avatar" class="avatar-img" id="avatarPreview">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}/image/avatar/${admin.avatar}"
+                                         data-original="${pageContext.request.contextPath}/image/avatar/${admin.avatar}"
+                                         alt="Avatar" class="avatar-img" id="avatarPreview">
+                                </c:otherwise>
+                            </c:choose>
                         </c:when>
                         <c:otherwise>
                             <img src="${pageContext.request.contextPath}/image/logoTCN.png"
+                                 data-original="${pageContext.request.contextPath}/image/logoTCN.png"
                                  alt="Avatar" class="avatar-img" id="avatarPreview">
                         </c:otherwise>
                     </c:choose>
@@ -294,6 +305,7 @@
         function uploadAvatar(file) {
             const formData = new FormData();
             formData.append("avatar", file);
+            formData.append("_csrf", CSRF_TOKEN);
             formData.append("fullName", document.querySelector('input[name="fullName"]').value);
             formData.append("email", document.querySelector('input[name="email"]').value);
             formData.append("phone", document.querySelector('input[name="phone"]').value);
@@ -301,29 +313,32 @@
                 method: 'POST',
                 body: formData
             }).then(response => {
-                if (response.ok) {
+                return response.text().then(text => {
                     if (processingNotification) processingNotification.style.display = "none";
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công',
-                        text: 'Đã cập nhật ảnh đại diện!',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    throw new Error('Lỗi khi lưu ảnh');
-                }
-            }).catch(error => {
-                (function(){})('Error:', error);
-                if (processingNotification) processingNotification.style.display = "none";
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Thất bại!',
-                    text: 'Có lỗi xảy ra khi lưu ảnh!',
-                    confirmButtonText: 'Thử lại'
+                    let data = {};
+                    try { data = JSON.parse(text); } catch (e) { data = { success: response.ok }; }
+                    if (response.ok && data.success !== false) {
+                        if (data.avatarUrl) {
+                            avatarPreview.src = data.avatarUrl;
+                            const sidebarAvatar = document.getElementById("sidebarAvatar");
+                            if (sidebarAvatar) sidebarAvatar.src = data.avatarUrl;
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công',
+                            text: 'Đã cập nhật ảnh đại diện!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => { location.reload(); });
+                    } else {
+                        const msg = data.message || 'Có lỗi xảy ra khi lưu ảnh!';
+                        Swal.fire({ icon: 'error', title: 'Thất bại!', text: msg, confirmButtonText: 'Thử lại' });
+                        avatarPreview.src = avatarPreview.dataset.original || avatarPreview.src;
+                    }
                 });
+            }).catch(error => {
+                if (processingNotification) processingNotification.style.display = "none";
+                Swal.fire({ icon: 'error', title: 'Lỗi kết nối!', text: 'Không thể kết nối đến server. Vui lòng thử lại.', confirmButtonText: 'OK' });
             });
         }
 

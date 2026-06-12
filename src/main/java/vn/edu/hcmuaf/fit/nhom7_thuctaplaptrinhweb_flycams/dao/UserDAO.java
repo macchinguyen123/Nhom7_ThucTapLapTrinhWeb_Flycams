@@ -274,6 +274,7 @@ public class UserDAO {
             } else {
                 ps.setNull(6, Types.DATE);
             }
+            ps.setInt(7, user.getId());
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {

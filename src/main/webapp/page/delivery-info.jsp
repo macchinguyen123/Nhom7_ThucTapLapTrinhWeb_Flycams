@@ -35,8 +35,14 @@
                 <c:choose>
                     <c:when test="${not empty sessionScope.user.avatar}">
                         <div class="avatar rounded-circle me-3">
-                            <img src="${pageContext.request.contextPath}/image/avatar/${sessionScope.user.avatar}"
-                                 alt="Avatar">
+                            <c:choose>
+                                <c:when test="${fn:startsWith(sessionScope.user.avatar, 'http://') || fn:startsWith(sessionScope.user.avatar, 'https://')}">
+                                    <img src="${sessionScope.user.avatar}" alt="Avatar">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}/image/avatar/${sessionScope.user.avatar}" alt="Avatar">
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </c:when>
                     <c:otherwise>

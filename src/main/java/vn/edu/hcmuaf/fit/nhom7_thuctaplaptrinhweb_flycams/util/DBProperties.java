@@ -25,5 +25,8 @@ public class DBProperties {
     public static final String initialPoolSize = properties.getProperty("db.initialPoolSize");
     public static final String maxConnections = properties.getProperty("db.maxConnections");
     public static final String uploadPath = properties.getProperty("upload.path");
+    public static final String supabaseUrl = properties.getProperty("supabase.url");
+    public static final String supabaseKey = properties.getProperty("supabase.key");
+    public static final String supabaseBucket = properties.getProperty("supabase.bucket");
 
 }

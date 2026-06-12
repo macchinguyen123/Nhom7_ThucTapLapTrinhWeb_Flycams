@@ -9,6 +9,17 @@ import java.nio.file.StandardCopyOption;
 
 public class FileStorageUtil {
     public static String saveFile(Part filePart, String deploymentPath, String subDir) throws IOException {
+        if ("avatar".equals(subDir)) {
+            try {
+                String supabaseUrl = SupabaseStorageUtil.uploadFile(filePart);
+                if (supabaseUrl != null) {
+                    return supabaseUrl;
+                }
+            } catch (Exception e) {
+                System.err.println("Supabase upload failed, falling back to local storage: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
         String originalFileName = filePart.getSubmittedFileName();
         if (originalFileName == null || originalFileName.trim().isEmpty()) {
             throw new IOException("Tên file không hợp lệ");
