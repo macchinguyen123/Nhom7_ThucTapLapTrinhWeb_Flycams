@@ -63,7 +63,19 @@ public class PaymentServlet extends HttpServlet {
                 totalAmount += (long) item.getPrice() * item.getQuantity();
             }
             if ("VNPAY".equals(paymentMethod)) {
-                String vnp_TxnRef = String.valueOf(System.currentTimeMillis());
+
+                String vnp_TxnRef = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+
+                Carts cart = (Carts) session.getAttribute("cart");
+                OrderService orderService = new OrderService();
+                int orderId = orderService.placeVnpayPendingOrder(
+                        user, addressId, phone, note, items, cart, shippingFee.doubleValue(), vnp_TxnRef);
+                if (orderId <= 0) {
+                    throw new Exception("Không thể tạo đơn hàng, vui lòng thử lại!");
+                }
+                session.setAttribute("vnp_TxnRef", vnp_TxnRef);
+                session.setAttribute("cart", cart);
+
                 String vnp_IpAddr = getClientIp(req);
                 Map<String, String> vnp_Params = new TreeMap<>();
                 vnp_Params.put("vnp_Version", "2.1.0");

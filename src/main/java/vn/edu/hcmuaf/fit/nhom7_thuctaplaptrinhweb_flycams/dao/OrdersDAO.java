@@ -22,8 +22,8 @@ public class OrdersDAO {
     }
     public int insert(Connection con, Orders order) throws SQLException {
         String sql = "INSERT INTO orders " +
-                "(user_id, shippingCode, totalPrice, status, address_id, phoneNumber, createdAt, paymentMethod, note, shippingFee) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(user_id, shippingCode, totalPrice, status, address_id, phoneNumber, createdAt, paymentMethod, note, shippingFee, vnp_txn_ref) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -48,6 +48,13 @@ public class OrdersDAO {
             } else {
                 ps.setNull(10, Types.DOUBLE);
             }
+
+            if (order.getVnpTxnRef() != null) {
+                ps.setString(11, order.getVnpTxnRef());
+            } else {
+                ps.setNull(11, Types.VARCHAR);
+            }
+
             int affected = ps.executeUpdate();
             if (affected == 0) throw new SQLException("Insert order failed");
 
@@ -60,6 +67,7 @@ public class OrdersDAO {
 
     private Orders.Status mapStatus(String dbStatus) {
         return switch (dbStatus) {
+            case "Chờ thanh toán" -> Orders.Status.WAITING_PAYMENT;
             case "Xác nhận" -> Orders.Status.PENDING;
             case "Đang xử lý" -> Orders.Status.PROCESSING;
             case "Đang giao" -> Orders.Status.OUT_FOR_DELIVERY;
@@ -69,6 +77,55 @@ public class OrdersDAO {
             case "Đã trả hàng" -> Orders.Status.RETURNED;
             default -> Orders.Status.PENDING;
         };
+    }
+
+    public Orders getOrderByTxnRef(String txnRef) {
+        String sql = "SELECT * FROM orders WHERE vnp_txn_ref = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, txnRef);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Orders o = new Orders();
+                o.setId(rs.getInt("id"));
+                o.setUserId(rs.getInt("user_id"));
+                o.setStatus(mapStatus(rs.getString("status")));
+                o.setVnpTxnRef(rs.getString("vnp_txn_ref"));
+                o.setTotalPrice(rs.getDouble("totalPrice"));
+                o.setPaymentMethod(rs.getString("paymentMethod"));
+                return o;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateStatusByTxnRef(String txnRef, Orders.Status newStatus) {
+        String sql = "UPDATE orders SET status = ? WHERE vnp_txn_ref = ? AND status = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, newStatus.toDB());
+            ps.setString(2, txnRef);
+            ps.setString(3, Orders.Status.WAITING_PAYMENT.toDB());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public void cancelOrderByTxnRef(String txnRef) {
+        String sql = "UPDATE orders SET status = ? WHERE vnp_txn_ref = ? AND status = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, Orders.Status.CANCELLED.toDB());
+            ps.setString(2, txnRef);
+            ps.setString(3, Orders.Status.WAITING_PAYMENT.toDB());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public List<Orders> getOrdersByUser1(int userId) {

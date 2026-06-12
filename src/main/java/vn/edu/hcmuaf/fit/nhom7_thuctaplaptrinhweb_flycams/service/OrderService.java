@@ -95,7 +95,93 @@ public class OrderService {
         }
     }
 
-    // Lấy danh sách đơn hàng của người dùng
+
+    public int placeVnpayPendingOrder(User user, int addressId, String phone, String note,
+                                      List<OrderItems> items, Carts cart, double shippingFee,
+                                      String vnpTxnRef) throws Exception {
+        if (items == null || items.isEmpty()) {
+            return 0;
+        }
+        double totalPrice = shippingFee;
+        for (OrderItems item : items) {
+            totalPrice += item.getPrice() * item.getQuantity();
+        }
+
+        Orders order = new Orders();
+        order.setUserId(user.getId());
+        order.setAddressId(addressId);
+        order.setPhoneNumber(phone);
+        order.setPaymentMethod("VNPAY");
+        order.setNote(note);
+        order.setStatus(Orders.Status.WAITING_PAYMENT);
+        order.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        order.setTotalPrice(totalPrice);
+        order.setShippingFee(shippingFee);
+        order.setVnpTxnRef(vnpTxnRef);
+
+        Connection con = DBConnection.getConnection();
+        if (con == null) {
+            throw new Exception("Không thể kết nối đến cơ sở dữ liệu!");
+        }
+
+        try {
+            con.setAutoCommit(false);
+            int orderId = ordersDAO.insert(con, order);
+            if (orderId <= 0) {
+                throw new Exception("Thêm đơn hàng thất bại!");
+            }
+
+            for (OrderItems item : items) {
+                item.setOrderId(orderId);
+                orderItemsDAO.insert(con, item);
+
+                boolean stockReduced = productManagement.reduceQuantity(con, item.getProductId(), item.getQuantity());
+                if (!stockReduced) {
+                    String productName = (item.getProduct() != null && item.getProduct().getProductName() != null)
+                            ? item.getProduct().getProductName() : "Sản phẩm (ID: " + item.getProductId() + ")";
+                    throw new Exception("Sản phẩm '" + productName + "' đã hết hàng hoặc không đủ số lượng trong kho!");
+                }
+
+                if (cart != null) {
+                    cart.removeItem(item.getProductId());
+                    if (user != null) {
+                        cartDAO.removeCartItem(con, user.getId(), item.getProductId());
+                    }
+                }
+            }
+
+            con.commit();
+            return orderId;
+        } catch (Exception e) {
+            try {
+                con.rollback();
+            } catch (java.sql.SQLException ex) {
+                ex.printStackTrace();
+            }
+            throw e;
+        } finally {
+            try {
+                con.close();
+            } catch (java.sql.SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+
+    public boolean confirmVnpayPayment(String txnRef) {
+        return ordersDAO.updateStatusByTxnRef(txnRef, Orders.Status.PENDING);
+    }
+
+    public Orders getOrderByTxnRef(String txnRef) {
+        return ordersDAO.getOrderByTxnRef(txnRef);
+    }
+
+    public void cancelPendingVnpayOrder(String txnRef) {
+        ordersDAO.cancelOrderByTxnRef(txnRef);
+    }
+
+
     public List<Orders> getOrdersByUser(int userId) {
         return ordersDAO.getOrdersByUser(userId);
     }
