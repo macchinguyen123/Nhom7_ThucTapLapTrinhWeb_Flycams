@@ -17,6 +17,10 @@ import java.util.List;
 public class HomeServlet extends HttpServlet {
     private final WishlistService wishlistService = new WishlistService();
 
+    private static List<Banner> cachedBanners;
+    private static long bannerCacheTimestamp = 0;
+    private static final long BANNER_CACHE_DURATION = 5 * 60 * 1000;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -25,8 +29,16 @@ public class HomeServlet extends HttpServlet {
             BannerService bannerService = new BannerService();
             ArticleService articleService = new ArticleService();
             CategoryService categoryService = new CategoryService();
-            List<Banner> activeBanners = bannerService.getActiveBanners();
-            request.setAttribute("banners", activeBanners);
+            long now = System.currentTimeMillis();
+            if (now - bannerCacheTimestamp > BANNER_CACHE_DURATION || cachedBanners == null) {
+                synchronized (HomeServlet.class) {
+                    if (now - bannerCacheTimestamp > BANNER_CACHE_DURATION || cachedBanners == null) {
+                        cachedBanners = bannerService.getActiveBanners();
+                        bannerCacheTimestamp = now;
+                    }
+                }
+            }
+            request.setAttribute("banners", cachedBanners);
             List<Product> bestSellerProducts = productService.getBestSellerProducts(5);
             if (bestSellerProducts.isEmpty()) {
                 bestSellerProducts = productService.getTopViewedProducts(5);

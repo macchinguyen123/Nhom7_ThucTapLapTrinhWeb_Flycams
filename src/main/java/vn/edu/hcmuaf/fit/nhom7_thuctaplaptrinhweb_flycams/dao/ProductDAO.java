@@ -298,7 +298,7 @@ public class ProductDAO {
     public List<Map<String, Object>> getProductSuggestions(String keyword) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = """
-                    SELECT p.id, p.productName, i.imageUrl
+                    SELECT p.id, p.productName, p.description, p.finalPrice, i.imageUrl
                     FROM products p
                     LEFT JOIN images i
                         ON p.id = i.product_id AND i.imageType = 'Chính'
@@ -314,6 +314,8 @@ public class ProductDAO {
                 m.put("id", rs.getInt("id"));
                 m.put("name", rs.getString("productName"));
                 m.put("image", rs.getString("imageUrl"));
+                m.put("description", rs.getString("description"));
+                m.put("price", rs.getDouble("finalPrice"));
                 list.add(m);
             }
         } catch (Exception e) {

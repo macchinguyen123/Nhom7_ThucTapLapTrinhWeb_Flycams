@@ -618,6 +618,11 @@
                 <div class="spinner-grow spinner-grow-sm text-secondary me-1" role="status" style="width: 0.8rem; height: 0.8rem;"></div>
                 Admin đang gõ...
             </div>
+            <div id="chatSuggestBox" class="chat-suggest-box" style="display:none; position:absolute; bottom:55px; left:10px; right:10px; max-height:160px; overflow-y:auto; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 -4px 10px rgba(0,0,0,0.1); z-index:1000;"></div>
+            <div id="chatAttachmentBar" class="chat-attachment-bar" style="display:none; align-items:center; padding:5px 10px; border-top:1px solid #eee; background:#f0f7ff; font-size:12px; color:#0051c6; gap:8px;">
+                <span style="flex:1; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="chatAttachmentName"></span>
+                <i class="bi bi-x-circle-fill" id="chatAttachmentRemove" style="cursor:pointer; color:#dc3545;" title="Xóa đính kèm"></i>
+            </div>
             <div class="chat-footer" style="display: flex; align-items: center; padding: 10px; border-top: 1px solid #eee;">
                 <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." style="flex: 1;">
                 <button id="sendChat">
@@ -689,6 +694,69 @@
                 .catch(err => (function(){})('Chat error:', err));
         }
 
+        let selectedChatProduct = null;
+        function displayChatSuggestions(data) {
+            const suggestBox = document.getElementById('chatSuggestBox');
+            if (!suggestBox) return;
+            suggestBox.innerHTML = '';
+            if (!data || data.length === 0) {
+                suggestBox.style.display = 'none';
+                return;
+            }
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'chat-suggest-card';
+                Object.assign(card.style, {
+                    display: 'flex',
+                    padding: '8px',
+                    borderBottom: '1px solid #eee',
+                    cursor: 'pointer',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'background 0.2s'
+                });
+                card.addEventListener('mouseenter', () => card.style.background = '#f8f9fa');
+                card.addEventListener('mouseleave', () => card.style.background = '#fff');
+                let imgSrc = item.image ? (item.image.startsWith('http') ? item.image : contextPath + '/' + item.image) : contextPath + '/image/logoo2.png';
+                let formattedPrice = item.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price) : 'Liên hệ';
+                card.innerHTML = 
+                    '<img src="' + imgSrc + '" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #eee; flex-shrink:0;">' +
+                    '<div style="flex:1; min-width:0; text-align:left;">' +
+                        '<div style="font-weight:600; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#333;">' + escapeHtml(item.name) + '</div>' +
+                        '<div style="font-size:10px; color:#777; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(item.description || '') + '</div>' +
+                        '<div style="font-weight:bold; font-size:11px; color:red;">' + formattedPrice + '</div>' +
+                    '</div>';
+                card.addEventListener('click', () => {
+                    selectProductForChat(item);
+                });
+                suggestBox.appendChild(card);
+            });
+            suggestBox.style.display = 'block';
+        }
+        function selectProductForChat(item) {
+            selectedChatProduct = item;
+            const attachmentBar = document.getElementById('chatAttachmentBar');
+            const attachmentName = document.getElementById('chatAttachmentName');
+            const suggestBox = document.getElementById('chatSuggestBox');
+            if (attachmentBar && attachmentName) {
+                attachmentName.textContent = 'Đính kèm sản phẩm: ' + item.name;
+                attachmentBar.style.display = 'flex';
+            }
+            if (suggestBox) {
+                suggestBox.style.display = 'none';
+            }
+            if (chatInput) {
+                chatInput.focus();
+            }
+        }
+        const removeAttachmentBtn = document.getElementById('chatAttachmentRemove');
+        if (removeAttachmentBtn) {
+            removeAttachmentBtn.addEventListener('click', () => {
+                selectedChatProduct = null;
+                const attachmentBar = document.getElementById('chatAttachmentBar');
+                if (attachmentBar) attachmentBar.style.display = 'none';
+            });
+        }
         function renderMessages(messages) {
             chatBody.innerHTML = '';
             if (!messages || messages.length === 0) {
@@ -711,7 +779,34 @@
                 const isUser = m.sendUserId == '${user.id}';
                 const div = document.createElement('div');
                 div.className = 'message ' + (isUser ? 'user' : 'admin');
-                div.innerHTML = '<span class="msg-text">' + m.content + '</span>' +
+                let contentHtml = m.content || '';
+                let productCardHtml = '';
+                if (contentHtml.includes('[PRODUCT_CARD]') && contentHtml.includes('[/PRODUCT_CARD]')) {
+                    const startIdx = contentHtml.indexOf('[PRODUCT_CARD]');
+                    const endIdx = contentHtml.indexOf('[/PRODUCT_CARD]');
+                    const jsonStr = contentHtml.substring(startIdx + 14, endIdx);
+                    contentHtml = contentHtml.substring(endIdx + 15).trim();
+                    try {
+                        const prod = JSON.parse(jsonStr);
+                        let imgSrc = prod.image ? (prod.image.startsWith('http') ? prod.image : contextPath + '/' + prod.image) : contextPath + '/image/logoo2.png';
+                        let formattedPrice = prod.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(prod.price) : 'Liên hệ';
+                        productCardHtml = 
+                            '<a href="' + contextPath + '/product-detail?id=' + prod.id + '" target="_blank" class="chat-product-card-link text-decoration-none" style="display:block; margin-bottom:8px; border:1px solid #ddd; border-radius:8px; overflow:hidden; background:#fff; color:#333;">' +
+                                '<div style="display:flex; padding:8px; gap:8px; align-items:center;">' +
+                                    '<img src="' + imgSrc + '" style="width:50px; height:50px; object-fit:cover; border-radius:4px; border:1px solid #eee; flex-shrink:0;" onerror="this.src=\'' + contextPath + '/image/logoo2.png\'">' +
+                                    '<div style="flex:1; min-width:0; text-align:left;">' +
+                                        '<div style="font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#0051c6;">' + escapeHtml(prod.name) + '</div>' +
+                                        '<div style="font-size:11px; color:#666; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2; max-height:2.4em; margin-bottom:2px;">' + escapeHtml(prod.desc || '') + '</div>' +
+                                        '<div style="font-weight:bold; font-size:12px; color:red;">' + formattedPrice + '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</a>';
+                    } catch(e) {
+                        (function(){})('Parse product card error:', e);
+                    }
+                }
+                div.innerHTML = (productCardHtml ? productCardHtml : '') +
+                    '<span class="msg-text">' + contentHtml + '</span>' +
                     '<span class="msg-time">' + formatChatTime(m.sendTime) + '</span>';
                 chatBody.appendChild(div);
                 if (index === lastUserMsgIndex && m.status === 'READ') {
@@ -728,12 +823,53 @@
         }
 
         function sendMessage() {
-            const content = chatInput.value.trim();
-            if (!content) return;
+            const textContent = chatInput.value.trim();
+            if (!textContent && !selectedChatProduct) return;
+            let content = '';
+            if (selectedChatProduct) {
+                const productSummary = {
+                    id: selectedChatProduct.id,
+                    name: selectedChatProduct.name,
+                    image: selectedChatProduct.image,
+                    desc: selectedChatProduct.description,
+                    price: selectedChatProduct.price
+                };
+                content = '[PRODUCT_CARD]' + JSON.stringify(productSummary) + '[/PRODUCT_CARD] ' + textContent;
+            } else {
+                content = textContent;
+            }
             chatInput.value = '';
+            selectedChatProduct = null;
+            const attachmentBar = document.getElementById('chatAttachmentBar');
+            if (attachmentBar) attachmentBar.style.display = 'none';
             const div = document.createElement('div');
             div.className = 'message user';
-            div.innerHTML = '<span class="msg-text">' + content + '</span><span class="msg-time">' + formatChatTime(new Date()) + '</span>';
+            let contentHtml = content;
+            let productCardHtml = '';
+            if (contentHtml.includes('[PRODUCT_CARD]') && contentHtml.includes('[/PRODUCT_CARD]')) {
+                const startIdx = contentHtml.indexOf('[PRODUCT_CARD]');
+                const endIdx = contentHtml.indexOf('[/PRODUCT_CARD]');
+                const jsonStr = contentHtml.substring(startIdx + 14, endIdx);
+                contentHtml = contentHtml.substring(endIdx + 15).trim();
+                try {
+                    const prod = JSON.parse(jsonStr);
+                    let imgSrc = prod.image ? (prod.image.startsWith('http') ? prod.image : contextPath + '/' + prod.image) : contextPath + '/image/logoo2.png';
+                    let formattedPrice = prod.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(prod.price) : 'Liên hệ';
+                    productCardHtml = 
+                        '<a href="' + contextPath + '/product-detail?id=' + prod.id + '" target="_blank" class="chat-product-card-link text-decoration-none" style="display:block; margin-bottom:8px; border:1px solid #ddd; border-radius:8px; overflow:hidden; background:#fff; color:#333;">' +
+                            '<div style="display:flex; padding:8px; gap:8px; align-items:center;">' +
+                                '<img src="' + imgSrc + '" style="width:50px; height:50px; object-fit:cover; border-radius:4px; border:1px solid #eee; flex-shrink:0;" onerror="this.src=\'' + contextPath + '/image/logoo2.png\'">' +
+                                '<div style="flex:1; min-width:0; text-align:left;">' +
+                                    '<div style="font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#0051c6;">' + escapeHtml(prod.name) + '</div>' +
+                                    '<div style="font-size:11px; color:#666; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2; max-height:2.4em; margin-bottom:2px;">' + escapeHtml(prod.desc || '') + '</div>' +
+                                    '<div style="font-weight:bold; font-size:12px; color:red;">' + formattedPrice + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</a>';
+                } catch(e) {}
+            }
+            div.innerHTML = (productCardHtml ? productCardHtml : '') +
+                '<span class="msg-text">' + contentHtml + '</span><span class="msg-time">' + formatChatTime(new Date()) + '</span>';
             chatBody.appendChild(div);
             scrollToBottomChat();
             fetch(contextPath + '/chat?action=send', {
@@ -755,9 +891,33 @@
         if (sendChat) {
             sendChat.addEventListener('click', sendMessage);
         }
+        let chatSuggestDebounce = null;
         if (chatInput) {
             chatInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendMessage();
+            });
+            chatInput.addEventListener('input', () => {
+                const text = chatInput.value.trim();
+                if (text.length < 2) {
+                    const suggestBox = document.getElementById('chatSuggestBox');
+                    if (suggestBox) suggestBox.style.display = 'none';
+                    return;
+                }
+                clearTimeout(chatSuggestDebounce);
+                chatSuggestDebounce = setTimeout(() => {
+                    fetch(contextPath + "/search-suggestion?keyword=" + encodeURIComponent(text))
+                        .then(res => res.json())
+                        .then(data => {
+                            displayChatSuggestions(data);
+                        })
+                        .catch(err => {});
+                }, 300);
+            });
+            document.addEventListener('click', (e) => {
+                const suggestBox = document.getElementById('chatSuggestBox');
+                if (suggestBox && !suggestBox.contains(e.target) && e.target !== chatInput) {
+                    suggestBox.style.display = 'none';
+                }
             });
         }
 

@@ -18,6 +18,7 @@ public class VerifyOtpController extends HttpServlet {
         HttpSession session = request.getSession();
         String otpSession = (String) session.getAttribute("otp");
         if (otpSession != null && otpSession.equals(otpInput)) {
+            session.setAttribute("otpVerified", true);
             request.getRequestDispatcher("/page/create-new-password.jsp").forward(request, response);
         } else {
             request.setAttribute("error", "Mã OTP không đúng!");
