@@ -222,9 +222,18 @@
             <c:forEach var="r" items="${reviews}">
                 <div class="review" data-star="${r.rating}" data-comment="${not empty r.content}">
                     <div class="review-avatar">
-                        <img src="${pageContext.request.contextPath}/image/avatar/${r.avatar}"
-                             alt="${r.username}"
-                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${r.username}&background=007bff&color=fff&size=50'">
+                        <c:choose>
+                            <c:when test="${fn:startsWith(r.avatar, 'http://') || fn:startsWith(r.avatar, 'https://')}">
+                                <img src="${r.avatar}"
+                                     alt="${r.username}"
+                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${r.username}&background=007bff&color=fff&size=50'">
+                            </c:when>
+                            <c:otherwise>
+                                <img src="${pageContext.request.contextPath}/image/avatar/${r.avatar}"
+                                     alt="${r.username}"
+                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${r.username}&background=007bff&color=fff&size=50'">
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <div class="review-content">
                         <div class="review-header">

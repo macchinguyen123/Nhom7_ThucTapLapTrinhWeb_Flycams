@@ -28,9 +28,18 @@
                  style="position: relative; width: 90px; height: 90px; margin: 0 auto 15px; cursor: pointer;">
                 <div class="avatar-wrapper" id="sidebar-avatar-wrapper"
                      style="width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #ddd; border: 2px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <img src="${pageContext.request.contextPath}/image/avatar/${user.avatar}"
-                         id="sidebar-avatar-img" class="avatar-img"
-                         style="width: 100%; height: 100%; object-fit: cover !important;">
+                    <c:choose>
+                        <c:when test="${fn:startsWith(user.avatar, 'http://') || fn:startsWith(user.avatar, 'https://')}">
+                            <img src="${user.avatar}"
+                                 id="sidebar-avatar-img" class="avatar-img"
+                                 style="width: 100%; height: 100%; object-fit: cover !important;">
+                        </c:when>
+                        <c:otherwise>
+                            <img src="${pageContext.request.contextPath}/image/avatar/${user.avatar}"
+                                 id="sidebar-avatar-img" class="avatar-img"
+                                 style="width: 100%; height: 100%; object-fit: cover !important;">
+                        </c:otherwise>
+                    </c:choose>
                 </div>
                 <span class="avatar-camera">
                                         <i class="bi bi-camera-fill"></i>
@@ -909,7 +918,9 @@
                 }).then(newFileName => {
                     (function(){})("Server saved successfully:", newFileName);
                     const timestamp = new Date().getTime();
-                    const finalSrc = "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + timestamp;
+                    const finalSrc = (newFileName.startsWith("http://") || newFileName.startsWith("https://"))
+                        ? newFileName
+                        : "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + timestamp;
                     document.querySelectorAll(".avatar-img").forEach(img => {
                         img.src = finalSrc;
                     });
@@ -1525,7 +1536,9 @@
         }).then(newFileName => {
             (function(){})("GOD MODE: Saved to server", newFileName);
             const ts = new Date().getTime();
-            const finalSrc = "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + ts;
+            const finalSrc = (newFileName.startsWith("http://") || newFileName.startsWith("https://"))
+                ? newFileName
+                : "${pageContext.request.contextPath}/image/avatar/" + newFileName + "?t=" + ts;
             document.querySelectorAll(".avatar-img").forEach(i => i.src = finalSrc);
             if (window.Swal) {
                 Swal.fire({

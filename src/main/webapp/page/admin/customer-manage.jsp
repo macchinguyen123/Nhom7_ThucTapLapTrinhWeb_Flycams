@@ -382,8 +382,16 @@
                                              style="width:100px; height:100px;">
                                             <c:choose>
                                                 <c:when test="${not empty detailUser.avatar}">
-                                                    <img src="${pageContext.request.contextPath}/image/avatar/${detailUser.avatar}"
-                                                         style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                                                    <c:choose>
+                                                        <c:when test="${fn:startsWith(detailUser.avatar, 'http://') || fn:startsWith(detailUser.avatar, 'https://')}">
+                                                            <img src="${detailUser.avatar}"
+                                                                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <img src="${pageContext.request.contextPath}/image/avatar/${detailUser.avatar}"
+                                                                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;">
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <i class="bi bi-person-circle text-muted"

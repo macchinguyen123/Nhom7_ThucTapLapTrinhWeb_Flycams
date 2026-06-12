@@ -1,12 +1,21 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="role" value="${sessionScope.user.roleId}" />
 <aside class="sidebar">
     <div class="user-info">
         <c:choose>
             <c:when test="${not empty sessionScope.user.avatar}">
-                <img src="${pageContext.request.contextPath}/image/avatar/${sessionScope.user.avatar}?v=${sessionScope.user.updatedAt != null ? sessionScope.user.updatedAt.time : ''}"alt="Avatar"
-                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                <c:choose>
+                    <c:when test="${fn:startsWith(sessionScope.user.avatar, 'http://') || fn:startsWith(sessionScope.user.avatar, 'https://')}">
+                        <img src="${sessionScope.user.avatar}" alt="Avatar"
+                             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                    </c:when>
+                    <c:otherwise>
+                        <img src="${pageContext.request.contextPath}/image/avatar/${sessionScope.user.avatar}?v=${sessionScope.user.updatedAt != null ? sessionScope.user.updatedAt.time : ''}" alt="Avatar"
+                             style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                    </c:otherwise>
+                </c:choose>
             </c:when>
             <c:otherwise> <img src="${pageContext.request.contextPath}/image/logoTCN.png" alt="Avatar">  </c:otherwise>
         </c:choose>
