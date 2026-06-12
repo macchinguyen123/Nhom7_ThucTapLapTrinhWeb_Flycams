@@ -603,6 +603,12 @@
         }
     }
 
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
     function loadMessages() {
         if (!currentConvId) return;
         fetch(contextPath + '/admin/chat?action=messages&conversationId=' + currentConvId + '&_t=' + new Date().getTime())
@@ -617,7 +623,33 @@
                     div.className = 'message ' + (isFromCustomer ? 'admin' : 'user');
                     const timeStr = m.sendTime ? formatAdminTime(m.sendTime) : '';
                     let contentHtml = m.content || '';
-                    div.innerHTML = '<span class="msg-text">' + contentHtml + '</span>' +
+                    let productCardHtml = '';
+                    if (contentHtml.includes('[PRODUCT_CARD]') && contentHtml.includes('[/PRODUCT_CARD]')) {
+                        const startIdx = contentHtml.indexOf('[PRODUCT_CARD]');
+                        const endIdx = contentHtml.indexOf('[/PRODUCT_CARD]');
+                        const jsonStr = contentHtml.substring(startIdx + 14, endIdx);
+                        contentHtml = contentHtml.substring(endIdx + 15).trim();
+                        try {
+                            const prod = JSON.parse(jsonStr);
+                            let imgSrc = prod.image ? (prod.image.startsWith('http') ? prod.image : contextPath + '/' + prod.image) : contextPath + '/image/logoo2.png';
+                            let formattedPrice = prod.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(prod.price) : 'Liên hệ';
+                            productCardHtml = 
+                                '<a href="' + contextPath + '/product-detail?id=' + prod.id + '" target="_blank" class="chat-product-card-link text-decoration-none" style="display:block; margin-bottom:8px; border:1px solid #ddd; border-radius:8px; overflow:hidden; background:#fff; color:#333; max-width:260px;">' +
+                                    '<div style="display:flex; padding:8px; gap:8px; align-items:center;">' +
+                                        '<img src="' + imgSrc + '" style="width:50px; height:50px; object-fit:cover; border-radius:4px; border:1px solid #eee; flex-shrink:0;" onerror="this.src=\'' + contextPath + '/image/logoo2.png\'">' +
+                                        '<div style="flex:1; min-width:0; text-align:left;">' +
+                                            '<div style="font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#0051c6;">' + escapeHtml(prod.name) + '</div>' +
+                                            '<div style="font-size:11px; color:#666; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2; max-height:2.4em; margin-bottom:2px;">' + escapeHtml(prod.desc || '') + '</div>' +
+                                            '<div style="font-weight:bold; font-size:12px; color:red;">' + formattedPrice + '</div>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</a>';
+                        } catch(e) {
+                            console.error('Parse product card error:', e);
+                        }
+                    }
+                    div.innerHTML = (productCardHtml ? productCardHtml : '') +
+                        '<span class="msg-text">' + contentHtml + '</span>' +
                         (timeStr ? '<span class="msg-time">' + timeStr + '</span>' : '');
                     body.appendChild(div);
                 });

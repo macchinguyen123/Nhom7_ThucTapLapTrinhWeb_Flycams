@@ -49,7 +49,7 @@
                     <c:when test="${banner.type == 'video'}">
                         <c:set var="vUrl" value="${banner.videoUrl}"/>
                         <a href="${not empty banner.link ? (fn:startsWith(banner.link, 'http') ? banner.link : pageContext.request.contextPath.concat(banner.link)) : '#'}">
-                            <video autoplay loop muted playsinline>
+                            <video autoplay loop muted playsinline preload="metadata" poster="${not empty banner.imageUrl && fn:contains(banner.imageUrl, '://') ? banner.imageUrl : pageContext.request.contextPath.concat(not empty banner.imageUrl && fn:startsWith(banner.imageUrl, '/') ? '' : '/').concat(not empty banner.imageUrl ? banner.imageUrl : '')}" width="936" height="350">
                                 <source src="${not empty vUrl && fn:contains(vUrl, '://') ? vUrl : pageContext.request.contextPath.concat(not empty vUrl && fn:startsWith(vUrl, '/') ? '' : '/').concat(not empty vUrl ? vUrl : '')}"
                                         type="video/mp4">
                             </video>
@@ -59,7 +59,7 @@
                         <c:set var="iUrl" value="${banner.imageUrl}"/>
                         <a href="${not empty banner.link ? (fn:startsWith(banner.link, 'http') ? banner.link : pageContext.request.contextPath.concat(banner.link)) : '#'}">
                             <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}"
-                                 alt="Banner ${banner.id}">
+                                 alt="Banner ${banner.id}" fetchpriority="high" width="936" height="350">
                         </a>
                     </c:otherwise>
                 </c:choose>
@@ -74,11 +74,11 @@
                     <c:choose>
                         <c:when test="${banner.type == 'image'}">
                             <c:set var="iUrl" value="${banner.imageUrl}"/>
-                            <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}" alt="Banner ${banner.id}">
+                            <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}" alt="Banner ${banner.id}" loading="lazy" width="386" height="250">
                         </c:when>
                         <c:otherwise>
                             <c:set var="vUrl" value="${banner.videoUrl}"/>
-                            <video autoplay loop muted playsinline>
+                            <video autoplay loop muted playsinline preload="metadata" poster="${not empty banner.imageUrl && fn:contains(banner.imageUrl, '://') ? banner.imageUrl : pageContext.request.contextPath.concat(not empty banner.imageUrl && fn:startsWith(banner.imageUrl, '/') ? '' : '/').concat(not empty banner.imageUrl ? banner.imageUrl : '')}" width="386" height="250">
                                 <source src="${not empty vUrl && fn:contains(vUrl, '://') ? vUrl : pageContext.request.contextPath.concat(not empty vUrl && fn:startsWith(vUrl, '/') ? '' : '/').concat(not empty vUrl ? vUrl : '')}" type="video/mp4">
                             </video>
                         </c:otherwise>
@@ -98,12 +98,12 @@
                             <c:when test="${banner.type == 'image'}">
                                 <c:set var="iUrl" value="${banner.imageUrl}"/>
                                 <img src="${not empty iUrl && fn:contains(iUrl, '://') ? iUrl : pageContext.request.contextPath.concat(not empty iUrl && fn:startsWith(iUrl, '/') ? '' : '/').concat(not empty iUrl ? iUrl : '')}" alt="Banner ${banner.id}"
-                                     style="width: 100%; height: 100%; object-fit: cover;">
+                                     loading="lazy" style="width: 100%; height: 100%; object-fit: cover;" width="960" height="400">
                             </c:when>
                             <c:otherwise>
                                 <c:set var="vUrl" value="${banner.videoUrl}"/>
-                                <video autoplay loop muted playsinline
-                                       style="width: 100%; height: 100%; object-fit: cover;">
+                                <video autoplay loop muted playsinline preload="metadata" poster="${not empty banner.imageUrl && fn:contains(banner.imageUrl, '://') ? banner.imageUrl : pageContext.request.contextPath.concat(not empty banner.imageUrl && fn:startsWith(banner.imageUrl, '/') ? '' : '/').concat(not empty banner.imageUrl ? banner.imageUrl : '')}"
+                                       style="width: 100%; height: 100%; object-fit: cover;" width="960" height="400">
                                     <source src="${not empty vUrl && fn:contains(vUrl, '://') ? vUrl : pageContext.request.contextPath.concat(not empty vUrl && fn:startsWith(vUrl, '/') ? '' : '/').concat(not empty vUrl ? vUrl : '')}" type="video/mp4">
                                 </video>
                             </c:otherwise>
@@ -127,11 +127,11 @@
                     <div class="khung-anh">
                         <c:choose>
                             <c:when test="${not empty p.mainImage}">
-                                <img src="${p.mainImage}" alt="${p.productName}">
+                                <img src="${p.mainImage}" alt="${p.productName}" loading="lazy">
                             </c:when>
                             <c:otherwise>
                                 <img src="${pageContext.request.contextPath}/assets/no-image.png"
-                                     alt="No Image">
+                                     alt="No Image" loading="lazy">
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -193,7 +193,7 @@
             <div class="item">
                 <a href="${pageContext.request.contextPath}/Category?id=${cat.id}">
                     <img src="${pageContext.request.contextPath}/${cat.image}"
-                         alt="${cat.categoryName}">
+                         alt="${cat.categoryName}" loading="lazy">
                     <p>${cat.categoryName}</p>
                 </a>
             </div>
@@ -210,11 +210,11 @@
                     <div class="khung-anh">
                         <c:choose>
                             <c:when test="${not empty p.mainImage}">
-                                <img src="${p.mainImage}" alt="${p.productName}">
+                                <img src="${p.mainImage}" alt="${p.productName}" loading="lazy">
                             </c:when>
                             <c:otherwise>
                                 <img src="${pageContext.request.contextPath}/assets/no-image.png"
-                                     alt="No Image">
+                                     alt="No Image" loading="lazy">
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -279,11 +279,11 @@
                         <div class="khung-anh">
                             <c:choose>
                                 <c:when test="${not empty p.mainImage}">
-                                    <img src="${p.mainImage}" alt="${p.productName}">
+                                    <img src="${p.mainImage}" alt="${p.productName}" loading="lazy">
                                 </c:when>
                                 <c:otherwise>
                                     <img src="${pageContext.request.contextPath}/assets/no-image.png"
-                                         alt="No Image">
+                                         alt="No Image" loading="lazy">
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -329,7 +329,7 @@
 </c:if>
 <a href="${pageContext.request.contextPath}/page/payment-policy.jsp">
     <div class="banner">
-        <img src="${pageContext.request.contextPath}/image/banner/hinh4.png" alt="Banner ưu đãi">
+        <img src="${pageContext.request.contextPath}/image/banner/hinh4.png" alt="Banner ưu đãi" loading="lazy">
     </div>
 </a>
 <section class="phan-san-pham-1">
@@ -339,7 +339,7 @@
     </div>
     <div class="khung-san-pham-1">
             <div class="poster">
-                <img src="${pageContext.request.contextPath}/image/banner/img_2.png" alt="Poster 1">
+                <img src="${pageContext.request.contextPath}/image/banner/img_2.png" alt="Poster 1" loading="lazy" width="555" height="320">
             </div>
         <c:forEach var="p" items="${quayPhim}">
             <div class="san-pham">
@@ -348,11 +348,11 @@
                     <div class="khung-anh">
                         <c:choose>
                             <c:when test="${not empty p.mainImage}">
-                                <img src="${p.mainImage}" alt="${p.productName}">
+                                <img src="${p.mainImage}" alt="${p.productName}" loading="lazy">
                             </c:when>
                             <c:otherwise>
                                 <img src="${pageContext.request.contextPath}/assets/no-image.png"
-                                     alt="No Image">
+                                     alt="No Image" loading="lazy">
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -413,7 +413,7 @@
     </div>
     <div class="khung-san-pham-1">
             <div class="poster">
-                <img src="${pageContext.request.contextPath}/image/banner/img.png" alt="Poster 1">
+                <img src="${pageContext.request.contextPath}/image/banner/img.png" alt="Poster 1" loading="lazy" width="555" height="320">
             </div>
         <c:forEach var="p" items="${mini}">
             <div class="san-pham">
@@ -422,11 +422,11 @@
                     <div class="khung-anh">
                         <c:choose>
                             <c:when test="${not empty p.mainImage}">
-                                <img src="${p.mainImage}" alt="${p.productName}">
+                                <img src="${p.mainImage}" alt="${p.productName}" loading="lazy">
                             </c:when>
                             <c:otherwise>
                                 <img src="${pageContext.request.contextPath}/assets/no-image.png"
-                                     alt="No Image">
+                                     alt="No Image" loading="lazy">
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -490,7 +490,7 @@
             <div class="related-item">
                 <a href="${pageContext.request.contextPath}/article?id=${post.id}">
                     <c:set var="pImg" value="${post.image}"/>
-                    <img src="${empty pImg ? pageContext.request.contextPath.concat('/assets/no-image.png') : (fn:contains(pImg, '://') ? pImg : pageContext.request.contextPath.concat(fn:startsWith(pImg, '/') ? '' : '/').concat(pImg))}" alt="${post.title}">
+                    <img src="${empty pImg ? pageContext.request.contextPath.concat('/assets/no-image.png') : (fn:contains(pImg, '://') ? pImg : pageContext.request.contextPath.concat(fn:startsWith(pImg, '/') ? '' : '/').concat(pImg))}" alt="${post.title}" loading="lazy">
                     <p>${post.title}</p>
                 </a>
             </div>
@@ -694,104 +694,5 @@
 <%
     }
 %>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const slider2 = document.querySelector('.slider-2-inner');
-        const slides2 = document.querySelectorAll('.slider-2-inner .slide');
-        const dotsContainer2 = document.querySelector('.slider-2-dots');
-        const arrowLeft2 = document.querySelector('.slider-2-left');
-        const arrowRight2 = document.querySelector('.slider-2-right');
-        const slider2Container = document.querySelector('.slider-2');
-        if (!slider2 || !slides2.length) {
-            (function(){})('Slider 2 không tồn tại hoặc không có slide');
-            return;
-        }
-        if (slides2.length < 2) {
-            if (arrowLeft2) arrowLeft2.style.display = 'none';
-            if (arrowRight2) arrowRight2.style.display = 'none';
-            if (dotsContainer2) dotsContainer2.style.display = 'none';
-            return;
-        }
-        let index2 = 0;
-        let autoSlide2;
-
-        function createDots2() {
-            if (!dotsContainer2) return;
-            dotsContainer2.innerHTML = '';
-            slides2.forEach((_, i) => {
-                const dot = document.createElement('span');
-                dot.classList.add('dot2');
-                if (i === 0) dot.classList.add('active');
-                dot.addEventListener('click', () => {
-                    goToSlide2(i);
-                    stopSlide2();
-                    startSlide2();
-                });
-                dotsContainer2.appendChild(dot);
-            });
-        }
-
-        function updateDots2() {
-            document.querySelectorAll('.dot2').forEach((dot, i) => {
-                dot.classList.toggle('active', i === index2);
-            });
-        }
-
-        function goToSlide2(i) {
-            index2 = (i + slides2.length) % slides2.length;
-            (function(){})('DEBUG: index2=', index2);
-            const percentage = index2 * 100;
-            (function(){})('DEBUG: percentage=', percentage);
-            const transformValue = 'translateX(-' + percentage + '%)';
-            (function(){})('DEBUG: transformValue string=', transformValue);
-            if (slider2) {
-                slider2.style.transform = transformValue;
-                (function(){})('DEBUG: Element style.transform after set:', slider2.style.transform);
-            } else {
-                (function(){})('DEBUG: slider2 element is missing!');
-            }
-            updateDots2();
-        }
-
-        window.addEventListener('resize', () => {
-            goToSlide2(index2);
-        });
-        if (arrowLeft2) {
-            arrowLeft2.addEventListener('click', () => {
-                goToSlide2(index2 - 1);
-                stopSlide2();
-                startSlide2();
-            });
-        }
-        if (arrowRight2) {
-            arrowRight2.addEventListener('click', () => {
-                goToSlide2(index2 + 1);
-                stopSlide2();
-                startSlide2();
-            });
-        }
-
-        function startSlide2() {
-            stopSlide2();
-            autoSlide2 = setInterval(() => {
-                goToSlide2(index2 + 1);
-            }, 3000);
-        }
-
-        function stopSlide2() {
-            if (autoSlide2) {
-                clearInterval(autoSlide2);
-            }
-        }
-
-        if (slider2Container) {
-            slider2Container.addEventListener('mouseenter', stopSlide2);
-            slider2Container.addEventListener('mouseleave', startSlide2);
-        }
-        createDots2();
-        startSlide2();
-        (function(){})('Slider 2 đã khởi động với ' + slides2.length + ' slides');
-    });
-</script>
 </body>
 </html>

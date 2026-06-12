@@ -20,6 +20,13 @@ public class ResetPasswordController extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession();
+        Boolean otpVerified = (Boolean) session.getAttribute("otpVerified");
+        if (otpVerified == null || !otpVerified) {
+            session.setAttribute("error", "Yêu cầu không hợp lệ. Vui lòng xác thực OTP trước!");
+            response.sendRedirect(request.getContextPath() + "/page/otp-forgot-password.jsp");
+            return;
+        }
+
         String email = (String) session.getAttribute("email");
         String password = request.getParameter("password");
         String confirm = request.getParameter("confirm");
@@ -52,6 +59,9 @@ public class ResetPasswordController extends HttpServlet {
             boolean updated = authService.resetPassword(email, password);
             if (updated) {
                 LoginAttemptService.successAttempt(email);
+                session.removeAttribute("otpVerified");
+                session.removeAttribute("email");
+                session.removeAttribute("otp");
                 response.sendRedirect(request.getContextPath() + "/page/login.jsp?resetSuccess=1");
             } else {
                 request.setAttribute("error", "Có lỗi xảy ra khi cập nhật mật khẩu hoặc không tìm thấy tài khoản!");
