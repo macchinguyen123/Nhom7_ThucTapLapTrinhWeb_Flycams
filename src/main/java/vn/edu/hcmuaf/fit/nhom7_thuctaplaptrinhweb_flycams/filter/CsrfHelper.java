@@ -9,8 +9,9 @@ import java.io.IOException;
 public class CsrfHelper {
 
     static final String[] BYPASS_PATHS = {
-            "/login", "/register", "/forgot-password",
-            "/reset-password", "/oauth", "/ghn"
+            "/login", "/register", "/ForgotPassword",
+            "/ResetPassword", "/oauth", "/ghn",
+            "/VerifyRegisterOtp", "/VerifyOtp"
     };
 
     static final String[] STATIC_EXTS = {

@@ -17,6 +17,7 @@ public class Orders implements Serializable {
     private Timestamp completedAt;
     private String note;
     private Double shippingFee;
+    private String vnpTxnRef;
 
     public Double getShippingFee() {
         return shippingFee;
@@ -26,7 +27,16 @@ public class Orders implements Serializable {
         this.shippingFee = shippingFee;
     }
 
+    public String getVnpTxnRef() {
+        return vnpTxnRef;
+    }
+
+    public void setVnpTxnRef(String vnpTxnRef) {
+        this.vnpTxnRef = vnpTxnRef;
+    }
+
     public enum Status {
+        WAITING_PAYMENT("Chờ thanh toán"),
         PENDING("Xác nhận"),
         PROCESSING("Đang xử lý"),
         OUT_FOR_DELIVERY("Đang giao"),
@@ -50,6 +60,7 @@ public class Orders implements Serializable {
                 return null;
 
             return switch (dbValue) {
+                case "Chờ thanh toán" -> WAITING_PAYMENT;
                 case "Xác nhận" -> PENDING;
                 case "Đang xử lý" -> PROCESSING;
                 case "Đang giao" -> OUT_FOR_DELIVERY;
